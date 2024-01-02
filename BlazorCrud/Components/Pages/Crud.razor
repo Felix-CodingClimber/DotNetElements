@@ -1,0 +1,74 @@
+﻿@page "/crud"
+@using BlazorCrud.Modules.BlogPostModule
+@using BlazorCrud.Modules.TagModule
+
+<PageTitle>Tags</PageTitle>
+
+@if (tags is null || blogPosts is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<h1>Tags</h1>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Label</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (TagModel tag in tags)
+			{
+				<tr>
+					<td>@tag.Id</td>
+					<td>@tag.Label</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+	<h1>BlogPosts</h1>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Title</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (BlogPostModel blogPost in blogPosts)
+			{
+				<tr>
+					<td>@blogPost.Id</td>
+					<td>@blogPost.Title</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code
+{
+	[Inject]
+	private TagRepository? tagRepository { get; set; }
+
+	[Inject]
+	private BlogPostRepository? blogPostRepository { get; set; }
+
+	private List<TagModel>? tags;
+	private List<BlogPostModel>? blogPosts;
+
+	protected override async Task OnInitializedAsync()
+	{
+		ArgumentNullException.ThrowIfNull(tagRepository);
+
+		await tagRepository.CreateAsync(new Tag("TestTag1"));
+		await tagRepository.CreateAsync(new Tag("TestTag2"));
+
+		tags = new List<TagModel>(await tagRepository.GetAllWithProjectionAsync(query => query.MapToModel()));
+	}
+}

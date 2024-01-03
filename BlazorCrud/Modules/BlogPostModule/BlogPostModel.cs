@@ -17,10 +17,10 @@ public record class EditBlogPostModel
 	}
 #nullable enable
 
-	public EditBlogPostModel(BlogPost blogPost)
+	public EditBlogPostModel(BlogPostModel blogPost)
 	{
 		Id = blogPost.Id;
 		Title = blogPost.Title;
-		Tags = new List<TagModel>(blogPost.Tags.Select(tag => tag.MapToModel()));
+		Tags = new List<TagModel>(blogPost.Tags);
 	}
 }

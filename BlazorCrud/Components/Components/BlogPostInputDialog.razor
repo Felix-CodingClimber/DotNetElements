@@ -1,30 +1,49 @@
 ﻿@using BlazorCrud.Modules.BlogPostModule
+@using BlazorCrud.Modules.TagModule
 
 <MudDialog>
-	<DialogContent>
-		<MudTextField @bind-Value="BlogPost.Title" Label="Title" />
-	</DialogContent>
-	<DialogActions>
-		<MudButton OnClick="OnCancel">Cancel</MudButton>
-		<MudButton Color="Color.Primary" OnClick="OnSave">Save</MudButton>
-	</DialogActions>
+    <DialogContent>
+        <MudTextField @bind-Value="BlogPost.Title" Label="Title" />
+        <MudSelect T="TagModel" Label="Tags" MultiSelection="true" @bind-SelectedValues="selectedTags">
+            @foreach (TagModel tag in SelectableTags)
+            {
+                <MudSelectItem T="TagModel" Value="@tag">@tag.Label</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnCancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OnSave">Save</MudButton>
+    </DialogActions>
 </MudDialog>
 
 @code
 {
-	[CascadingParameter]
-	MudDialogInstance DialogInstance { get; set; } = default!;
+    [CascadingParameter]
+    MudDialogInstance DialogInstance { get; set; } = default!;
 
-	[Parameter, EditorRequired]
-	public EditBlogPostModel BlogPost { get; set; } = default!;
+    [Parameter, EditorRequired]
+    public EditBlogPostModel BlogPost { get; set; } = default!;
 
-	private void OnSave()
-	{
-		DialogInstance.Close(DialogResult.Ok(true));
-	}
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TagModel> SelectableTags { get; set; } = default!;
 
-	private void OnCancel()
-	{
-		DialogInstance.Cancel();
-	}
+    private IEnumerable<TagModel>? selectedTags;
+
+    protected override void OnParametersSet()
+    {
+        selectedTags = new HashSet<TagModel>(BlogPost.Tags);
+    }
+
+    private void OnSave()
+    {
+        BlogPost.Tags = selectedTags!.ToList();
+
+        DialogInstance.Close(DialogResult.Ok(true));
+    }
+
+    private void OnCancel()
+    {
+        DialogInstance.Cancel();
+    }
 }

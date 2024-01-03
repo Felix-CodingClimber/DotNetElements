@@ -7,6 +7,7 @@ public sealed class TagModule : IModule
 	public IServiceCollection RegisterModules(IServiceCollection services)
 	{
 		services.AddScoped<TagRepository>();
+		services.AddManagedRepository<ManagedTagRepository, TagRepository, Tag, EditTagModel, Guid>();
 
 		return services;
 	}

@@ -10,4 +10,5 @@ public interface IRepository<TEntity, TEditModel, TKey> : IReadOnlyRepository<TE
     Task<Result> DeleteAsync(TKey id);
     Task<Result<TEntity>> UpdateAsync(TKey id, TEditModel from);
     Task<Result<TSelf>> UpdateFromSelfAsync<TSelf>(TKey id, TSelf from) where TSelf : Entity<TKey>, IUpdatableFromSelf<TSelf>;
+    Task ClearTable();
 }

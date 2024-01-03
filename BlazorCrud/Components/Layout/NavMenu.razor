@@ -1,24 +1,5 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-	<div class="container-fluid">
-		<a class="navbar-brand" href="">BlazorCrud</a>
-	</div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-	<nav class="flex-column">
-		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-				<span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-			</NavLink>
-		</div>
-
-		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="crud">
-				<span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> CRUD
-			</NavLink>
-		</div>
-	</nav>
-</div>
+﻿<MudNavMenu>
+	<MudNavLink Icon="@Icons.Material.Outlined.Home" Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
+	<MudNavLink Icon="@Icons.Material.Outlined.TableView" Href="/crud" Match="NavLinkMatch.Prefix">CRUD</MudNavLink>
+</MudNavMenu>
 

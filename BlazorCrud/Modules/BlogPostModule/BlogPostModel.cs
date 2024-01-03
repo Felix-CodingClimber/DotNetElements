@@ -11,7 +11,10 @@ public record class EditBlogPostModel
 	public List<TagModel> Tags { get; set; }
 
 #nullable disable
-	public EditBlogPostModel() { }
+	public EditBlogPostModel()
+	{
+		Tags = new List<TagModel>();
+	}
 #nullable enable
 
 	public EditBlogPostModel(BlogPost blogPost)

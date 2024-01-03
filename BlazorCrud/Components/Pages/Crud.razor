@@ -1,74 +1,161 @@
 ﻿@page "/crud"
 @using BlazorCrud.Modules.BlogPostModule
 @using BlazorCrud.Modules.TagModule
+@using System.Runtime.InteropServices
 
 <PageTitle>Tags</PageTitle>
 
+<MudCard>
+	<MudToolBar>
+		<MudButton Color="Color.Primary" OnClick="OnInitDatabase">Init Database</MudButton>
+	</MudToolBar>
+</MudCard>
+
 @if (tags is null || blogPosts is null)
 {
-	<p><em>Loading...</em></p>
+	<MudText>Loading...</MudText>
+	<MudProgressLinear />
 }
 else
 {
-	<h1>Tags</h1>
+	<MudCard Class="mt-8">
+		<MudCardHeader>
+			<MudText>Tags</MudText>
+			<MudSpacer />
+			<MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" />
+		</MudCardHeader>
 
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Id</th>
-				<th>Label</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (TagModel tag in tags)
-			{
-				<tr>
-					<td>@tag.Id</td>
-					<td>@tag.Label</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+		<MudCardContent>
+			<MudSimpleTable Style="overflow-x: auto;">
+				<thead>
+					<tr>
+						<th>Id</th>
+						<th>Label</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (TagModel tag in tags)
+					{
+						<tr>
+							<td>@tag.Id</td>
+							<td>@tag.Label</td>
+							<td>
+								<MudIconButton Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+								<MudIconButton Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+							</td>
+						</tr>
+					}
+				</tbody>
+			</MudSimpleTable>
+		</MudCardContent>
+	</MudCard>
 
-	<h1>BlogPosts</h1>
+	<MudCard Class="mt-8">
+		<MudCardHeader>
+			<MudText>Tags</MudText>
+			<MudSpacer />
+			<MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" OnClick="OnCreateNewBlogPost" />
+		</MudCardHeader>
 
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Id</th>
-				<th>Title</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (BlogPostModel blogPost in blogPosts)
-			{
-				<tr>
-					<td>@blogPost.Id</td>
-					<td>@blogPost.Title</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+		<MudCardContent>
+			<MudSimpleTable Style="overflow-x: auto;">
+				<thead>
+					<tr>
+						<th>Id</th>
+						<th>Title</th>
+						<th>Tags</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (BlogPostModel blogPost in blogPosts)
+					{
+						<tr>
+							<td>@blogPost.Id</td>
+							<td>@blogPost.Title</td>
+							<td>
+								@foreach (TagModel tag in blogPost.Tags)
+								{
+									<MudTooltip Text="@tag.Id.ToString()">
+										<MudChip Variant="Variant.Outlined" Size="Size.Small">@tag.Label</MudChip>
+										</MudTooltip>
+								}
+							</td>
+							<td>
+								<MudIconButton Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+								<MudIconButton Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+							</td>
+						</tr>
+					}
+				</tbody>
+			</MudSimpleTable>
+		</MudCardContent>
+	</MudCard>
 }
 
 @code
 {
 	[Inject]
-	private TagRepository? tagRepository { get; set; }
+	private ManagedTagRepository tagRepository { get; set; } = default!;
 
 	[Inject]
-	private BlogPostRepository? blogPostRepository { get; set; }
+	private ManagedBlogPostRepository blogPostRepository { get; set; } = default!;
+
+	[Inject]
+	private IDialogService dialogService { get; set; } = default!;
+
+	[Inject]
+	private ISnackbar snackbar { get; set; } = default!;
 
 	private List<TagModel>? tags;
 	private List<BlogPostModel>? blogPosts;
 
 	protected override async Task OnInitializedAsync()
 	{
-		ArgumentNullException.ThrowIfNull(tagRepository);
+		tags = new List<TagModel>(await tagRepository.GetAllWithProjectionAsync(query => query.MapToModel()));
 
-		await tagRepository.CreateAsync(new Tag("TestTag1"));
-		await tagRepository.CreateAsync(new Tag("TestTag2"));
+		blogPosts = new List<BlogPostModel>(await blogPostRepository.GetAllWithProjectionAsync(query => query.MapToModel()));
+	}
+
+	private async Task OnInitDatabase()
+	{
+		await tagRepository.ClearTable();
+		await blogPostRepository.ClearTable();
+
+		await tagRepository.CreateAsync(new Tag("Test Tag 1"));
+		await tagRepository.CreateAsync(new Tag("Test Tag 2"));
 
 		tags = new List<TagModel>(await tagRepository.GetAllWithProjectionAsync(query => query.MapToModel()));
+
+		BlogPost blogPost = new BlogPost("Test Blog Post 1", Random.Shared.GetItems<TagModel>(CollectionsMarshal.AsSpan(tags), 2).Select(tag => new EditTagModel(tag).MapToEntity()).ToList());
+		EditBlogPostModel editBlogPost = new EditBlogPostModel(blogPost);
+
+		await blogPostRepository.CreateAsync(editBlogPost.MapToEntity());
+
+		blogPosts = new List<BlogPostModel>(await blogPostRepository.GetAllWithProjectionAsync(query => query.MapToModel()));
+	}
+
+	private async void OnCreateNewBlogPost()
+	{
+		EditBlogPostModel editBlogPostModel = new EditBlogPostModel();
+
+		var parameters = new DialogParameters<BlogPostInputDialog> { { x => x.BlogPost, editBlogPostModel } };
+
+		IDialogReference dialog = await dialogService.ShowAsync<BlogPostInputDialog>("New Blog Post", parameters);
+		DialogResult result = await dialog.Result;
+
+		if (result.Canceled)
+			return;
+
+		Result<BlogPost> createdBlogPost = await blogPostRepository.CreateAsync(editBlogPostModel.MapToEntity());
+
+		if (createdBlogPost.IsFailure)
+		{
+			snackbar.Add("Failed to create blog post", Severity.Error);
+			return;
+		}
+
+		snackbar.Add("Blog post created", Severity.Success);
 	}
 }

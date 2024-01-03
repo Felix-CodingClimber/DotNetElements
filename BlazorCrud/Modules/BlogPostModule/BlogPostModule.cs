@@ -7,6 +7,7 @@ public sealed class BlogPostModule : IModule
 	public IServiceCollection RegisterModules(IServiceCollection services)
 	{
 		services.AddScoped<BlogPostRepository>();
+		services.AddManagedRepository<ManagedBlogPostRepository, BlogPostRepository, BlogPost, EditBlogPostModel, Guid>();
 
 		return services;
 	}

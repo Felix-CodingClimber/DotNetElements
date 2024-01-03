@@ -34,6 +34,6 @@ public class BlogPost : AuditedEntity<Guid>, IUpdatableFromModel<EditBlogPostMod
 		ArgumentNullException.ThrowIfNull(from);
 
 		Title = from.Title;
-		tags = from.Tags.Select(tag => new Tag(Id)).ToList();
+		tags = from.Tags.Select(tag => new Tag(tag.Id)).ToList();
 	}
 }

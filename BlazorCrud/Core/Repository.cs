@@ -96,8 +96,15 @@ public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOn
 
 		entity.Update(from);
 
+		// todo not working for many to many
+		bool hasChanged = DbContext.ChangeTracker.HasChanges();
+
+		DbContext.ChangeTracker.Clear();
+
+		DbContext.Attach(entity);
+
 		// Check if entity has changed and set audit properties if needed
-		if (DbContext.ChangeTracker.HasChanges())
+		if (hasChanged)
 		{
 			if (entity is IAuditedEntity auditedEntity)
 				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());

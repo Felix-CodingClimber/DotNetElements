@@ -2,7 +2,7 @@
 
 namespace BlazorCrud.Modules.BlogPostModule;
 
-public record class BlogPostModel(Guid Id, string Title, IReadOnlyList<TagModel> Tags);
+public record class BlogPostModel(Guid Id, string Title, IReadOnlyList<TagModel> Tags) : Model<Guid>(Id);
 
 public record class EditBlogPostModel
 {
@@ -13,7 +13,7 @@ public record class EditBlogPostModel
 #nullable disable
 	public EditBlogPostModel()
 	{
-		Tags = new List<TagModel>();
+		Tags = [];
 	}
 #nullable enable
 
@@ -21,6 +21,6 @@ public record class EditBlogPostModel
 	{
 		Id = blogPost.Id;
 		Title = blogPost.Title;
-		Tags = new List<TagModel>(blogPost.Tags);
+		Tags = [.. blogPost.Tags];
 	}
 }

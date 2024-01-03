@@ -33,4 +33,14 @@ public static class MapperExtensions
 			Enumerable.ToList(Enumerable.Select(entity.Tags, tag => new TagModel(tag.Id, tag.Label)))
 		));
 	}
+
+	public static IQueryable<ModelWithDetails<BlogPostModel, AuditedModelDetails>> MapToModelWithDetails(this IQueryable<BlogPost> query)
+	{
+		return Queryable.Select(query, entity => new ModelWithDetails<BlogPostModel, AuditedModelDetails>(new BlogPostModel
+		(
+			entity.Id,
+			entity.Title,
+			Enumerable.ToList(Enumerable.Select(entity.Tags, tag => new TagModel(tag.Id, tag.Label)))
+		)));
+	}
 }

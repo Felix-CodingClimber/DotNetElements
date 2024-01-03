@@ -28,4 +28,13 @@ public static class MapperExtensions
 			entity.Label
 		));
 	}
+
+	public static IQueryable<ModelWithDetails<TagModel, AuditedModelDetails>> MapToModelWithDetails(this IQueryable<Tag> query)
+	{
+		return Queryable.Select(query, entity => new ModelWithDetails<TagModel, AuditedModelDetails>(new TagModel
+		(
+			entity.Id,
+			entity.Label
+		)));
+	}
 }

@@ -5,12 +5,6 @@
 
 <PageTitle>Tags</PageTitle>
 
-<MudCard>
-	<MudToolBar>
-		<MudButton Color="Color.Primary" OnClick="OnResetDatabase">Reset Database</MudButton>
-	</MudToolBar>
-</MudCard>
-
 @if (tags is null || blogPosts is null)
 {
 	<MudText>Loading...</MudText>
@@ -18,34 +12,60 @@
 }
 else
 {
-	<MudCard Class="mt-8">
+	<MudCard>
 		<MudCardHeader>
 			<MudText Typo="Typo.h5">Tags</MudText>
 			<MudSpacer />
-			<MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" />
+			<MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" OnClick="OnCreateNewTag" />
 		</MudCardHeader>
 
 		<MudCardContent>
 			<MudSimpleTable Style="overflow-x: auto;">
 				<thead>
 					<tr>
-						<th>Id</th>
 						<th>Label</th>
 						<th style="width: 140px;">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (TagModel tag in tags)
+					@foreach (ModelWithDetails<TagModel, AuditedModelDetails> context in tags)
 					{
 						<tr>
-							<td>@tag.Id</td>
-							<td>@tag.Label</td>
+							<td>@context.Value.Label</td>
 							<td class="py-0 pl-2" style="width: 140px;">
-								<MudIconButton OnClick="() => OnEditTag(tag)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
-								<MudIconButton OnClick="() => OnDeleteTag(tag)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
-								<MudIconButton Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Secondary" />
+								<MudIconButton OnClick="() => OnEditTag(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+								<MudIconButton OnClick="() => OnDeleteTag(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+								<MudIconButton OnClick="() => OnShowTagDetails(context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
 							</td>
 						</tr>
+
+						@if (context.DetailsShown && context.Details is not null)
+						{
+							<tr>
+								<td colspan="100">
+									<MudGrid Spacing="2">
+										<MudItem xs="12">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>ID</b></MudText>
+												<MudText Typo="Typo.caption">@context.Value.Id</MudText>
+											</MudStack>
+										</MudItem>
+										<MudItem xs="4">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>Creation Time</b></MudText>
+												<MudText Typo="Typo.caption">@context.Details.CreationTime</MudText>
+											</MudStack>
+										</MudItem>
+										<MudItem xs="4">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+												<MudText Typo="Typo.caption">@context.Details.LastModificationTime</MudText>
+											</MudStack>
+										</MudItem>
+									</MudGrid>
+								</td>
+							</tr>
+						}
 					}
 				</tbody>
 			</MudSimpleTable>
@@ -63,37 +83,71 @@ else
 			<MudSimpleTable Style="overflow-x: auto;">
 				<thead>
 					<tr>
-						<th>Id</th>
 						<th>Title</th>
 						<th>Tags</th>
 						<th style="width: 140px;">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (BlogPostModel blogPost in blogPosts)
+					@foreach (ModelWithDetails<BlogPostModel, AuditedModelDetails> context in blogPosts)
 					{
 						<tr>
-							<td>@blogPost.Id</td>
-							<td>@blogPost.Title</td>
+							<td>@context.Value.Title</td>
 							<td class="py-0">
-								@foreach (TagModel tag in blogPost.Tags)
+								@foreach (TagModel tag in context.Value.Tags)
 								{
 									<MudTooltip Text="@tag.Id.ToString()">
 										<MudChip Variant="Variant.Outlined" Size="Size.Small">@tag.Label</MudChip>
-										</MudTooltip>
+									</MudTooltip>
 								}
 							</td>
 							<td class="py-0 pl-2" style="width: 140px;">
-								<MudIconButton OnClick="() => OnEditBlogPost(blogPost)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
-								<MudIconButton OnClick="() => OnDeleteBlogPost(blogPost)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+								<MudIconButton OnClick="() => OnEditBlogPost(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+								<MudIconButton OnClick="() => OnDeleteBlogPost(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+								<MudIconButton OnClick="() => OnShowBlogPostDetails(context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
 							</td>
 						</tr>
+
+						
+						@if (context.DetailsShown && context.Details is not null)
+						{
+							<tr>
+								<td colspan="100">
+									<MudGrid Spacing="2">
+										<MudItem xs="12">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>ID</b></MudText>
+												<MudText Typo="Typo.caption">@context.Value.Id</MudText>
+											</MudStack>
+										</MudItem>
+										<MudItem xs="4">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>Creation Time</b></MudText>
+												<MudText Typo="Typo.caption">@context.Details.CreationTime</MudText>
+											</MudStack>
+										</MudItem>
+										<MudItem xs="4">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+												<MudText Typo="Typo.caption">@context.Details.LastModificationTime</MudText>
+											</MudStack>
+										</MudItem>
+									</MudGrid>
+								</td>
+							</tr>
+						}
 					}
 				</tbody>
 			</MudSimpleTable>
 		</MudCardContent>
 	</MudCard>
 }
+
+<MudCard Class="mt-8">
+	<MudToolBar>
+		<MudButton Color="Color.Error" OnClick="OnResetDatabase">Reset Database</MudButton>
+	</MudToolBar>
+</MudCard>
 
 @code
 {
@@ -109,14 +163,14 @@ else
 	[Inject]
 	private ISnackbar snackbar { get; set; } = default!;
 
-	private IReadOnlyList<TagModel>? tags;
-	private IReadOnlyList<BlogPostModel>? blogPosts;
+	private IReadOnlyList<ModelWithDetails<TagModel, AuditedModelDetails>>? tags;
+	private IReadOnlyList<ModelWithDetails<BlogPostModel, AuditedModelDetails>>? blogPosts;
 
 	protected override async Task OnInitializedAsync()
 	{
-		tags = new List<TagModel>(await tagRepository.GetAllWithProjectionAsync(query => query.MapToModel()));
+		await UpdateTags();
 
-		blogPosts = new List<BlogPostModel>(await blogPostRepository.GetAllWithProjectionAsync(query => query.MapToModel()));
+		await UpdateBlogPosts();
 	}
 
 	private async Task OnResetDatabase()
@@ -129,7 +183,7 @@ else
 
 		await UpdateTags();
 
-		BlogPost blogPost = new BlogPost("Test Blog Post 1", [new EditTagModel(tags!.First()).MapToEntity()]);
+		BlogPost blogPost = new BlogPost("Test Blog Post 1", [ new EditTagModel(tags!.First().Value).MapToEntity() ]);
 		EditBlogPostModel editBlogPost = new EditBlogPostModel(blogPost.MapToModel());
 
 		await blogPostRepository.CreateAsync(editBlogPost.MapToEntity());
@@ -219,14 +273,36 @@ else
 		await UpdateBlogPosts();
 	}
 
+	private async Task OnShowTagDetails(ModelWithDetails<TagModel, AuditedModelDetails> context)
+	{
+		if(context.DetailsShown)
+		{
+			context.DetailsShown = false;
+			return;
+		}
+
+		Result<AuditedModelDetails> details = await tagRepository.GetAuditedModelDetailsByIdAsync<Tag>(context.Value.Id);
+
+		if(details.IsFailure)
+		{
+			snackbar.Add("Failed to fetch tag details", Severity.Error);
+			return;
+		}
+
+		context.Details = details.Value;
+		context.DetailsShown = true;
+	}
+
 	private async Task OnCreateNewBlogPost()
 	{
+		ArgumentNullException.ThrowIfNull(tags);
+
 		EditBlogPostModel editBlogPostModel = new EditBlogPostModel();
 
 		var dialogParameters = new DialogParameters<BlogPostInputDialog>
 		{
 			{ x => x.BlogPost, editBlogPostModel },
-			{ x => x.SelectableTags, tags }
+			{ x => x.SelectableTags, tags.Select(tag => tag.Value).ToList() }
 		};
 
 		DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
@@ -252,12 +328,14 @@ else
 
 	private async Task OnEditBlogPost(BlogPostModel blogPost)
 	{
+		ArgumentNullException.ThrowIfNull(tags);
+
 		EditBlogPostModel editBlogPostModel = new EditBlogPostModel(blogPost);
 
 		var dialogParameters = new DialogParameters<BlogPostInputDialog>
 		{
 			{ x => x.BlogPost, editBlogPostModel },
-			{ x => x.SelectableTags, tags }
+			{ x => x.SelectableTags, tags.Select(tag => tag.Value).ToList() }
 		};
 
 		DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
@@ -301,13 +379,33 @@ else
 		await UpdateBlogPosts();
 	}
 
+	private async Task OnShowBlogPostDetails(ModelWithDetails<BlogPostModel, AuditedModelDetails> context)
+	{
+		if(context.DetailsShown)
+		{
+			context.DetailsShown = false;
+			return;
+		}
+
+		Result<AuditedModelDetails> details = await blogPostRepository.GetAuditedModelDetailsByIdAsync<BlogPost>(context.Value.Id);
+
+		if(details.IsFailure)
+		{
+			snackbar.Add("Failed to fetch blog post details", Severity.Error);
+			return;
+		}
+
+		context.Details = details.Value;
+		context.DetailsShown = true;
+	}
+
 	private async Task UpdateTags()
 	{
-		tags = await tagRepository.GetAllWithProjectionAsync(query => query.MapToModel());
+		tags = [..await tagRepository.GetAllWithProjectionAsync(query => query.MapToModelWithDetails())];
 	}
 
 	private async Task UpdateBlogPosts()
 	{
-		blogPosts = await blogPostRepository.GetAllWithProjectionAsync(query => query.MapToModel());
+		blogPosts = [..await blogPostRepository.GetAllWithProjectionAsync(query => query.MapToModelWithDetails())];
 	}
 }

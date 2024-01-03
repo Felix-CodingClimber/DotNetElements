@@ -135,4 +135,12 @@ public abstract class ManagedRepository<TRepository, TEntity, TEditModel, TKey> 
 
 		return repository.Inner.ClearTable();
 	}
+
+	public Task<Result<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(TKey id)
+		where TAuditedEntity : AuditedEntity<TKey>
+	{
+		using var repository = repositoryFactory.Create();
+
+		return repository.Inner.GetAuditedModelDetailsByIdAsync<TAuditedEntity>(id);
+	}
 }

@@ -1,9 +1,9 @@
 ﻿namespace BlazorCrud.Core;
 
-public sealed class ScopedRepository<TRepository, TEntity, TEditModel, TKey> : IDisposable
-	where TEntity : Entity<TKey>, IUpdatableFromModel<TEditModel>
+public sealed class ScopedRepository<TRepository, TEntity, TKey> : IDisposable
+	where TEntity : Entity<TKey>
 	where TKey : notnull
-	where TRepository : IRepository<TEntity, TEditModel, TKey>
+	where TRepository : IRepository<TEntity, TKey>
 {
 	public TRepository Inner { get; private init; }
 

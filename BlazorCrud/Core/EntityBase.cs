@@ -58,34 +58,21 @@ public interface IDeletionAuditedEntity : IHasDeletionTime
 	void Delete(Guid deleterId, DateTimeOffset deletionTime);
 }
 
-// todo more specific generic constraint
-public interface IUpdatableFromModel<TUpdateModel>
+public interface IUpdatable<TFrom>
 {
-	void Update(TUpdateModel from);
-}
-
-public interface IUpdatableFromModelIncludingRelatedEntities<TUpdateModel> : IUpdatableFromModel<TUpdateModel>
-{
-	void Update(TUpdateModel from, IAttachRelatedEntity attachRelatedEntity);
-
-	static abstract string[] GetRelatedProperties();
+	void Update(TFrom from, IAttachRelatedEntity attachRelatedEntity);
 }
 
 public interface IRelatedEntity<TSelf, TKey>
-	where TSelf : Entity<TKey>, IRelatedEntity<TSelf, TKey>
+	where TSelf : IEntity<TKey>, IRelatedEntity<TSelf, TKey>
 	where TKey : notnull
 {
 	static abstract TSelf CreateRefById(TKey id);
 }
 
-public interface IUpdatableFromSelf<TSelf>
-{
-	void Update(TSelf from);
-}
-
 public abstract class Entity { }
 
-public abstract class Entity<TKey> : Entity, IEntity
+public abstract class Entity<TKey> : Entity, IEntity<TKey>
 	where TKey : notnull
 {
 	public TKey Id { get; protected set; } = default!;

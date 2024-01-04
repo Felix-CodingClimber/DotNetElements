@@ -1,9 +1,9 @@
 ﻿namespace BlazorCrud.Core;
 
-public sealed class ScopedRepositoryFactory<TRepository, TEntity, TEditModel, TKey> : IScopedRepositoryFactory<TRepository, TEntity, TEditModel, TKey>
-	where TEntity : Entity<TKey>, IUpdatableFromModel<TEditModel>
+public sealed class ScopedRepositoryFactory<TRepository, TEntity, TKey> : IScopedRepositoryFactory<TRepository, TEntity, TKey>
+	where TEntity : Entity<TKey>
 	where TKey : notnull
-	where TRepository : IRepository<TEntity, TEditModel, TKey>
+	where TRepository : IRepository<TEntity, TKey>
 {
 	private readonly IServiceProvider serviceProvider;
 
@@ -12,13 +12,13 @@ public sealed class ScopedRepositoryFactory<TRepository, TEntity, TEditModel, TK
 		this.serviceProvider = serviceProvider;
 	}
 
-	public ScopedRepository<TRepository, TEntity, TEditModel, TKey> Create()
+	public ScopedRepository<TRepository, TEntity, TKey> Create()
 	{
 		IServiceScope scope = serviceProvider.CreateScope();
 
 		TRepository repository = scope.ServiceProvider.GetRequiredService<TRepository>();
 
-		var scopedRepository = new ScopedRepository<TRepository, TEntity, TEditModel, TKey>(scope, repository);
+		ScopedRepository<TRepository, TEntity, TKey> scopedRepository = new(scope, repository);
 
 		return scopedRepository;
 	}

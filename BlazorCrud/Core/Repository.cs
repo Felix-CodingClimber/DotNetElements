@@ -1,10 +1,11 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
 
 namespace BlazorCrud.Core;
 
-public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOnlyRepository<TDbContext, TEntity, TKey>, IRepository<TEntity, TEditModel, TKey>, IAttachRelatedEntity
+public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository<TDbContext, TEntity, TKey>, IRepository<TEntity, TKey>, IAttachRelatedEntity 
 	where TDbContext : DbContext
-	where TEntity : Entity<TKey>, IUpdatableFromModel<TEditModel>
+	where TEntity : Entity<TKey>
 	where TKey : notnull
 {
 	protected ICurrentUserProvider CurrentUserProvider { get; private init; }
@@ -39,73 +40,85 @@ public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOn
 		return createdEntity.Entity;
 	}
 
-	public virtual async Task<Result<TSelf>> CreateOrUpdateAsync<TSelf>(TKey id, TSelf entity)
-		where TSelf : Entity<TKey>, IUpdatableFromSelf<TSelf>
-	{
-		// If id is not set yet, the entity must be new
-		if (id.Equals(default(TKey)))
-			return await CreateFromSelfAsync(entity);
-
-		return await UpdateFromSelfAsync(entity.Id, entity);
-	}
-
-	private async Task<Result<TSelf>> CreateFromSelfAsync<TSelf>(TSelf entity)
-		where TSelf : Entity<TKey>, IUpdatableFromSelf<TSelf>
+	public virtual async Task<Result<TSelf>> CreateOrUpdateAsync<TSelf>(TKey id, TSelf entity, Expression<Func<TSelf, bool>>? checkDuplicate = null)
+		where TSelf : Entity<TKey>, IUpdatable<TSelf>
 	{
 		ArgumentNullException.ThrowIfNull(entity);
 
-		// Set audit properties if needed
-		if (entity is ICreationAuditedEntity auditedEntity)
-			auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+		// If id is not set yet, the entity must be new
+		if (id.Equals(default(TKey)))
+		{
+			if (checkDuplicate is not null)
+			{
+				bool isDuplicate = await DbContext.Set<TSelf>().AnyAsync(checkDuplicate);
 
-		var createdEntity = await DbContext.Set<TSelf>().AddAsync(entity);
+				if (isDuplicate)
+					return Result.DuplicateEntity();
+			}
 
-		await DbContext.SaveChangesAsync();
+			// Set audit properties if needed
+			if (entity is ICreationAuditedEntity auditedEntity)
+				auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-		return createdEntity.Entity;
+			var createdEntity = DbContext.Set<TSelf>().Attach(entity);
+
+			await DbContext.SaveChangesAsync();
+
+			return createdEntity.Entity;
+		}
+		else
+		{
+			// Update existing entity
+			TSelf? existingEntity = await DbContext.Set<TSelf>().FirstOrDefaultAsync(WithId<TSelf>(id));
+
+			if (existingEntity is null)
+				return Result.EntityNotFound(id);
+
+			entity.Update(entity, this);
+
+			// Check if entity has changed and set audit properties if needed
+			if (DbContext.ChangeTracker.HasChanges())
+			{
+				if (existingEntity is IAuditedEntity auditedEntity)
+					auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+
+				await DbContext.SaveChangesAsync();
+			}
+
+			return existingEntity;
+		}
 	}
 
-	public virtual async Task<Result<TSelf>> UpdateFromSelfAsync<TSelf>(TKey id, TSelf from)
-		where TSelf : Entity<TKey>, IUpdatableFromSelf<TSelf>
+	public virtual async Task<Result<TUpdatableEntity>> UpdateAsync<TUpdatableEntity, TFrom>(TKey id, TFrom from)
+		where TUpdatableEntity : Entity<TKey>, IUpdatable<TFrom>
 	{
-		TSelf? entity = await DbContext.Set<TSelf>().FirstOrDefaultAsync(entity => entity.Id.Equals(id));
+		IQueryable<TUpdatableEntity> query = DbContext.Set<TUpdatableEntity>();
 
-		if (entity is null)
+		RelatedEntitiesAttribute? relatedEntities = typeof(TUpdatableEntity).GetCustomAttribute<RelatedEntitiesAttribute>();
+
+		if (relatedEntities is not null)
+		{
+			foreach (string relatedProperty in relatedEntities.ReferenceProperties)
+				query = query.Include(relatedProperty);
+		}
+
+		TUpdatableEntity? existingEntity = await query.FirstOrDefaultAsync(WithId<TUpdatableEntity>(id));
+
+		if (existingEntity is null)
 			return Result.EntityNotFound(id);
 
-		entity.Update(from);
+		existingEntity.Update(from, this);
 
 		// Check if entity has changed and set audit properties if needed
 		if (DbContext.ChangeTracker.HasChanges())
 		{
-			if (entity is IAuditedEntity auditedEntity)
+			if (existingEntity is IAuditedEntity auditedEntity)
 				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
 			await DbContext.SaveChangesAsync();
 		}
 
-		return entity;
-	}
-
-	public virtual async Task<Result<TEntity>> UpdateAsync(TKey id, TEditModel from)
-	{
-		TEntity? entity = await Entities.FirstOrDefaultAsync(WithId(id));
-
-		if (entity is null)
-			return Result.EntityNotFound(id);
-
-		entity.Update(from);
-
-		// Check if entity has changed and set audit properties if needed
-		if (DbContext.ChangeTracker.HasChanges())
-		{
-			if (entity is IAuditedEntity auditedEntity)
-				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
-
-			await DbContext.SaveChangesAsync();
-		}
-
-		return entity;
+		return existingEntity;
 	}
 
 	public virtual async Task<Result> DeleteAsync(TKey id)
@@ -149,37 +162,10 @@ public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOn
 		return DbContext.Set<TRelatedEntity>().Attach(TRelatedEntity.CreateRefById(id)).Entity;
 	}
 
-	protected async Task<Result<TEntityWithRelationship>> UpdateIncludingRelatedEntities<TEntityWithRelationship>(TKey id, TEditModel from)
-		where TEntityWithRelationship : Entity<TKey>, IUpdatableFromModelIncludingRelatedEntities<TEditModel>
+	protected async Task<Result> HardDeleteAsync<TSoftDeleteEntity>(TKey id, Expression<Func<TSoftDeleteEntity, bool>>? canBeDeleted = null)
+		where TSoftDeleteEntity : Entity<TKey>, ISoftDelete
 	{
-		IQueryable<TEntityWithRelationship> query = DbContext.Set<TEntityWithRelationship>();
-
-		foreach (string relatedProperty in TEntityWithRelationship.GetRelatedProperties())
-			query = query.Include(relatedProperty);
-
-		TEntityWithRelationship? entity = await query.FirstOrDefaultAsync(WithId<TEntityWithRelationship>(id));
-
-		if (entity is null)
-			return Result.EntityNotFound(id);
-
-		entity.Update(from, this);
-
-		// Check if entity has changed and set audit properties if needed
-		if (DbContext.ChangeTracker.HasChanges())
-		{
-			if (entity is IAuditedEntity auditedEntity)
-				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
-
-			await DbContext.SaveChangesAsync();
-		}
-
-		return entity;
-	}
-
-	protected async Task<Result> HardDeleteAsync<TSelf>(TKey id, Expression<Func<TEntity, bool>>? canBeDeleted = null)
-		where TSelf : TEntity, ISoftDelete
-	{
-		TEntity? entityToDelete = await Entities.FirstOrDefaultAsync(WithId(id));
+		TSoftDeleteEntity? entityToDelete = await DbContext.Set<TSoftDeleteEntity>().FirstOrDefaultAsync(WithId<TSoftDeleteEntity>(id));
 
 		if (entityToDelete is null)
 			return Result.EntityNotFound(id);
@@ -187,7 +173,7 @@ public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOn
 		if (canBeDeleted is not null && !canBeDeleted.Compile().Invoke(entityToDelete))
 			return Result.Fail("Entity can not be deleted. It is still in use.");
 
-		Entities.Remove(entityToDelete);
+		DbContext.Set<TSoftDeleteEntity>().Remove(entityToDelete);
 
 		await DbContext.SaveChangesAsync();
 

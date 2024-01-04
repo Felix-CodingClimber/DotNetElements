@@ -7,7 +7,7 @@ public sealed class BlogPostModule : IModule
 	public IServiceCollection RegisterModules(IServiceCollection services)
 	{
 		services.AddScoped<BlogPostRepository>();
-		services.AddManagedRepository<ManagedBlogPostRepository, BlogPostRepository, BlogPost, EditBlogPostModel, Guid>();
+		services.AddManagedRepository<ManagedBlogPostRepository, BlogPostRepository, BlogPost, Guid>();
 
 		return services;
 	}
@@ -24,7 +24,7 @@ public sealed class BlogPostModule : IModule
 
 		endpoints.MapPost(BaseUrl, async (EditBlogPostModel blogPost, BlogPostRepository blogPostRepo) =>
 		{
-			Result<BlogPost> result = await blogPostRepo.UpdateAsync(blogPost.Id, blogPost);
+			Result<BlogPost> result = await blogPostRepo.UpdateAsync<BlogPost, EditBlogPostModel>(blogPost.Id, blogPost);
 
 			return result.IsSuccess ? Results.Ok(result.Value.MapToModel()) : Results.NotFound(result.Error);
 		});

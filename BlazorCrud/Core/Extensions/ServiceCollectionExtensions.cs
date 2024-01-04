@@ -20,13 +20,13 @@ public static class ServiceCollectionExtensions
 		return services;
 	}
 
-	public static IServiceCollection AddManagedRepository<TManagedRepository, TRepository, TEntity, TEditModel, TKey>(this IServiceCollection services)
-		where TEntity : Entity<TKey>, IUpdatableFromModel<TEditModel>
+	public static IServiceCollection AddManagedRepository<TManagedRepository, TRepository, TEntity, TKey>(this IServiceCollection services)
+		where TEntity : Entity<TKey>
 		where TKey : notnull
-		where TRepository : IRepository<TEntity, TEditModel, TKey>
-		where TManagedRepository : ManagedRepository<TRepository, TEntity, TEditModel, TKey>
+		where TRepository : IRepository<TEntity, TKey>
+		where TManagedRepository : ManagedRepository<TRepository, TEntity, TKey>
 	{
-		services.AddTransient<IScopedRepositoryFactory<TRepository, TEntity, TEditModel, TKey>, ScopedRepositoryFactory<TRepository, TEntity, TEditModel, TKey>>();
+		services.AddTransient<IScopedRepositoryFactory<TRepository, TEntity, TKey>, ScopedRepositoryFactory<TRepository, TEntity, TKey>>();
 		services.AddTransient<TManagedRepository>();
 
 		return services;

@@ -1,8 +1,8 @@
 ﻿namespace BlazorCrud.Modules.BlogPostModule;
 
-public class ManagedBlogPostRepository : ManagedRepository<BlogPostRepository, BlogPost, EditBlogPostModel, Guid>
+public class ManagedBlogPostRepository : ManagedRepository<BlogPostRepository, BlogPost, Guid>
 {
-	public ManagedBlogPostRepository(IScopedRepositoryFactory<BlogPostRepository, BlogPost, EditBlogPostModel, Guid> repositoryFactory)
+	public ManagedBlogPostRepository(IScopedRepositoryFactory<BlogPostRepository, BlogPost, Guid> repositoryFactory)
 		: base(repositoryFactory)
 	{
 	}

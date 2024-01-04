@@ -1,7 +1,7 @@
 ﻿namespace BlazorCrud.Core;
 
-public interface IManagedRepository<TRepository, TEntity, TEditModel, TKey> : IRepository<TEntity, TEditModel, TKey>
-	where TEntity : Entity<TKey>, IUpdatableFromModel<TEditModel>
+public interface IManagedRepository<TRepository, TEntity, TEditModel, TKey> : IRepository<TEntity, TKey>
+	where TEntity : Entity<TKey>
 	where TKey : notnull
-	where TRepository : IRepository<TEntity, TEditModel, TKey>
+	where TRepository : IRepository<TEntity, TKey>
 { }

@@ -7,7 +7,7 @@ public sealed class TagModule : IModule
 	public IServiceCollection RegisterModules(IServiceCollection services)
 	{
 		services.AddScoped<TagRepository>();
-		services.AddManagedRepository<ManagedTagRepository, TagRepository, Tag, EditTagModel, Guid>();
+		services.AddManagedRepository<ManagedTagRepository, TagRepository, Tag, Guid>();
 
 		return services;
 	}
@@ -24,7 +24,7 @@ public sealed class TagModule : IModule
 
 		endpoints.MapPost(BaseUrl, async (EditTagModel tag, TagRepository tagRepo) =>
 		{
-			Result<Tag> result = await tagRepo.UpdateAsync(tag.Id, tag);
+			Result<Tag> result = await tagRepo.UpdateAsync<Tag, EditTagModel>(tag.Id, tag);
 
 			return result.IsSuccess ? Results.Ok(result.Value.MapToModel()) : Results.NotFound(result.Error);
 		});

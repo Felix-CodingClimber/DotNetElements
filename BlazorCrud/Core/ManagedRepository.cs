@@ -2,14 +2,14 @@
 
 namespace BlazorCrud.Core;
 
-public abstract class ManagedRepository<TRepository, TEntity, TEditModel, TKey> : IRepository<TEntity, TEditModel, TKey>
-	where TEntity : Entity<TKey>, IUpdatableFromModel<TEditModel>
+public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepository<TEntity, TKey>
+	where TEntity : Entity<TKey>
 	where TKey : notnull
-	where TRepository : IRepository<TEntity, TEditModel, TKey>
+	where TRepository : IRepository<TEntity, TKey>
 {
-	private readonly IScopedRepositoryFactory<TRepository, TEntity, TEditModel, TKey> repositoryFactory;
+	private readonly IScopedRepositoryFactory<TRepository, TEntity, TKey> repositoryFactory;
 
-	public ManagedRepository(IScopedRepositoryFactory<TRepository, TEntity, TEditModel, TKey> repositoryFactory)
+	public ManagedRepository(IScopedRepositoryFactory<TRepository, TEntity, TKey> repositoryFactory)
 	{
 		this.repositoryFactory = repositoryFactory;
 	}
@@ -21,12 +21,12 @@ public abstract class ManagedRepository<TRepository, TEntity, TEditModel, TKey> 
 		return repository.Inner.CreateAsync(entity, checkDuplicate);
 	}
 
-	public Task<Result<TSelf>> CreateOrUpdateAsync<TSelf>(TKey id, TSelf entity)
-		where TSelf : Entity<TKey>, IUpdatableFromSelf<TSelf>
+	public Task<Result<TSelf>> CreateOrUpdateAsync<TSelf>(TKey id, TSelf entity, Expression<Func<TSelf, bool>>? checkDuplicate = null)
+		where TSelf : Entity<TKey>, IUpdatable<TSelf>
 	{
 		using var repository = repositoryFactory.Create();
 
-		return repository.Inner.CreateOrUpdateAsync(id, entity);
+		return repository.Inner.CreateOrUpdateAsync(id, entity, checkDuplicate);
 	}
 
 	public Task<Result> DeleteAsync(TKey id)
@@ -114,19 +114,12 @@ public abstract class ManagedRepository<TRepository, TEntity, TEditModel, TKey> 
 		return repository.Inner.GetByIdWithProjectionAsync(id, selector, filter);
 	}
 
-	public Task<Result<TEntity>> UpdateAsync(TKey id, TEditModel from)
+	public Task<Result<TUpdatableEntity>> UpdateAsync<TUpdatableEntity, TFrom>(TKey id, TFrom from)
+		where TUpdatableEntity : Entity<TKey>, IUpdatable<TFrom>
 	{
 		using var repository = repositoryFactory.Create();
 
-		return repository.Inner.UpdateAsync(id, from);
-	}
-
-	public Task<Result<TSelf>> UpdateFromSelfAsync<TSelf>(TKey id, TSelf from)
-		where TSelf : Entity<TKey>, IUpdatableFromSelf<TSelf>
-	{
-		using var repository = repositoryFactory.Create();
-
-		return repository.Inner.UpdateFromSelfAsync(id, from);
+		return repository.Inner.UpdateAsync<TUpdatableEntity, TFrom>(id, from);
 	}
 
 	public Task ClearTable()

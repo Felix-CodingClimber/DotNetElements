@@ -2,17 +2,20 @@
 
 public static class ServiceCollectionExtensions
 {
-	private static readonly List<IModule> registeredModules = new List<IModule>();
+	public static IReadOnlyList<IModule>? RegisteredModules { get; private set; }
 
 	public static IServiceCollection RegisterModules(this IServiceCollection services)
 	{
 		IEnumerable<IModule> modules = DiscoverModules();
+		List<IModule> registeredModules = new List<IModule>();
 
 		foreach (IModule module in modules)
 		{
 			module.RegisterModules(services);
 			registeredModules.Add(module);
 		}
+
+		RegisteredModules = registeredModules;
 
 		return services;
 	}
@@ -29,12 +32,12 @@ public static class ServiceCollectionExtensions
 		return services;
 	}
 
-	public static WebApplication MapEndpoints(this WebApplication app)
+	public static IServiceCollection AddDatabaseMigrationService<TDbContext>(this IServiceCollection services)
+	where TDbContext : DbContext
 	{
-		foreach (IModule module in registeredModules)
-			module.MapEndpoints(app);
+		services.AddScoped<IDatabaseMigrationService<TDbContext>, DatabaseMigrationService<TDbContext>>();
 
-		return app;
+		return services;
 	}
 
 	// todo replace with source generated version

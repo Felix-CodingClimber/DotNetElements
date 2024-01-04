@@ -12,6 +12,12 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 
 	public static Expression<Func<TEntity, bool>> WithId(TKey id) => entity => entity.Id.Equals(id);
 
+	public static Expression<Func<TEntityWithKey, bool>> WithId<TEntityWithKey>(TKey id)
+		where TEntityWithKey : Entity<TKey>
+	{
+		return entity => entity.Id.Equals(id);
+	}
+
 	public ReadOnlyRepository(TDbContext dbContext)
 	{
 		DbContext = dbContext;
@@ -144,19 +150,19 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 
 		AuditedModelDetails? entity = await localDbSet
 			.AsNoTracking()
-			.Where(entity => entity.Id.Equals(id))
+			.Where(WithId<TAuditedEntity>(id))
 			.Select(entity =>
 				new AuditedModelDetails()
 				{
 					CreatorId = entity.CreatorId,
-					Creator = "Felix",
+					Creator = "Felix", // todo get from user
 					CreationTime = entity.CreationTime,
 					LastModifierId = entity.LastModifierId,
-					LastModifier = "Felix",
+					LastModifier = "Felix", // todo get from user
 					LastModificationTime = entity.LastModificationTime,
 				}
 		).FirstOrDefaultAsync();
 
-		return entity is null ? Result.Fail("") : Result.Ok(entity);
+		return entity is null ? Result.Fail("Failed to get model details") : Result.Ok(entity);
 	}
 }

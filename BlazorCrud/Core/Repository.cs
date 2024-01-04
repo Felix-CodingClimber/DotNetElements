@@ -2,7 +2,7 @@
 
 namespace BlazorCrud.Core;
 
-public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOnlyRepository<TDbContext, TEntity, TKey>, IRepository<TEntity, TEditModel, TKey>
+public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOnlyRepository<TDbContext, TEntity, TKey>, IRepository<TEntity, TEditModel, TKey>, IAttachRelatedEntity
 	where TDbContext : DbContext
 	where TEntity : Entity<TKey>, IUpdatableFromModel<TEditModel>
 	where TKey : notnull
@@ -96,15 +96,8 @@ public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOn
 
 		entity.Update(from);
 
-		// todo not working for many to many
-		bool hasChanged = DbContext.ChangeTracker.HasChanges();
-
-		DbContext.ChangeTracker.Clear();
-
-		DbContext.Attach(entity);
-
 		// Check if entity has changed and set audit properties if needed
-		if (hasChanged)
+		if (DbContext.ChangeTracker.HasChanges())
 		{
 			if (entity is IAuditedEntity auditedEntity)
 				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
@@ -149,7 +142,41 @@ public abstract class Repository<TDbContext, TEntity, TEditModel, TKey> : ReadOn
 		await Entities.ExecuteDeleteAsync();
 	}
 
-	protected virtual async Task<Result> HardDeleteAsync<TSelf>(TKey id, Expression<Func<TEntity, bool>>? canBeDeleted = null)
+	public TRelatedEntity AttachById<TRelatedEntity, TRelatedEntityKey>(TRelatedEntityKey id)
+		where TRelatedEntity : Entity<TRelatedEntityKey>, IRelatedEntity<TRelatedEntity, TRelatedEntityKey>
+		where TRelatedEntityKey : notnull
+	{
+		return DbContext.Set<TRelatedEntity>().Attach(TRelatedEntity.CreateRefById(id)).Entity;
+	}
+
+	protected async Task<Result<TEntityWithRelationship>> UpdateIncludingRelatedEntities<TEntityWithRelationship>(TKey id, TEditModel from)
+		where TEntityWithRelationship : Entity<TKey>, IUpdatableFromModelIncludingRelatedEntities<TEditModel>
+	{
+		IQueryable<TEntityWithRelationship> query = DbContext.Set<TEntityWithRelationship>();
+
+		foreach (string relatedProperty in TEntityWithRelationship.GetRelatedProperties())
+			query = query.Include(relatedProperty);
+
+		TEntityWithRelationship? entity = await query.FirstOrDefaultAsync(WithId<TEntityWithRelationship>(id));
+
+		if (entity is null)
+			return Result.EntityNotFound(id);
+
+		entity.Update(from, this);
+
+		// Check if entity has changed and set audit properties if needed
+		if (DbContext.ChangeTracker.HasChanges())
+		{
+			if (entity is IAuditedEntity auditedEntity)
+				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+
+			await DbContext.SaveChangesAsync();
+		}
+
+		return entity;
+	}
+
+	protected async Task<Result> HardDeleteAsync<TSelf>(TKey id, Expression<Func<TEntity, bool>>? canBeDeleted = null)
 		where TSelf : TEntity, ISoftDelete
 	{
 		TEntity? entityToDelete = await Entities.FirstOrDefaultAsync(WithId(id));

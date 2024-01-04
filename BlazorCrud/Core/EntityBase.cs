@@ -64,12 +64,28 @@ public interface IUpdatableFromModel<TUpdateModel>
 	void Update(TUpdateModel from);
 }
 
+public interface IUpdatableFromModelIncludingRelatedEntities<TUpdateModel> : IUpdatableFromModel<TUpdateModel>
+{
+	void Update(TUpdateModel from, IAttachRelatedEntity attachRelatedEntity);
+
+	static abstract string[] GetRelatedProperties();
+}
+
+public interface IRelatedEntity<TSelf, TKey>
+	where TSelf : Entity<TKey>, IRelatedEntity<TSelf, TKey>
+	where TKey : notnull
+{
+	static abstract TSelf CreateRefById(TKey id);
+}
+
 public interface IUpdatableFromSelf<TSelf>
 {
 	void Update(TSelf from);
 }
 
-public abstract class Entity<TKey> : IEntity
+public abstract class Entity { }
+
+public abstract class Entity<TKey> : Entity, IEntity
 	where TKey : notnull
 {
 	public TKey Id { get; protected set; } = default!;

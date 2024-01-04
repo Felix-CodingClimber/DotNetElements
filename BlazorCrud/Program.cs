@@ -15,6 +15,7 @@ builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddScoped<ICurrentUserProvider, CurrentUserProviderWeb>();
 
 builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddDatabaseMigrationService<AppDbContext>();
 builder.AddSettings<AppDatabaseSettings>();
 
 builder.Services.RegisterModules();
@@ -38,5 +39,7 @@ app.MapRazorComponents<App>()
 	.AddInteractiveServerRenderMode();
 
 app.MapEndpoints();
+
+app.MigrateDatabase<AppDbContext>();
 
 app.Run();

@@ -2,7 +2,7 @@
 
 namespace BlazorCrud.Modules.TagModule;
 
-public class Tag : AuditedEntity<Guid>, IUpdatableFromModel<EditTagModel>
+public class Tag : AuditedEntity<Guid>, IUpdatableFromModel<EditTagModel>, IRelatedEntity<Tag, Guid>
 {
 	[SQLStringColumn(Length = 256)]
 	public string Label { get; private set; }
@@ -37,5 +37,15 @@ public class Tag : AuditedEntity<Guid>, IUpdatableFromModel<EditTagModel>
 		ArgumentNullException.ThrowIfNull(from);
 
 		Label = from.Label;
+	}
+
+	public void Update(EditTagModel from, IAttachRelatedEntity attachRelatedEntity)
+	{
+		throw new NotImplementedException();
+	}
+
+	public static Tag CreateRefById(Guid id)
+	{
+		return new Tag(id);
 	}
 }

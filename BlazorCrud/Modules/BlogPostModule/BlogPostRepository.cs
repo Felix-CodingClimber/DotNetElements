@@ -8,4 +8,9 @@ public class BlogPostRepository : Repository<AppDbContext, BlogPost, EditBlogPos
 		: base(dbContext, currentUserProvider, timeProvider)
 	{
 	}
+
+	public override async Task<Result<BlogPost>> UpdateAsync(Guid id, EditBlogPostModel from)
+	{
+		return await UpdateIncludingRelatedEntities<BlogPost>(id, from);
+	}
 }

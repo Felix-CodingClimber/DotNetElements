@@ -2,7 +2,7 @@
 
 namespace BlazorCrud.Modules.BlogPostModule;
 
-public class BlogPost : AuditedEntity<Guid>, IUpdatableFromModel<EditBlogPostModel>
+public class BlogPost : AuditedEntity<Guid>, IUpdatableFromModelIncludingRelatedEntities<EditBlogPostModel>
 {
 	[SQLStringColumn(Length = 256)]
 	public string Title { get; private set; }
@@ -36,4 +36,15 @@ public class BlogPost : AuditedEntity<Guid>, IUpdatableFromModel<EditBlogPostMod
 		Title = from.Title;
 		tags = from.Tags.Select(tag => new Tag(tag.Id)).ToList();
 	}
+
+	public void Update(EditBlogPostModel from, IAttachRelatedEntity attachRelatedEntity)
+	{
+		ArgumentNullException.ThrowIfNull(from);
+
+		Title = from.Title;
+
+		EntityHelper.UpdateRelatedEntities<Tag, TagModel, Guid>(tags, from.Tags, attachRelatedEntity);
+	}
+
+	public static string[] GetRelatedProperties() => [nameof(Tags)];
 }

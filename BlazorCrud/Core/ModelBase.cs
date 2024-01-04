@@ -30,3 +30,8 @@ public class AuditedModelDetails : CreationAuditedModelDetails
 
 	public DateTimeOffset? LastModificationTime { get; init; }
 }
+
+public interface IUpdatesRelatedEntities
+{
+
+}

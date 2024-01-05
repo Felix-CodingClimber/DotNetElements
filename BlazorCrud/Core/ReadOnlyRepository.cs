@@ -25,9 +25,9 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		Entities = dbContext.Set<TEntity>();
 	}
 
-	public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id)
+	public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken cancellationToken = default)
 	{
-		TEntity? entity = await Entities.AsNoTracking().FirstOrDefaultAsync(WithId(id));
+		TEntity? entity = await Entities.AsNoTracking().FirstOrDefaultAsync(WithId(id), cancellationToken);
 
 		if (entity is null)
 			return Result.EntityNotFound(id);
@@ -37,14 +37,15 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 
 	public async Task<Result<TEntity>> GetByIdAsync(
 		TKey id,
-		Expression<Func<TEntity, bool>>? filter = null)
+		Expression<Func<TEntity, bool>>? filter = null,
+		CancellationToken cancellationToken = default)
 	{
 		IQueryable<TEntity> entityQuery = Entities.AsNoTracking();
 
 		if (filter is not null)
 			entityQuery = entityQuery.Where(filter);
 
-		TEntity? entity = await entityQuery.FirstOrDefaultAsync(WithId(id));
+		TEntity? entity = await entityQuery.FirstOrDefaultAsync(WithId(id), cancellationToken);
 
 		if (entity is null)
 			return Result.EntityNotFound(id);
@@ -55,7 +56,8 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 	public async Task<Result<TProjection>> GetByIdWithProjectionAsync<TProjection>(
 		TKey id,
 		Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
-		Expression<Func<TEntity, bool>>? filter = null)
+		Expression<Func<TEntity, bool>>? filter = null,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(selector);
 
@@ -64,7 +66,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		if (filter is not null)
 			entityQuery = entityQuery.Where(filter);
 
-		TProjection? projectedEntity = await selector.Compile().Invoke(entityQuery.Where(WithId(id))).FirstOrDefaultAsync();
+		TProjection? projectedEntity = await selector.Compile().Invoke(entityQuery.Where(WithId(id))).FirstOrDefaultAsync(cancellationToken);
 
 		if (projectedEntity is null)
 			return Result.EntityNotFound(id);
@@ -72,15 +74,16 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		return Result.Ok(projectedEntity);
 	}
 
-	public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync()
+	public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
 	{
-		return await Entities.AsNoTracking().ToListAsync();
+		return await Entities.AsNoTracking().ToListAsync(cancellationToken);
 	}
 
 	public async Task<IReadOnlyList<TEntity>> GetAllAsync(
 		Expression<Func<TEntity, bool>>? filter = null,
 		Expression<Func<TEntity, object>>? orderBy = null,
-		bool descending = true)
+		bool descending = true,
+		CancellationToken cancellationToken = default)
 	{
 		IQueryable<TEntity> entityQuery = Entities.AsNoTracking();
 
@@ -90,14 +93,15 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		if (orderBy is not null)
 			entityQuery = descending ? entityQuery.OrderByDescending(orderBy) : entityQuery.OrderBy(orderBy);
 
-		return await entityQuery.ToListAsync();
+		return await entityQuery.ToListAsync(cancellationToken);
 	}
 
 	public async Task<IReadOnlyList<TProjection>> GetAllWithProjectionAsync<TProjection>(
 		Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
 		Expression<Func<TEntity, bool>>? filter = null,
 		Expression<Func<TEntity, object>>? orderBy = null,
-		bool descending = true)
+		bool descending = true,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(selector);
 
@@ -109,7 +113,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		if (orderBy is not null)
 			entityQuery = descending ? entityQuery.OrderByDescending(orderBy) : entityQuery.OrderBy(orderBy);
 
-		return await selector.Compile().Invoke(entityQuery).ToListAsync();
+		return await selector.Compile().Invoke(entityQuery).ToListAsync(cancellationToken);
 	}
 
 	public async Task<IPagedList<TEntity>> GetAllPagedAsync(
@@ -117,9 +121,10 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		Expression<Func<TEntity, object>>? orderBy = null,
 		bool descending = true,
 		int page = 1,
-		int pageSize = int.MaxValue)
+		int pageSize = int.MaxValue,
+		CancellationToken cancellationToken = default)
 	{
-		return await GetAllPagedWithProjectionAsync(selector => selector, filter, orderBy, descending, page, pageSize);
+		return await GetAllPagedWithProjectionAsync(selector => selector, filter, orderBy, descending, page, pageSize, cancellationToken);
 	}
 
 	public async Task<IPagedList<TProjection>> GetAllPagedWithProjectionAsync<TProjection>(
@@ -128,7 +133,8 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		Expression<Func<TEntity, object>>? orderBy = null,
 		bool descending = true,
 		int page = 1,
-		int pageSize = int.MaxValue)
+		int pageSize = int.MaxValue,
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(selector);
 
@@ -140,10 +146,10 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		if (orderBy is not null)
 			entityQuery = descending ? entityQuery.OrderByDescending(orderBy) : entityQuery.OrderBy(orderBy);
 
-		return await selector.Compile().Invoke(entityQuery).ToPagedListAsync(page, pageSize);
+		return await selector.Compile().Invoke(entityQuery).ToPagedListAsync(page, pageSize, cancellationToken);
 	}
 
-	public async Task<Result<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(TKey id)
+	public async Task<Result<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(TKey id, CancellationToken cancellationToken = default)
 		where TAuditedEntity : AuditedEntity<TKey>
 	{
 		DbSet<TAuditedEntity> localDbSet = DbContext.Set<TAuditedEntity>();
@@ -161,7 +167,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 					LastModifier = "Felix", // todo get from user
 					LastModificationTime = entity.LastModificationTime,
 				}
-		).FirstOrDefaultAsync();
+		).FirstOrDefaultAsync(cancellationToken);
 
 		return Result.OkIfNotNull(entity, "Failed to get model details");
 	}

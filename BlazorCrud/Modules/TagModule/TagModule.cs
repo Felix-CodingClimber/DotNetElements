@@ -38,15 +38,15 @@ public sealed class TagModule : IModule
 		});
 
 
-		endpoints.MapGet(BaseUrl, async (TagRepository tagRepo) =>
+		endpoints.MapGet(BaseUrl, async (TagRepository tagRepo, CancellationToken cancellationToken) =>
 		{
-			return await tagRepo.GetAllWithProjectionAsync(query => query.MapToModel());
+			return await tagRepo.GetAllWithProjectionAsync(query => query.MapToModel(), cancellationToken: cancellationToken);
 		});
 
 
-		endpoints.MapGet($"{BaseUrl}/{{id}}", async (Guid id, TagRepository tagRepo) =>
+		endpoints.MapGet($"{BaseUrl}/{{id}}", async (Guid id, TagRepository tagRepo, CancellationToken cancellationToken) =>
 		{
-			Result<TagModel> result = await tagRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel());
+			Result<TagModel> result = await tagRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel(), cancellationToken: cancellationToken);
 
 			return result.IsOk ? Results.Ok(result.Value) : Results.NotFound(result.Error);
 		});

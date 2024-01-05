@@ -38,15 +38,15 @@ public sealed class BlogPostModule : IModule
 		});
 
 
-		endpoints.MapGet(BaseUrl, async (BlogPostRepository blogPostRepo) =>
+		endpoints.MapGet(BaseUrl, async (BlogPostRepository blogPostRepo, CancellationToken cancellationToken) =>
 		{
-			return await blogPostRepo.GetAllWithProjectionAsync(query => query.MapToModel());
+			return await blogPostRepo.GetAllWithProjectionAsync(query => query.MapToModel(), cancellationToken: cancellationToken);
 		});
 
 
-		endpoints.MapGet($"{BaseUrl}/{{id}}", async (Guid id, BlogPostRepository blogPostRepo) =>
+		endpoints.MapGet($"{BaseUrl}/{{id}}", async (Guid id, BlogPostRepository blogPostRepo, CancellationToken cancellationToken) =>
 		{
-			Result<BlogPostModel> result = await blogPostRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel());
+			Result<BlogPostModel> result = await blogPostRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel(), cancellationToken: cancellationToken);
 
 			return result.IsOk ? Results.Ok(result.Value) : Results.NotFound(result.Error);
 		});

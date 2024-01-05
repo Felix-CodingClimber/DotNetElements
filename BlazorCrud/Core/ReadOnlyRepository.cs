@@ -163,6 +163,6 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 				}
 		).FirstOrDefaultAsync();
 
-		return entity is null ? Result.Fail("Failed to get model details") : Result.Ok(entity);
+		return Result.OkIfNotNull(entity, "Failed to get model details");
 	}
 }

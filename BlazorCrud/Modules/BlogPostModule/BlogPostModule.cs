@@ -18,7 +18,7 @@ public sealed class BlogPostModule : IModule
 		{
 			Result<BlogPost> result = await blogPostRepo.CreateAsync(blogPost.MapToEntity());
 
-			return result.IsSuccess ? Results.Ok(result.Value.MapToModel()) : Results.Conflict(result.Error);
+			return result.IsOk ? Results.Ok(result.Value.MapToModel()) : Results.Conflict(result.Error);
 		});
 
 
@@ -26,7 +26,7 @@ public sealed class BlogPostModule : IModule
 		{
 			Result<BlogPost> result = await blogPostRepo.UpdateAsync<BlogPost, EditBlogPostModel>(blogPost.Id, blogPost);
 
-			return result.IsSuccess ? Results.Ok(result.Value.MapToModel()) : Results.NotFound(result.Error);
+			return result.IsOk ? Results.Ok(result.Value.MapToModel()) : Results.NotFound(result.Error);
 		});
 
 
@@ -34,7 +34,7 @@ public sealed class BlogPostModule : IModule
 		{
 			Result result = await blogPostRepo.DeleteAsync(id);
 
-			return result.IsSuccess ? Results.Ok() : Results.NotFound(result.Error);
+			return result.IsOk ? Results.Ok() : Results.NotFound(result.Error);
 		});
 
 
@@ -48,7 +48,7 @@ public sealed class BlogPostModule : IModule
 		{
 			Result<BlogPostModel> result = await blogPostRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel());
 
-			return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound(result.Error);
+			return result.IsOk ? Results.Ok(result.Value) : Results.NotFound(result.Error);
 		});
 
 		return endpoints;

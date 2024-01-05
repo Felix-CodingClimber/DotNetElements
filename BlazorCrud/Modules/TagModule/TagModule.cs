@@ -18,7 +18,7 @@ public sealed class TagModule : IModule
 		{
 			Result<Tag> result = await tagRepo.CreateAsync(tag.MapToEntity(), entity => entity.Label == tag.Label);
 
-			return result.IsSuccess ? Results.Ok(result.Value.MapToModel()) : Results.Conflict(result.Error);
+			return result.IsOk ? Results.Ok(result.Value.MapToModel()) : Results.Conflict(result.Error);
 		});
 
 
@@ -26,7 +26,7 @@ public sealed class TagModule : IModule
 		{
 			Result<Tag> result = await tagRepo.UpdateAsync<Tag, EditTagModel>(tag.Id, tag);
 
-			return result.IsSuccess ? Results.Ok(result.Value.MapToModel()) : Results.NotFound(result.Error);
+			return result.IsOk ? Results.Ok(result.Value.MapToModel()) : Results.NotFound(result.Error);
 		});
 
 
@@ -34,7 +34,7 @@ public sealed class TagModule : IModule
 		{
 			Result result = await tagRepo.DeleteAsync(id);
 
-			return result.IsSuccess ? Results.Ok() : Results.NotFound(result.Error);
+			return result.IsOk ? Results.Ok() : Results.NotFound(result.Error);
 		});
 
 
@@ -48,7 +48,7 @@ public sealed class TagModule : IModule
 		{
 			Result<TagModel> result = await tagRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel());
 
-			return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound(result.Error);
+			return result.IsOk ? Results.Ok(result.Value) : Results.NotFound(result.Error);
 		});
 
 		return endpoints;

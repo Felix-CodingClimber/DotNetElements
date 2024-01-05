@@ -1,15 +1,15 @@
 ﻿namespace BlazorCrud.Core;
 
-public class ResultSuccessException : Exception
+public class ResultOkException : Exception
 {
-	public ResultSuccessException(string error = "Could not get error for a successful result") : base(error) { }
+	public ResultOkException(string error = "Could not get error for a successful result") : base(error) { }
 }
 
-public class ResultFailureException : Exception
+public class ResultFailException : Exception
 {
 	public string Error { get; }
 
-	public ResultFailureException(string error) : base($"Could not get value for a failed result with error {error}")
+	public ResultFailException(string error) : base($"Could not get value for a failed result with error {error}")
 	{
 		Error = error;
 	}

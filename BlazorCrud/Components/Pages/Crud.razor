@@ -210,7 +210,7 @@ else
 
 		Result<Tag> createdTag = await tagRepository.CreateAsync(editTagModel.MapToEntity());
 
-		if (createdTag.IsFailure)
+		if (createdTag.IsFail)
 		{
 			snackbar.Add("Failed to create tag", Severity.Error);
 			return;
@@ -240,7 +240,7 @@ else
 
 		Result<Tag> updatedTag = await tagRepository.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
 
-		if (updatedTag.IsFailure)
+		if (updatedTag.IsFail)
 		{
 			snackbar.Add("Failed to update tag", Severity.Error);
 			return;
@@ -256,12 +256,12 @@ else
 	{
 		Result confirmResult = await dialogService.ShowDeleteDialog("Delete tag?", tag.Label, "Tag");
 
-		if (confirmResult.IsFailure)
+		if (confirmResult.IsFail)
 			return;
 
 		Result deleteResult = await tagRepository.DeleteAsync(tag.Id);
 
-		if(deleteResult.IsFailure)
+		if(deleteResult.IsFail)
 		{
 			snackbar.Add("Failed to delete tag", Severity.Error);
 			return;
@@ -283,7 +283,7 @@ else
 
 		Result<AuditedModelDetails> details = await tagRepository.GetAuditedModelDetailsByIdAsync<Tag>(context.Value.Id);
 
-		if(details.IsFailure)
+		if(details.IsFail)
 		{
 			snackbar.Add("Failed to fetch tag details", Severity.Error);
 			return;
@@ -315,7 +315,7 @@ else
 
 		Result<BlogPost> createdBlogPost = await blogPostRepository.CreateAsync(editBlogPostModel.MapToEntity());
 
-		if (createdBlogPost.IsFailure)
+		if (createdBlogPost.IsFail)
 		{
 			snackbar.Add("Failed to create blog post", Severity.Error);
 			return;
@@ -348,7 +348,7 @@ else
 
 		Result<BlogPost> updatedBlogPost = await blogPostRepository.UpdateAsync<BlogPost, EditBlogPostModel>(editBlogPostModel.Id, editBlogPostModel);
 
-		if (updatedBlogPost.IsFailure)
+		if (updatedBlogPost.IsFail)
 		{
 			snackbar.Add("Failed to update blog post", Severity.Error);
 			return;
@@ -363,12 +363,12 @@ else
 	{
 		Result confirmResult = await dialogService.ShowDeleteDialog("Delete blog post?", blogPost.Title, "Blog post");
 
-		if (confirmResult.IsFailure)
+		if (confirmResult.IsFail)
 			return;
 
 		Result deleteResult = await blogPostRepository.DeleteAsync(blogPost.Id);
 
-		if(deleteResult.IsFailure)
+		if(deleteResult.IsFail)
 		{
 			snackbar.Add("Failed to delete blog post", Severity.Error);
 			return;
@@ -389,7 +389,7 @@ else
 
 		Result<AuditedModelDetails> details = await blogPostRepository.GetAuditedModelDetailsByIdAsync<BlogPost>(context.Value.Id);
 
-		if(details.IsFailure)
+		if(details.IsFail)
 		{
 			snackbar.Add("Failed to fetch blog post details", Severity.Error);
 			return;

@@ -35,21 +35,21 @@ namespace BlazorCrud.Core;
 
 public interface IResult
 {
-	bool IsFailure { get; }
-	bool IsSuccess { get; }
+	bool IsFail { get; }
+	bool IsOk { get; }
 }
 
 public readonly partial struct Result : IResult
 {
-	public bool IsFailure { get; }
-	public bool IsSuccess => !IsFailure;
+	public bool IsFail { get; }
+	public bool IsOk => !IsFail;
 
-	public string Error => IsFailure ? error! : throw new ResultSuccessException();
+	public string Error => IsFail ? error! : throw new ResultOkException();
 	private readonly string? error;
 
-	private Result(bool isFailure, string? error)
+	private Result(bool isFail, string? error)
 	{
-		IsFailure = isFailure;
+		IsFail = isFail;
 		this.error = error;
 	}
 
@@ -64,37 +64,37 @@ public readonly partial struct Result : IResult
 	public static Result<T> Ok<T>(T value) => new Result<T>(false, null, value);
 
 	// Create a failed result with the given error
-	public static Result<T> Fail<T>(string error = "See log file for more infos") => new Result<T>(true, error, default);
+	public static Result<T> Fail<T>(string error = "See log file for more info") => new Result<T>(true, error, default);
 
 	// Create a failed result from another failed result
 	public static Result<T> Fail<T>(Result failedResult)
 	{
-		if (failedResult.IsSuccess)
-			throw new ResultSuccessException();
+		if (failedResult.IsOk)
+			throw new ResultOkException();
 
 		return new Result<T>(true, failedResult.Error, default);
 	}
 
-	public override string ToString() => IsFailure ? $"Failure. Error: {Error}" : $"Success";
+	public override string ToString() => IsFail ? $"Failure. Error: {Error}" : $"Success";
 }
 
 public readonly partial struct Result<T> : IResult
 {
-	public bool IsFailure { get; }
-	public bool IsSuccess => !IsFailure;
+	public bool IsFail { get; }
+	public bool IsOk => !IsFail;
 
 	// Prevent accessing error on a successful result
-	public string Error => IsFailure ? error! : throw new ResultSuccessException();
+	public string Error => IsFail ? error! : throw new ResultOkException();
 	private readonly string? error;
 
 	// Prevent accessing value on a failed result
-	public T Value => IsSuccess ? value! : throw new ResultFailureException(error!);
+	public T Value => IsOk ? value! : throw new ResultFailException(error!);
 	private readonly T? value;
 
-	// A result should be constructed using the static .Success and .Failure methods
-	internal Result(bool isFailure, string? error, T? value)
+	// A result should be constructed using the static Result.Ok and Result.Fail methods
+	internal Result(bool isFail, string? error, T? value)
 	{
-		IsFailure = isFailure;
+		IsFail = isFail;
 		this.error = error;
 		this.value = value;
 	}
@@ -104,10 +104,10 @@ public readonly partial struct Result<T> : IResult
 	{
 		if (value is Result<T> result)
 		{
-			string? resultError = result.IsFailure ? result.Error : null;
-			T? resultValue = result.IsSuccess ? result.Value : default;
+			string? resultError = result.IsFail ? result.Error : null;
+			T? resultValue = result.IsOk ? result.Value : default;
 
-			return new Result<T>(result.IsFailure, resultError, resultValue);
+			return new Result<T>(result.IsFail, resultError, resultValue);
 		}
 
 		return Result.Ok(value);
@@ -116,7 +116,7 @@ public readonly partial struct Result<T> : IResult
 	// Implicit cast to the non generic result version
 	public static implicit operator Result(Result<T> result)
 	{
-		if (result.IsSuccess)
+		if (result.IsOk)
 			return Result.Ok();
 		else
 			return Result.Fail(result.Error);
@@ -125,11 +125,11 @@ public readonly partial struct Result<T> : IResult
 	// Implicit cast from the generic result version
 	public static implicit operator Result<T>(Result result)
 	{
-		if (result.IsSuccess)
-			throw new ResultSuccessException("Can not convert from a Result.Ok to a Result.Ok<T>");
+		if (result.IsOk)
+			throw new ResultOkException("Can not convert from a Result.Ok to a Result.Ok<T>");
 		else
 			return Result.Fail<T>(result.Error);
 	}
 
-	public override string ToString() => IsFailure ? $"Failed to return {typeof(T)}. Error: {Error}" : $"Successfully returned {typeof(T)} with value {Value}";
+	public override string ToString() => IsFail ? $"Failed to return {typeof(T)}. Error: {Error}" : $"Successfully returned {typeof(T)} with value {Value}";
 }

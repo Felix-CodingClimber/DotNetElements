@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace BlazorCrud.Core;
 
-public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository<TDbContext, TEntity, TKey>, IRepository<TEntity, TKey>, IAttachRelatedEntity 
+public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository<TDbContext, TEntity, TKey>, IRepository<TEntity, TKey>, IAttachRelatedEntity
 	where TDbContext : DbContext
 	where TEntity : Entity<TKey>
 	where TKey : notnull
@@ -82,6 +82,9 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 				if (existingEntity is IAuditedEntity auditedEntity)
 					auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
+				if (existingEntity is IHasVersion entityWithVersion)
+					entityWithVersion.Version = Guid.NewGuid();
+
 				await DbContext.SaveChangesAsync();
 			}
 
@@ -115,6 +118,9 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 			if (existingEntity is IAuditedEntity auditedEntity)
 				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
+			if (existingEntity is IHasVersion entityWithVersion)
+				entityWithVersion.Version = Guid.NewGuid();
+
 			await DbContext.SaveChangesAsync();
 		}
 
@@ -131,14 +137,23 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 		if (entityToDelete is IDeletionAuditedEntity deletionAuditedEntity)
 		{
 			deletionAuditedEntity.Delete(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+
+			if (entityToDelete is IHasVersion entityWithVersion)
+				entityWithVersion.Version = Guid.NewGuid();
 		}
 		else if (entityToDelete is IHasDeletionTime entityWithDeletionTime)
 		{
 			entityWithDeletionTime.Delete(TimeProvider.GetUtcNow());
+
+			if (entityToDelete is IHasVersion entityWithVersion)
+				entityWithVersion.Version = Guid.NewGuid();
 		}
 		else if (entityToDelete is ISoftDelete softDeletableEntity)
 		{
 			softDeletableEntity.Delete();
+
+			if (entityToDelete is IHasVersion entityWithVersion)
+				entityWithVersion.Version = Guid.NewGuid();
 		}
 		else
 		{

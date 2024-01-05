@@ -2,24 +2,32 @@
 
 namespace BlazorCrud.Modules.BlogPostModule;
 
-public record class BlogPostModel(Guid Id, string Title, IReadOnlyList<TagModel> Tags) : Model<Guid>(Id);
-
-public record class EditBlogPostModel
+public class BlogPostModel : VersionedModel<Guid>
 {
-	public Guid Id { get; private init; }
+	public string Title { get; private init; }
+	public IReadOnlyList<TagModel> Tags { get; private init; }
+
+	public BlogPostModel(Guid id, string title, IReadOnlyList<TagModel> tags, Guid version) : base(id, version)
+	{
+		Title = title;
+		Tags = tags;
+	}
+}
+
+public class EditBlogPostModel : VersionedEditModel<Guid>
+{
 	public string Title { get; set; }
 	public List<TagModel> Tags { get; set; }
 
 #nullable disable
-	public EditBlogPostModel()
+	public EditBlogPostModel() : base(Guid.NewGuid())
 	{
 		Tags = [];
 	}
 #nullable enable
 
-	public EditBlogPostModel(BlogPostModel blogPost)
+	public EditBlogPostModel(BlogPostModel blogPost) : base(blogPost.Id, blogPost.Version)
 	{
-		Id = blogPost.Id;
 		Title = blogPost.Title;
 		Tags = [.. blogPost.Tags];
 	}

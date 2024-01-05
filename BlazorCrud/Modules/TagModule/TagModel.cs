@@ -1,22 +1,27 @@
 ﻿namespace BlazorCrud.Modules.TagModule;
 
-public record class TagModel(Guid Id, string Label) : Model<Guid>(Id)
+public class TagModel : VersionedModel<Guid>
 {
+	public string Label { get; private init; }
+
+	public TagModel(Guid id, string label, Guid version) : base(id, version)
+	{
+		Label = label;
+	}
+
 	public override string ToString() => Label;
 }
 
-public record class EditTagModel
+public class EditTagModel : VersionedEditModel<Guid>
 {
-	public Guid Id { get; private init; }
 	public string Label { get; set; }
 
 #nullable disable
-	public EditTagModel() { }
+	public EditTagModel() : base(Guid.NewGuid()) { }
 #nullable enable
 
-	public EditTagModel(TagModel tag)
+	public EditTagModel(TagModel tag) : base(tag.Id, tag.Version)
 	{
-		Id = tag.Id;
 		Label = tag.Label;
 	}
 }

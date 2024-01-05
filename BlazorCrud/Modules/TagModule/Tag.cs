@@ -2,7 +2,7 @@
 
 namespace BlazorCrud.Modules.TagModule;
 
-public class Tag : AuditedEntity<Guid>, IUpdatable<EditTagModel>, IRelatedEntity<Tag, Guid>
+public class Tag : AuditedEntity<Guid>, IUpdatable<EditTagModel>, IRelatedEntity<Tag, Guid>, IHasVersion
 {
 	[SQLStringColumn(Length = 256)]
 	public string Label { get; private set; }
@@ -12,15 +12,19 @@ public class Tag : AuditedEntity<Guid>, IUpdatable<EditTagModel>, IRelatedEntity
 	[BackingField(nameof(blogPosts))]
 	public IReadOnlyList<BlogPost> BlogPosts => blogPosts;
 
+	[ConcurrencyCheck]
+	public Guid Version { get; set; }
+
 	public Tag(string label)
 	{
 		Label = label;
 	}
 
-	public Tag(Guid id, string label)
+	public Tag(Guid id, string label, Guid version)
 	{
 		Id = id;
 		Label = label;
+		Version = version;
 	}
 
 #nullable disable

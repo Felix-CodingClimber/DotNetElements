@@ -6,8 +6,43 @@ public interface IModel<TKey>
 	TKey Id { get; }
 }
 
-public abstract record class Model<TKey>(TKey Id) : IModel<TKey>
-	where TKey : notnull;
+public abstract class Model<TKey> : IModel<TKey>
+	where TKey : notnull
+{
+	public TKey Id { get; private init; }
+
+	protected Model(TKey id)
+	{
+		Id = id;
+	}
+}
+
+public abstract class VersionedModel<TKey> : Model<TKey>
+	where TKey : notnull
+{
+	public Guid Version { get; protected set; }
+
+	protected VersionedModel(TKey id, Guid version) : base(id)
+	{
+		Version = version;
+	}
+}
+
+public abstract class EditModel<TKey> : Model<TKey>
+	where TKey : notnull
+{
+	protected EditModel() : base(default!) { }
+
+	protected EditModel(TKey id) : base(id) { }
+}
+
+public abstract class VersionedEditModel<TKey> : VersionedModel<TKey>
+	where TKey : notnull
+{
+	protected VersionedEditModel(Guid version) : base(default!, version) { }
+
+	protected VersionedEditModel(TKey id, Guid version) : base(id, version) { }
+}
 
 public abstract class ModelDetails
 {
@@ -29,9 +64,4 @@ public class AuditedModelDetails : CreationAuditedModelDetails
 	public string? LastModifier { get; init; }
 
 	public DateTimeOffset? LastModificationTime { get; init; }
-}
-
-public interface IUpdatesRelatedEntities
-{
-
 }

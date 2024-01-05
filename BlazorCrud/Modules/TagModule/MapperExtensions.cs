@@ -7,7 +7,8 @@ public static class MapperExtensions
 		return new Tag
 		(
 			model.Id,
-			model.Label
+			model.Label,
+			model.Version
 		);
 	}
 
@@ -16,7 +17,8 @@ public static class MapperExtensions
 		return new TagModel
 		(
 			entity.Id,
-			entity.Label
+			entity.Label,
+			entity.Version
 		);
 	}
 
@@ -25,7 +27,8 @@ public static class MapperExtensions
 		return Queryable.Select(query, entity => new TagModel
 		(
 			entity.Id,
-			entity.Label
+			entity.Label,
+			entity.Version
 		));
 	}
 
@@ -34,7 +37,8 @@ public static class MapperExtensions
 		return Queryable.Select(query, entity => new ModelWithDetails<TagModel, AuditedModelDetails>(new TagModel
 		(
 			entity.Id,
-			entity.Label
+			entity.Label,
+			entity.Version
 		)));
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.Eventing.Reader;
 
 namespace BlazorCrud.Core;
 
@@ -56,6 +57,14 @@ public interface IDeletionAuditedEntity : IHasDeletionTime
 	Guid? DeleterId { get; }
 
 	void Delete(Guid deleterId, DateTimeOffset deletionTime);
+}
+
+/// <summary>
+/// To make use of Ef Cores concurrency check, add a <see cref="ConcurrencyCheckAttribute"/> to the property.
+/// </summary>
+public interface IHasVersion
+{
+	public Guid Version { get; set; }
 }
 
 public interface IUpdatable<TFrom>

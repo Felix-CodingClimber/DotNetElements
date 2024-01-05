@@ -10,7 +10,8 @@ public static class MapperExtensions
 		(
 			model.Id,
 			model.Title,
-			model.Tags.Select(tag => new Tag(tag.Id)).ToList()
+			model.Tags.Select(tag => new Tag(tag.Id)).ToList(),
+			model.Version
 		);
 	}
 
@@ -20,7 +21,8 @@ public static class MapperExtensions
 		(
 			entity.Id,
 			entity.Title,
-			entity.Tags.Select(tag => tag.MapToModel()).ToList()
+			entity.Tags.Select(tag => tag.MapToModel()).ToList(),
+			entity.Version
 		);
 	}
 
@@ -30,7 +32,8 @@ public static class MapperExtensions
 		(
 			entity.Id,
 			entity.Title,
-			Enumerable.ToList(Enumerable.Select(entity.Tags, tag => new TagModel(tag.Id, tag.Label)))
+			Enumerable.ToList(Enumerable.Select(entity.Tags, tag => new TagModel(tag.Id, tag.Label, tag.Version))),
+			entity.Version
 		));
 	}
 
@@ -40,7 +43,8 @@ public static class MapperExtensions
 		(
 			entity.Id,
 			entity.Title,
-			Enumerable.ToList(Enumerable.Select(entity.Tags, tag => new TagModel(tag.Id, tag.Label)))
+			Enumerable.ToList(Enumerable.Select(entity.Tags, tag => new TagModel(tag.Id, tag.Label, tag.Version))),
+			entity.Version
 		)));
 	}
 }

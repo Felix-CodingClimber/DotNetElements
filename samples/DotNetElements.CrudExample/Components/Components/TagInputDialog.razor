@@ -1,0 +1,30 @@
+﻿@using DotNetElements.CrudExample.Modules.TagModule
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Tag.Label" Label="Label" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnCancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OnSave">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    MudDialogInstance DialogInstance { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EditTagModel Tag { get; set; } = default!;
+
+    private void OnSave()
+    {
+        DialogInstance.Close(DialogResult.Ok(true));
+    }
+
+    private void OnCancel()
+    {
+        DialogInstance.Cancel();
+    }
+}

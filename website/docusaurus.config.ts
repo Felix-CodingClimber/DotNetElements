@@ -78,9 +78,9 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "tutorialSidebar",
           position: "left",
-          label: "Tutorial",
+          label: "Getting started",
         },
-        { to: "/blog", label: "Blog", position: "left" },
+        { to: "/docs", label: "Docs", position: "left" },
         {
           href: "https://github.com/Felix-CodingClimber/DotNetElements",
           label: "GitHub",
@@ -89,13 +89,12 @@ const config: Config = {
       ],
     },
     footer: {
-      style: "dark",
       links: [
         {
           title: "Docs",
           items: [
             {
-              label: "Tutorial",
+              label: "Getting started",
               to: "/docs/intro",
             },
           ],
@@ -105,25 +104,13 @@ const config: Config = {
           items: [
             {
               label: "Stack Overflow",
-              href: "https://stackoverflow.com/questions/tagged/docusaurus",
-            },
-            {
-              label: "Discord",
-              href: "https://discordapp.com/invite/docusaurus",
-            },
-            {
-              label: "Twitter",
-              href: "https://twitter.com/docusaurus",
-            },
+              href: "https://stackoverflow.com/questions/tagged/dotnetelements",
+            }
           ],
         },
         {
           title: "More",
           items: [
-            {
-              label: "Blog",
-              to: "/blog",
-            },
             {
               label: "GitHub",
               href: "https://github.com/Felix-CodingClimber/DotNetElements",

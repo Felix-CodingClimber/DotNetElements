@@ -67,7 +67,7 @@ const config: Config = {
 
   themeConfig: {
     // Social card
-    image: "img/docusaurus-social-card.jpg",
+    image: "img/social-card.png",
     navbar: {
       title: "DotNet Elements",
       logo: {
@@ -81,7 +81,7 @@ const config: Config = {
           position: "left",
           label: "Getting started",
         },
-        { to: "/docs", label: "Docs", position: "left" },
+        { to: "/docs/intro", label: "Docs", position: "left" },
         {
           href: "https://github.com/Felix-CodingClimber/DotNetElements",
           label: "GitHub",

@@ -13,7 +13,7 @@ function HomepageHeader() {
         <DotNetElementsLogo className={"w-[80%] m-12 mt-20"} />
         <div className={"mb-2"}>
           <p className={"text-center text-2xl"}>
-            Opinionated framework to build .NET applications fast <br /> while
+            Opinionated framework to build .NET applications fast and easy <br /> while
             focusing more on the final product and less on writing low level
             code.
           </p>
@@ -21,7 +21,7 @@ function HomepageHeader() {
         <div>
           <Link
             className={
-              "text-white hover:no-underline hover:text-white bg-[#EF4A81] hover:bg-[#dd638c] focus:outline-none focus:ring-4 focus:ring-blue-300 font-bold rounded-full text-lg flex items-center gap-2 px-4 py-2"
+              "hover:no-underline bg-primary hover:bg-primary-light hover:text-primary-text text-primary-text dark:hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-blue-300 font-bold rounded-full text-lg flex items-center gap-2 px-4 py-2"
             }
             to="/docs/intro"
           >
@@ -35,7 +35,11 @@ function HomepageHeader() {
           </Link>
         </div>
       </div>
-      <div className={"self-stretch flex justify-around text-center text-2xl mt-20 bg-[#EF4A81]"}>
+      <div
+        className={
+          "self-stretch flex justify-around text-center text-2xl mt-20 bg-primary text-primary-text"
+        }
+      >
         <p className={"max-w-4xl m-4"}>
           Framework is work in progress and not considered production ready
           (while still used in some personal projects). Feel free to try it and

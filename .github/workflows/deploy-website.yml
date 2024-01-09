@@ -10,7 +10,7 @@ permissions:
   
 defaults:
   run:
-    working-directory: ./website/
+    working-directory: website
 
 jobs:
   deploy:

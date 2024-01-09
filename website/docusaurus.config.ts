@@ -16,6 +16,7 @@ const config: Config = {
   // GitHub pages deployment config.
   organizationName: "Felix-CodingClimber",
   projectName: "DotNetElements",
+  deploymentBranch: "gh-pages",
   trailingSlash: false,
 
   onBrokenLinks: "throw",

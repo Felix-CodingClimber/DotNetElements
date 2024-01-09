@@ -120,7 +120,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `${new Date().getFullYear()} Felix-CodingClimber`,
+      copyright: `${new Date().getFullYear()} Felix-CodingClimber test`,
     },
     prism: {
       theme: prismThemes.github,

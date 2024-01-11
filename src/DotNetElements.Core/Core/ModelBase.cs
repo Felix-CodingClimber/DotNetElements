@@ -17,7 +17,7 @@ public abstract class Model<TKey> : IModel<TKey>
 	}
 }
 
-public abstract class VersionedModel<TKey> : Model<TKey>
+public abstract class VersionedModel<TKey> : Model<TKey>, IHasVersionReadOnly
 	where TKey : notnull
 {
 	public Guid Version { get; protected set; }

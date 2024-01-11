@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DotNetElements.Migrations
+namespace DotNetElements.CrudExample.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -17,6 +17,7 @@ namespace DotNetElements.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(256)", nullable: false),
+                    Version = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreatorId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreationTime = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                     LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true),
@@ -33,6 +34,7 @@ namespace DotNetElements.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Label = table.Column<string>(type: "nvarchar(256)", nullable: false),
+                    Version = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreatorId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreationTime = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                     LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true),

@@ -110,6 +110,13 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 		if (existingEntity is null)
 			return Result.EntityNotFound(id);
 
+		// todo version 1 not ideal but working. Improve IReadVersion
+		//if(from is IReadVersion readVersion && existingEntity is IHasVersion hasVersion)
+		//{
+		//	if (readVersion.Version != hasVersion.Version)
+		//		throw new DbUpdateConcurrencyException();
+		//}
+
 		existingEntity.Update(from, this);
 
 		// Check if entity has changed and set audit properties if needed
@@ -118,8 +125,20 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 			if (existingEntity is IAuditedEntity auditedEntity)
 				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
+			// todo needed for version 1
+			//if (existingEntity is IHasVersion entityWithVersion)
+			//	entityWithVersion.Version = Guid.NewGuid();
+
+			// todo version 2 not ideal but working. Improve IReadVersion
 			if (existingEntity is IHasVersion entityWithVersion)
+			{
 				entityWithVersion.Version = Guid.NewGuid();
+
+				// Set queried entities version to the version from the updating entity to detect weather or not the data has changed
+				// between getting the data in the first place and updating it now
+				if (from is IHasVersionReadOnly entityWithVersionReadOnly)
+					DbContext.Entry(entityWithVersion).OriginalValues[nameof(IHasVersion.Version)] = entityWithVersionReadOnly.Version;
+			}
 
 			await DbContext.SaveChangesAsync();
 		}

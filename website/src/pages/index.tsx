@@ -11,10 +11,10 @@ function HomepageHeader() {
     <header className={"flex flex-col items-center dark:bg-zinc-800 bg-white"}>
       <div className={"flex flex-col items-center max-w-4xl"}>
         <DotNetElementsLogo className={"w-[80%] m-12 mt-20"} />
-        <div className={"mb-2"}>
+        <div className={"mb-2 mx-4"}>
           <p className={"text-center text-2xl"}>
             Opinionated framework to build .NET applications fast and easy <br /> while
-            focusing more on the final product and less on writing low level
+            focusing more on the final product and less on writing low-level
             code.
           </p>
         </div>
@@ -42,8 +42,7 @@ function HomepageHeader() {
       >
         <p className={"max-w-4xl m-4"}>
           Framework is work in progress and not considered production ready
-          (while still used in some personal projects). Feel free to try it and
-          leave suggestions.
+          (while still used in some personal projects). Feel free to try it out and share your thoughts.
         </p>
       </div>
     </header>

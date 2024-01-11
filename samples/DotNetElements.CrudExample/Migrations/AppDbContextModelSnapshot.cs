@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace DotNetElements.Migrations
+namespace DotNetElements.CrudExample.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,22 @@ namespace DotNetElements.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
-            modelBuilder.Entity("BlazorCrud.Modules.BlogPostModule.BlogPost", b =>
+            modelBuilder.Entity("BlogPostTag", b =>
+                {
+                    b.Property<Guid>("BlogPostsId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TagsId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("BlogPostsId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("BlogPostTag");
+                });
+
+            modelBuilder.Entity("DotNetElements.CrudExample.Modules.BlogPostModule.BlogPost", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -48,7 +63,7 @@ namespace DotNetElements.Migrations
                     b.ToTable("BlogPosts");
                 });
 
-            modelBuilder.Entity("BlazorCrud.Modules.TagModule.Tag", b =>
+            modelBuilder.Entity("DotNetElements.CrudExample.Modules.TagModule.Tag", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -81,28 +96,13 @@ namespace DotNetElements.Migrations
 
             modelBuilder.Entity("BlogPostTag", b =>
                 {
-                    b.Property<Guid>("BlogPostsId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("TagsId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("BlogPostsId", "TagsId");
-
-                    b.HasIndex("TagsId");
-
-                    b.ToTable("BlogPostTag");
-                });
-
-            modelBuilder.Entity("BlogPostTag", b =>
-                {
-                    b.HasOne("BlazorCrud.Modules.BlogPostModule.BlogPost", null)
+                    b.HasOne("DotNetElements.CrudExample.Modules.BlogPostModule.BlogPost", null)
                         .WithMany()
                         .HasForeignKey("BlogPostsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BlazorCrud.Modules.TagModule.Tag", null)
+                    b.HasOne("DotNetElements.CrudExample.Modules.TagModule.Tag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)

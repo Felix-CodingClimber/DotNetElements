@@ -1,6 +1,7 @@
 using DotNetElements.Datahandling;
 using MudBlazor.Services;
 using DotNetElements.CrudExample.Components;
+using DotNetElements.CrudExample.Modules.BlogPostModule;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,7 @@ builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddDatabaseMigrationService<AppDbContext>();
 builder.AddSettings<AppDatabaseSettings>();
 
-builder.Services.RegisterModules();
+builder.Services.RegisterModules(typeof(BlogPostModule).Assembly);
 
 var app = builder.Build();
 

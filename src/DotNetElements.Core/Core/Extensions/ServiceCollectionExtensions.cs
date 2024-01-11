@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetElements.Core.Extensions;
 
@@ -6,10 +7,10 @@ public static class ServiceCollectionExtensions
 {
 	public static IReadOnlyList<IModule>? RegisteredModules { get; private set; }
 
-	public static IServiceCollection RegisterModules(this IServiceCollection services)
+	public static IServiceCollection RegisterModules(this IServiceCollection services, Assembly moduleAssembly)
 	{
-		IEnumerable<IModule> modules = DiscoverModules();
-		List<IModule> registeredModules = new List<IModule>();
+		IEnumerable<IModule> modules = DiscoverModules(moduleAssembly);
+		List<IModule> registeredModules = [];
 
 		foreach (IModule module in modules)
 		{
@@ -43,10 +44,9 @@ public static class ServiceCollectionExtensions
 	}
 
 	// todo replace with source generated version
-	private static IEnumerable<IModule> DiscoverModules()
+	private static IEnumerable<IModule> DiscoverModules(Assembly moduleAssembly)
 	{
-		return typeof(IModule).Assembly
-		.GetTypes()
+		return moduleAssembly.GetTypes()
 			.Where(p => p.IsAssignableTo(typeof(IModule)) && p.IsClass && !p.IsAbstract)
 			.Select(Activator.CreateInstance)
 			.Cast<IModule>();

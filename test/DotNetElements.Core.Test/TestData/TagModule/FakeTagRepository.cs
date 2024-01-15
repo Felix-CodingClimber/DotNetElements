@@ -6,9 +6,4 @@ internal class FakeTagRepository : FakeRepository<TestDbContext, Tag, Guid>
 		: base(dbContext, currentUserProvider, timeProvider)
 	{
 	}
-
-	public FakeTagRepository(TestDbContext dbContext)
-		: base(dbContext)
-	{
-	}
 }

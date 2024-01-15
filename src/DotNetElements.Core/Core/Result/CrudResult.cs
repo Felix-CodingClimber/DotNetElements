@@ -49,10 +49,10 @@ public readonly partial struct CrudResult : IResult
 
 	public static CrudResult NotFound<TKey>(TKey id)
 		where TKey : notnull
-		=> new CrudResult(true, CrudError.DuplicateEntry, id.ToString());
+		=> new CrudResult(true, CrudError.NotFound, id.ToString());
 
 	public static CrudResult ConcurrencyConflict()
-		=> new CrudResult(true, CrudError.DuplicateEntry, "Entry was changed, check updated values.");
+		=> new CrudResult(true, CrudError.ConcurrencyConflict, "Entry was changed, check updated values.");
 
 	/// <summary>
 	/// Create a successful result

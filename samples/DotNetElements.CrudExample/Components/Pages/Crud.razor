@@ -208,11 +208,11 @@ else
 		if (result.Canceled)
 			return;
 
-		Result<Tag> createdTag = await tagRepository.CreateAsync(editTagModel.MapToEntity());
+		CrudResult<Tag> createdTag = await tagRepository.CreateAsync(editTagModel.MapToEntity());
 
 		if (createdTag.IsFail)
 		{
-			snackbar.Add("Failed to create tag", Severity.Error);
+			snackbar.Add($"Failed to create tag.\n{createdTag.Message}", Severity.Error);
 			return;
 		}
 
@@ -238,11 +238,11 @@ else
 		if (result.Canceled)
 			return;
 
-		Result<Tag> updatedTag = await tagRepository.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
+		CrudResult<Tag> updatedTag = await tagRepository.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
 
 		if (updatedTag.IsFail)
 		{
-			snackbar.Add("Failed to update tag", Severity.Error);
+			snackbar.Add($"Failed to update tag.\n{updatedTag.Message}", Severity.Error);
 			return;
 		}
 
@@ -259,11 +259,11 @@ else
 		if (confirmResult.IsFail)
 			return;
 
-		Result deleteResult = await tagRepository.DeleteAsync(tag.Id);
+		CrudResult deleteResult = await tagRepository.DeleteAsync(tag);
 
 		if(deleteResult.IsFail)
 		{
-			snackbar.Add("Failed to delete tag", Severity.Error);
+			snackbar.Add($"Failed to delete tag.\n{deleteResult.Message}", Severity.Error);
 			return;
 		}
 
@@ -281,11 +281,11 @@ else
 			return;
 		}
 
-		Result<AuditedModelDetails> details = await tagRepository.GetAuditedModelDetailsByIdAsync<Tag>(context.Value.Id);
+		CrudResult<AuditedModelDetails> details = await tagRepository.GetAuditedModelDetailsByIdAsync<Tag>(context.Value.Id);
 
 		if(details.IsFail)
 		{
-			snackbar.Add("Failed to fetch tag details", Severity.Error);
+			snackbar.Add($"Failed to fetch tag details.\n{details.Message}", Severity.Error);
 			return;
 		}
 
@@ -313,11 +313,11 @@ else
 		if (result.Canceled)
 			return;
 
-		Result<BlogPost> createdBlogPost = await blogPostRepository.CreateAsync(editBlogPostModel.MapToEntity());
+		CrudResult<BlogPost> createdBlogPost = await blogPostRepository.CreateAsync(editBlogPostModel.MapToEntity());
 
 		if (createdBlogPost.IsFail)
 		{
-			snackbar.Add("Failed to create blog post", Severity.Error);
+			snackbar.Add($"Failed to create blog post.\n{createdBlogPost.Message}", Severity.Error);
 			return;
 		}
 
@@ -346,11 +346,11 @@ else
 		if (result.Canceled)
 			return;
 
-		Result<BlogPost> updatedBlogPost = await blogPostRepository.UpdateAsync<BlogPost, EditBlogPostModel>(editBlogPostModel.Id, editBlogPostModel);
+		CrudResult<BlogPost> updatedBlogPost = await blogPostRepository.UpdateAsync<BlogPost, EditBlogPostModel>(editBlogPostModel.Id, editBlogPostModel);
 
 		if (updatedBlogPost.IsFail)
 		{
-			snackbar.Add("Failed to update blog post", Severity.Error);
+			snackbar.Add($"Failed to update blog post.\n{updatedBlogPost.Message}", Severity.Error);
 			return;
 		}
 
@@ -366,11 +366,11 @@ else
 		if (confirmResult.IsFail)
 			return;
 
-		Result deleteResult = await blogPostRepository.DeleteAsync(blogPost.Id);
+		CrudResult deleteResult = await blogPostRepository.DeleteAsync(blogPost);
 
 		if(deleteResult.IsFail)
 		{
-			snackbar.Add("Failed to delete blog post", Severity.Error);
+			snackbar.Add($"Failed to delete blog post.\n{deleteResult.Message}", Severity.Error);
 			return;
 		}
 
@@ -387,11 +387,11 @@ else
 			return;
 		}
 
-		Result<AuditedModelDetails> details = await blogPostRepository.GetAuditedModelDetailsByIdAsync<BlogPost>(context.Value.Id);
+		CrudResult<AuditedModelDetails> details = await blogPostRepository.GetAuditedModelDetailsByIdAsync<BlogPost>(context.Value.Id);
 
 		if(details.IsFail)
 		{
-			snackbar.Add("Failed to fetch blog post details", Severity.Error);
+			snackbar.Add($"Failed to fetch blog post details.\n{details.Message}", Severity.Error);
 			return;
 		}
 

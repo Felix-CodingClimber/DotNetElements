@@ -1,4 +1,6 @@
-﻿namespace DotNetElements.CrudExample.Modules.BlogPostModule;
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace DotNetElements.CrudExample.Modules.BlogPostModule;
 
 public sealed class BlogPostModule : IModule
 {
@@ -16,25 +18,25 @@ public sealed class BlogPostModule : IModule
 	{
 		endpoints.MapPut(BaseUrl, async (EditBlogPostModel blogPost, BlogPostRepository blogPostRepo) =>
 		{
-			Result<BlogPost> result = await blogPostRepo.CreateAsync(blogPost.MapToEntity());
+			CrudResult<BlogPost> result = await blogPostRepo.CreateAsync(blogPost.MapToEntity());
 
-			return result.IsOk ? Results.Ok(result.Value.MapToModel()) : Results.Conflict(result.Error);
+			return result.MapToHttpResultWithProjection(entity => entity.MapToModel());
 		});
 
 
 		endpoints.MapPost(BaseUrl, async (EditBlogPostModel blogPost, BlogPostRepository blogPostRepo) =>
 		{
-			Result<BlogPost> result = await blogPostRepo.UpdateAsync<BlogPost, EditBlogPostModel>(blogPost.Id, blogPost);
+			CrudResult<BlogPost> result = await blogPostRepo.UpdateAsync<BlogPost, EditBlogPostModel>(blogPost.Id, blogPost);
 
-			return result.IsOk ? Results.Ok(result.Value.MapToModel()) : Results.NotFound(result.Error);
+			return result.MapToHttpResultWithProjection(entity => entity.MapToModel());
 		});
 
 
-		endpoints.MapDelete($"{BaseUrl}/{{id}}", async (Guid id, BlogPostRepository blogPostRepo) =>
+		endpoints.MapDelete(BaseUrl, async ([FromBody] BlogPostModel blogPost, BlogPostRepository blogPostRepo) =>
 		{
-			Result result = await blogPostRepo.DeleteAsync(id);
+			CrudResult result = await blogPostRepo.DeleteAsync(blogPost);
 
-			return result.IsOk ? Results.Ok() : Results.NotFound(result.Error);
+			return result.MapToHttpResult();
 		});
 
 
@@ -46,9 +48,9 @@ public sealed class BlogPostModule : IModule
 
 		endpoints.MapGet($"{BaseUrl}/{{id}}", async (Guid id, BlogPostRepository blogPostRepo, CancellationToken cancellationToken) =>
 		{
-			Result<BlogPostModel> result = await blogPostRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel(), cancellationToken: cancellationToken);
+			CrudResult<BlogPostModel> result = await blogPostRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel(), cancellationToken: cancellationToken);
 
-			return result.IsOk ? Results.Ok(result.Value) : Results.NotFound(result.Error);
+			return result.MapToHttpResult();
 		});
 
 		return endpoints;

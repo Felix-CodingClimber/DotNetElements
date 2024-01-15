@@ -5,7 +5,9 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetElements.CrudExample", "samples\DotNetElements.CrudExample\DotNetElements.CrudExample.csproj", "{5841B4C6-1339-412F-97F4-D17C6E3D3D24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.Core", "src\DotNetElements.Core\DotNetElements.Core.csproj", "{1CEE4FCD-1A35-4365-A6A1-6F05937B4E3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetElements.Core", "src\DotNetElements.Core\DotNetElements.Core.csproj", "{1CEE4FCD-1A35-4365-A6A1-6F05937B4E3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.Core.Test", "test\DotNetElements.Core.Test\DotNetElements.Core.Test.csproj", "{9BA47821-EBE3-4290-877B-FE75340AE33E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{1CEE4FCD-1A35-4365-A6A1-6F05937B4E3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1CEE4FCD-1A35-4365-A6A1-6F05937B4E3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1CEE4FCD-1A35-4365-A6A1-6F05937B4E3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BA47821-EBE3-4290-877B-FE75340AE33E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BA47821-EBE3-4290-877B-FE75340AE33E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BA47821-EBE3-4290-877B-FE75340AE33E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BA47821-EBE3-4290-877B-FE75340AE33E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

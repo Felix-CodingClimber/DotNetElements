@@ -14,14 +14,14 @@ public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepositor
 		this.repositoryFactory = repositoryFactory;
 	}
 
-	public Task<Result<TEntity>> CreateAsync(TEntity entity, Expression<Func<TEntity, bool>>? checkDuplicate = null)
+	public Task<CrudResult<TEntity>> CreateAsync(TEntity entity, Expression<Func<TEntity, bool>>? checkDuplicate = null)
 	{
 		using var repository = repositoryFactory.Create();
 
 		return repository.Inner.CreateAsync(entity, checkDuplicate);
 	}
 
-	public Task<Result<TSelf>> CreateOrUpdateAsync<TSelf>(TKey id, TSelf entity, Expression<Func<TSelf, bool>>? checkDuplicate = null)
+	public Task<CrudResult<TSelf>> CreateOrUpdateAsync<TSelf>(TKey id, TSelf entity, Expression<Func<TSelf, bool>>? checkDuplicate = null)
 		where TSelf : Entity<TKey>, IUpdatable<TSelf>
 	{
 		using var repository = repositoryFactory.Create();
@@ -29,11 +29,12 @@ public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepositor
 		return repository.Inner.CreateOrUpdateAsync(id, entity, checkDuplicate);
 	}
 
-	public Task<Result> DeleteAsync(TKey id)
+	public Task<CrudResult> DeleteAsync<TEntityToDelete>(TEntityToDelete entityToDelete)
+		where TEntityToDelete : IHasKey<TKey>, IHasVersionReadOnly
 	{
 		using var repository = repositoryFactory.Create();
 
-		return repository.Inner.DeleteAsync(id);
+		return repository.Inner.DeleteAsync(entityToDelete);
 	}
 
 	public Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -43,7 +44,7 @@ public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepositor
 		return repository.Inner.GetAllAsync(cancellationToken);
 	}
 
-	public Task<IReadOnlyList<TEntity>> GetAllAsync(
+	public Task<IReadOnlyList<TEntity>> GetAllFilteredAsync(
 		Expression<Func<TEntity, bool>>? filter = null,
 		Expression<Func<TEntity, object>>? orderBy = null,
 		bool descending = true,
@@ -51,7 +52,7 @@ public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepositor
 	{
 		using var repository = repositoryFactory.Create();
 
-		return repository.Inner.GetAllAsync(filter, orderBy, descending, cancellationToken);
+		return repository.Inner.GetAllFilteredAsync(filter, orderBy, descending, cancellationToken);
 	}
 
 	public Task<IPagedList<TEntity>> GetAllPagedAsync(
@@ -94,21 +95,21 @@ public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepositor
 		return repository.Inner.GetAllWithProjectionAsync(selector, filter, orderBy, descending, cancellationToken);
 	}
 
-	public Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken cancellationToken = default)
+	public Task<CrudResult<TEntity>> GetByIdAsync(TKey id, CancellationToken cancellationToken = default)
 	{
 		using var repository = repositoryFactory.Create();
 
 		return repository.Inner.GetByIdAsync(id, cancellationToken);
 	}
 
-	public Task<Result<TEntity>> GetByIdAsync(TKey id, Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
+	public Task<CrudResult<TEntity>> GetByIdFilteredAsync(TKey id, Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
 	{
 		using var repository = repositoryFactory.Create();
 
-		return repository.Inner.GetByIdAsync(id, filter, cancellationToken);
+		return repository.Inner.GetByIdFilteredAsync(id, filter, cancellationToken);
 	}
 
-	public Task<Result<TProjection>> GetByIdWithProjectionAsync<TProjection>(
+	public Task<CrudResult<TProjection>> GetByIdWithProjectionAsync<TProjection>(
 		TKey id,
 		Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
 		Expression<Func<TEntity, bool>>? filter = null,
@@ -119,8 +120,9 @@ public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepositor
 		return repository.Inner.GetByIdWithProjectionAsync(id, selector, filter, cancellationToken);
 	}
 
-	public Task<Result<TUpdatableEntity>> UpdateAsync<TUpdatableEntity, TFrom>(TKey id, TFrom from)
+	public Task<CrudResult<TUpdatableEntity>> UpdateAsync<TUpdatableEntity, TFrom>(TKey id, TFrom from)
 		where TUpdatableEntity : Entity<TKey>, IUpdatable<TFrom>
+		where TFrom : notnull
 	{
 		using var repository = repositoryFactory.Create();
 
@@ -134,7 +136,7 @@ public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepositor
 		return repository.Inner.ClearTable();
 	}
 
-	public Task<Result<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(TKey id, CancellationToken cancellationToken = default)
+	public Task<CrudResult<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(TKey id, CancellationToken cancellationToken = default)
 		where TAuditedEntity : AuditedEntity<TKey>
 	{
 		using var repository = repositoryFactory.Create();

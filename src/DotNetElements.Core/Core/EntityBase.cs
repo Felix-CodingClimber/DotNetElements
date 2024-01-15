@@ -2,22 +2,11 @@
 
 namespace DotNetElements.Core;
 
-public interface IEntity
-{
-	const string NoKey = "NOKEY";
+public interface IEntity<TKey> : IHasKey<TKey>
+	where TKey : notnull;
 
-	abstract bool HasKey { get; }
-
-	string Key { get; }
-}
-
-public interface IEntity<TKey> : IEntity
+public interface ICreationAuditedEntity<TKey> : IEntity<TKey>
 	where TKey : notnull
-{
-	TKey Id { get; }
-}
-
-public interface ICreationAuditedEntity : IEntity
 {
 	Guid CreatorId { get; }
 
@@ -26,7 +15,8 @@ public interface ICreationAuditedEntity : IEntity
 	void SetCreationAudited(Guid creatorId, DateTimeOffset creationTime);
 }
 
-public interface IAuditedEntity : ICreationAuditedEntity
+public interface IAuditedEntity<TKey> : ICreationAuditedEntity<TKey>
+		where TKey : notnull
 {
 	Guid? LastModifierId { get; }
 
@@ -76,13 +66,9 @@ public abstract class Entity<TKey> : Entity, IEntity<TKey>
 	where TKey : notnull
 {
 	public TKey Id { get; protected set; } = default!;
-
-	public bool HasKey => !Id.Equals(default(TKey));
-
-	string IEntity.Key => HasKey ? Id.ToString()! : IEntity.NoKey;
 }
 
-public class CreationAuditedEntity<TKey> : Entity<TKey>, ICreationAuditedEntity
+public class CreationAuditedEntity<TKey> : Entity<TKey>, ICreationAuditedEntity<TKey>
 	where TKey : notnull
 {
 	public Guid CreatorId { get; private set; }
@@ -99,7 +85,7 @@ public class CreationAuditedEntity<TKey> : Entity<TKey>, ICreationAuditedEntity
 	}
 }
 
-public class AuditedEntity<TKey> : CreationAuditedEntity<TKey>, IAuditedEntity
+public class AuditedEntity<TKey> : CreationAuditedEntity<TKey>, IAuditedEntity<TKey>
 	where TKey : notnull
 {
 	public Guid? LastModifierId { get; private set; }

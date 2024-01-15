@@ -1,10 +1,7 @@
 ﻿namespace DotNetElements.Core;
 
-public interface IModel<TKey>
-	where TKey : notnull
-{
-	TKey Id { get; }
-}
+public interface IModel<TKey> : IHasKey<TKey>
+		where TKey : notnull;
 
 public abstract class Model<TKey> : IModel<TKey>
 	where TKey : notnull
@@ -44,9 +41,8 @@ public abstract class VersionedEditModel<TKey> : VersionedModel<TKey>
 	protected VersionedEditModel(TKey id, Guid version) : base(id, version) { }
 }
 
-public abstract class ModelDetails
-{
-}
+// todo interface?
+public abstract class ModelDetails;
 
 public class CreationAuditedModelDetails : ModelDetails
 {

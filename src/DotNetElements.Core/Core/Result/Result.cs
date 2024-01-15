@@ -64,7 +64,7 @@ public readonly partial struct Result : IResult
 	public static Result<T> Ok<T>(T value) => new Result<T>(false, null, value);
 
 	// Create a failed result with the given error
-	public static Result<T> Fail<T>(string error = "See log file for more info") => new Result<T>(true, error, default);
+	internal static Result<T> Fail_Internal<T>(string error) => new Result<T>(true, error, default);
 
 	// Create a failed result from another failed result
 	public static Result<T> Fail<T>(Result failedResult)
@@ -128,7 +128,7 @@ public readonly partial struct Result<T> : IResult
 		if (result.IsOk)
 			throw new ResultOkException("Can not convert from a Result.Ok to a Result.Ok<T>");
 		else
-			return Result.Fail<T>(result.Error);
+			return Result.Fail_Internal<T>(result.Error);
 	}
 
 	public override string ToString() => IsFail ? $"Failed to return {typeof(T)}. Error: {Error}" : $"Successfully returned {typeof(T)} with value {Value}";

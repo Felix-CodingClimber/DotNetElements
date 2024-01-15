@@ -25,17 +25,14 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		Entities = dbContext.Set<TEntity>();
 	}
 
-	public virtual async Task<Result<TEntity>> GetByIdAsync(TKey id, CancellationToken cancellationToken = default)
+	public virtual async Task<CrudResult<TEntity>> GetByIdAsync(TKey id, CancellationToken cancellationToken = default)
 	{
 		TEntity? entity = await Entities.AsNoTracking().FirstOrDefaultAsync(WithId(id), cancellationToken);
 
-		if (entity is null)
-			return Result.EntityNotFound(id);
-
-		return Result.Ok(entity);
+		return CrudResult.OkIfNotNull(entity, CrudError.NotFound, id.ToString());
 	}
 
-	public async Task<Result<TEntity>> GetByIdAsync(
+	public async Task<CrudResult<TEntity>> GetByIdFilteredAsync(
 		TKey id,
 		Expression<Func<TEntity, bool>>? filter = null,
 		CancellationToken cancellationToken = default)
@@ -47,13 +44,10 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 
 		TEntity? entity = await entityQuery.FirstOrDefaultAsync(WithId(id), cancellationToken);
 
-		if (entity is null)
-			return Result.EntityNotFound(id);
-
-		return Result.Ok(entity);
+		return CrudResult.OkIfNotNull(entity, CrudError.NotFound, id.ToString());
 	}
 
-	public async Task<Result<TProjection>> GetByIdWithProjectionAsync<TProjection>(
+	public async Task<CrudResult<TProjection>> GetByIdWithProjectionAsync<TProjection>(
 		TKey id,
 		Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
 		Expression<Func<TEntity, bool>>? filter = null,
@@ -68,10 +62,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 
 		TProjection? projectedEntity = await selector.Compile().Invoke(entityQuery.Where(WithId(id))).FirstOrDefaultAsync(cancellationToken);
 
-		if (projectedEntity is null)
-			return Result.EntityNotFound(id);
-
-		return Result.Ok(projectedEntity);
+		return CrudResult.OkIfNotNull(projectedEntity, CrudError.NotFound, id.ToString());
 	}
 
 	public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -79,7 +70,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		return await Entities.AsNoTracking().ToListAsync(cancellationToken);
 	}
 
-	public async Task<IReadOnlyList<TEntity>> GetAllAsync(
+	public async Task<IReadOnlyList<TEntity>> GetAllFilteredAsync(
 		Expression<Func<TEntity, bool>>? filter = null,
 		Expression<Func<TEntity, object>>? orderBy = null,
 		bool descending = true,
@@ -149,7 +140,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 		return await selector.Compile().Invoke(entityQuery).ToPagedListAsync(page, pageSize, cancellationToken);
 	}
 
-	public async Task<Result<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(TKey id, CancellationToken cancellationToken = default)
+	public async Task<CrudResult<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(TKey id, CancellationToken cancellationToken = default)
 		where TAuditedEntity : AuditedEntity<TKey>
 	{
 		DbSet<TAuditedEntity> localDbSet = DbContext.Set<TAuditedEntity>();
@@ -169,6 +160,6 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 				}
 		).FirstOrDefaultAsync(cancellationToken);
 
-		return Result.OkIfNotNull(entity, "Failed to get model details");
+		return CrudResult.OkIfNotNull(entity, CrudError.NotFound, id.ToString());
 	}
 }

@@ -23,7 +23,7 @@ public partial struct Result
 	/// </summary>
 	public static Result<T> OkIf<T>(bool isSuccess, T value, string error)
 	{
-		return isSuccess ? Ok(value) : Fail<T>(error);
+		return isSuccess ? Ok(value) : Fail_Internal<T>(error);
 	}
 
 	/// <summary>

@@ -1,5 +1,13 @@
 ﻿namespace DotNetElements.Core;
 
+public interface IHasKey<TKey>
+	where TKey : notnull
+{
+	TKey Id { get; }
+
+	bool HasKey => !Id.Equals(default(TKey));
+}
+
 public interface IHasVersionReadOnly
 {
 	Guid Version { get; }

@@ -3,7 +3,7 @@ using MudBlazor.Services;
 using DotNetElements.CrudExample.Components;
 using DotNetElements.CrudExample.Modules.BlogPostModule;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -21,7 +21,7 @@ builder.AddSettings<AppDatabaseSettings>();
 
 builder.Services.RegisterModules(typeof(BlogPostModule).Assembly);
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

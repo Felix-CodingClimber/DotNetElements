@@ -1,4 +1,6 @@
-﻿namespace DotNetElements.CrudExample.Modules.TagModule;
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace DotNetElements.CrudExample.Modules.TagModule;
 
 public sealed class TagModule : IModule
 {
@@ -16,25 +18,25 @@ public sealed class TagModule : IModule
 	{
 		endpoints.MapPut(BaseUrl, async (EditTagModel tag, TagRepository tagRepo) =>
 		{
-			Result<Tag> result = await tagRepo.CreateAsync(tag.MapToEntity(), entity => entity.Label == tag.Label);
+			CrudResult<Tag> result = await tagRepo.CreateAsync(tag.MapToEntity(), entity => entity.Label == tag.Label);
 
-			return result.IsOk ? Results.Ok(result.Value.MapToModel()) : Results.Conflict(result.Error);
+			return result.MapToHttpResultWithProjection(entity => entity.MapToModel());
 		});
 
 
 		endpoints.MapPost(BaseUrl, async (EditTagModel tag, TagRepository tagRepo) =>
 		{
-			Result<Tag> result = await tagRepo.UpdateAsync<Tag, EditTagModel>(tag.Id, tag);
+			CrudResult<Tag> result = await tagRepo.UpdateAsync<Tag, EditTagModel>(tag.Id, tag);
 
-			return result.IsOk ? Results.Ok(result.Value.MapToModel()) : Results.NotFound(result.Error);
+			return result.MapToHttpResultWithProjection(entity => entity.MapToModel());
 		});
 
 
-		endpoints.MapDelete($"{BaseUrl}/{{id}}", async (Guid id, TagRepository tagRepo) =>
+		endpoints.MapDelete(BaseUrl, async ([FromBody] TagModel tag, TagRepository tagRepo) =>
 		{
-			Result result = await tagRepo.DeleteAsync(id);
+			CrudResult result = await tagRepo.DeleteAsync(tag);
 
-			return result.IsOk ? Results.Ok() : Results.NotFound(result.Error);
+			return result.MapToHttpResult();
 		});
 
 
@@ -46,9 +48,9 @@ public sealed class TagModule : IModule
 
 		endpoints.MapGet($"{BaseUrl}/{{id}}", async (Guid id, TagRepository tagRepo, CancellationToken cancellationToken) =>
 		{
-			Result<TagModel> result = await tagRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel(), cancellationToken: cancellationToken);
+			CrudResult<TagModel> result = await tagRepo.GetByIdWithProjectionAsync(id, query => query.MapToModel(), cancellationToken: cancellationToken);
 
-			return result.IsOk ? Results.Ok(result.Value) : Results.NotFound(result.Error);
+			return result.MapToHttpResult();
 		});
 
 		return endpoints;

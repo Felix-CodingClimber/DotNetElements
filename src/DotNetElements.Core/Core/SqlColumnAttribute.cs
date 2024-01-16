@@ -23,8 +23,7 @@ public abstract class SQLColumnWithLengthAttribute : SQLColumnAttribute
 		get => length;
 		set
 		{
-			if (value < 0)
-				throw new ArgumentOutOfRangeException(nameof(value));
+			ArgumentOutOfRangeException.ThrowIfNegative(value);
 
 			length = value;
 			TypeName = $"{SqlTypeName}({value})";

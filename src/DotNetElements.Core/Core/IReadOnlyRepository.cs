@@ -4,7 +4,7 @@ namespace DotNetElements.Core;
 
 public interface IReadOnlyRepository<TEntity, TKey>
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
 

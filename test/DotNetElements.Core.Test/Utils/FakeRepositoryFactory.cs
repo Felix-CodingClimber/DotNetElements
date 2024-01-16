@@ -6,7 +6,7 @@ internal sealed class FakeRepositoryFactory<TDbContext, TRepository, TEntity, TK
 	where TDbContext : DbContext
 	where TRepository : FakeRepository<TDbContext, TEntity, TKey>
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	public readonly FakeCurrentUserProvider UserProvider = new();
 	public readonly FakeTimeProvider TimeProvider = new();

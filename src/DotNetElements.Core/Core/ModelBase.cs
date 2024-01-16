@@ -1,10 +1,10 @@
 ﻿namespace DotNetElements.Core;
 
 public interface IModel<TKey> : IHasKey<TKey>
-		where TKey : notnull;
+		where TKey : notnull, IEquatable<TKey>;
 
 public abstract class Model<TKey> : IModel<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	public TKey Id { get; private init; }
 
@@ -15,7 +15,7 @@ public abstract class Model<TKey> : IModel<TKey>
 }
 
 public abstract class VersionedModel<TKey> : Model<TKey>, IHasVersionReadOnly
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	public Guid Version { get; protected set; }
 
@@ -26,7 +26,7 @@ public abstract class VersionedModel<TKey> : Model<TKey>, IHasVersionReadOnly
 }
 
 public abstract class EditModel<TKey> : Model<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	protected EditModel() : base(default!) { }
 
@@ -34,7 +34,7 @@ public abstract class EditModel<TKey> : Model<TKey>
 }
 
 public abstract class VersionedEditModel<TKey> : VersionedModel<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	protected VersionedEditModel(Guid version) : base(default!, version) { }
 

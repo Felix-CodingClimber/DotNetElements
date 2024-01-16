@@ -11,7 +11,7 @@ public static class CrudResultExtensions
 		if (crudResult.IsOk)
 			return Results.Ok();
 
-		return MapToFailedHttpResult(crudResult.Error, crudResult.Message);
+		return MapToFailedHttpResult(crudResult.ErrorCode, crudResult.ErrorMessage);
 	}
 
 	public static IHttpResult MapToHttpResultWithProjection<TEntity, TProjection>(this CrudResult<TEntity> crudResult, Expression<Func<TEntity, TProjection>> projection)
@@ -19,7 +19,7 @@ public static class CrudResultExtensions
 		if (crudResult.IsOk)
 			return Results.Ok(projection.Compile().Invoke(crudResult.Value));
 
-		return MapToFailedHttpResult(crudResult.Error, crudResult.Message);
+		return MapToFailedHttpResult(crudResult.ErrorCode, crudResult.ErrorMessage);
 	}
 
 	public static IHttpResult MapToHttpResult<TEntity>(this CrudResult<TEntity> crudResult)
@@ -27,17 +27,17 @@ public static class CrudResultExtensions
 		if (crudResult.IsOk)
 			return Results.Ok(crudResult.Value);
 
-		return MapToFailedHttpResult(crudResult.Error, crudResult.Message);
+		return MapToFailedHttpResult(crudResult.ErrorCode, crudResult.ErrorMessage);
 	}
 
-	private static IHttpResult MapToFailedHttpResult(CrudError error, string? message)
+	private static IHttpResult MapToFailedHttpResult(CrudError errorCode, string? errorMessage)
 	{
-		return error switch
+		return errorCode switch
 		{
-			CrudError.Unknown => Results.Problem(detail: message),
-			CrudError.NotFound => Results.NotFound(message),
-			CrudError.DuplicateEntry => Results.Conflict(message),
-			CrudError.ConcurrencyConflict => Results.Conflict(message),
+			CrudError.Unknown => Results.Problem(detail: errorMessage),
+			CrudError.NotFound => Results.NotFound(errorMessage),
+			CrudError.DuplicateEntry => Results.Conflict(errorMessage),
+			CrudError.ConcurrencyConflict => Results.Conflict(errorMessage),
 			_ => throw new NotImplementedException()
 		};
 	}

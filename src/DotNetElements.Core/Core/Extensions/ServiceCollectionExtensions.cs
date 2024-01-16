@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
 
 	public static IServiceCollection AddManagedRepository<TManagedRepository, TRepository, TEntity, TKey>(this IServiceCollection services)
 		where TEntity : Entity<TKey>
-		where TKey : notnull
+		where TKey : notnull, IEquatable<TKey>
 		where TRepository : IRepository<TEntity, TKey>
 		where TManagedRepository : ManagedRepository<TRepository, TEntity, TKey>
 	{

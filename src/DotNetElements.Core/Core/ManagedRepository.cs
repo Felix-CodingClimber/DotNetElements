@@ -4,7 +4,7 @@ namespace DotNetElements.Core;
 
 public abstract class ManagedRepository<TRepository, TEntity, TKey> : IRepository<TEntity, TKey>
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 	where TRepository : IRepository<TEntity, TKey>
 {
 	private readonly IScopedRepositoryFactory<TRepository, TEntity, TKey> repositoryFactory;

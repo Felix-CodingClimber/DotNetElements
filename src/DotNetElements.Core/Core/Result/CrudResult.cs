@@ -13,33 +13,32 @@ public readonly partial struct CrudResult : IResult
 	public bool IsFail { get; }
 	public bool IsOk => !IsFail;
 
-	public CrudError Error => IsFail ? error!.Value : throw new ResultOkException();
-	private readonly CrudError? error;
+	public CrudError ErrorCode => IsFail ? errorCode!.Value : throw new ResultOkException();
+	private readonly CrudError? errorCode;
 
-	public string Message => IsFail ? message! : throw new ResultOkException();
-	private readonly string? message;
+	public string ErrorMessage => IsFail ? errorMessage! : throw new ResultOkException();
+	private readonly string? errorMessage;
 
-	private CrudResult(bool isFail, CrudError? error, string? message)
+	private CrudResult(bool isFail, CrudError? error, string? errorMessage)
 	{
 		IsFail = isFail;
-		this.error = error;
-		this.message = message;
+		this.errorCode = error;
+		this.errorMessage = errorMessage;
 	}
 
 	/// <summary>
-	/// Create a successful result
+	///		Create a successful result
 	/// </summary>
 	public static CrudResult Ok() => new CrudResult(false, null, null);
 
 	/// <summary>
-	/// Create a failed result with the given error type and message
+	///		Create a failed result with the given an undefined error code and given message
 	/// </summary>
-	/// <param name="error">Describes the error type</param>
-	/// <param name="message">Optional error message</param>
+	/// <param name="errorMessage">Optional error message</param>
 	/// <returns></returns>
-	public static CrudResult Fail(string? message = null) => new CrudResult(true, CrudError.Unknown, message);
+	public static CrudResult Fail(string? errorMessage = null) => new CrudResult(true, CrudError.Unknown, errorMessage);
 
-	internal static CrudResult Fail_Internal(CrudError error, string? message = null) => new CrudResult(true, error, message);
+	internal static CrudResult Fail_Internal(CrudError errorCode, string? errorMessage = null) => new CrudResult(true, errorCode, errorMessage);
 
 	public static CrudResult DuplicateEntry()
 		=> new CrudResult(true, CrudError.DuplicateEntry, "A similar entry does already exist.");
@@ -55,17 +54,17 @@ public readonly partial struct CrudResult : IResult
 		=> new CrudResult(true, CrudError.ConcurrencyConflict, "Entry was changed, check updated values.");
 
 	/// <summary>
-	/// Create a successful result
-	/// Helper to construct a CrudResult<T> without the need to explicit define the generic T
+	///		Create a successful result
+	///		Helper to construct a CrudResult<T> without the need to explicit define the generic T
 	/// </summary>
 	/// <typeparam name="T">Type of the return value</typeparam>
 	/// <param name="value">Return value</param>
 	/// <returns></returns>
 	public static CrudResult<T> Ok<T>(T value) => new CrudResult<T>(false, null, null, value);
 
-	internal static CrudResult<T> Fail_Internal<T>(CrudError error, string? message = null) => new CrudResult<T>(true, error, message, default);
+	internal static CrudResult<T> Fail_Internal<T>(CrudError errorCode, string? errorMessage = null) => new CrudResult<T>(true, errorCode, errorMessage, default);
 
-	public override string ToString() => IsFail ? $"Failure. Error: {Error}" : $"Success";
+	public override string ToString() => IsFail ? $"Failure. Error code: {ErrorCode}" : $"Success";
 }
 
 public readonly partial struct CrudResult<T>
@@ -73,21 +72,21 @@ public readonly partial struct CrudResult<T>
 	public bool IsFail { get; }
 	public bool IsOk => !IsFail;
 
-	public CrudError Error => IsFail ? error!.Value : throw new ResultOkException();
-	private readonly CrudError? error;
+	public CrudError ErrorCode => IsFail ? errorCode!.Value : throw new ResultOkException();
+	private readonly CrudError? errorCode;
 
-	public string Message => IsFail ? message! : throw new ResultOkException();
-	private readonly string? message;
+	public string ErrorMessage => IsFail ? errorMessage! : throw new ResultOkException();
+	private readonly string? errorMessage;
 
-	public T Value => IsOk ? value! : throw new ResultFailException(error!.Value.ToString());
+	public T Value => IsOk ? value! : throw new ResultFailException(errorCode!.Value.ToString());
 	private readonly T? value;
 
 	// A result should be constructed using the static CrudResult.Ok and CrudResult.Fail methods
-	internal CrudResult(bool isFail, CrudError? error, string? message, T? value)
+	internal CrudResult(bool isFail, CrudError? errorCode, string? errorMessage, T? value)
 	{
 		IsFail = isFail;
-		this.error = error;
-		this.message = message;
+		this.errorCode = errorCode;
+		this.errorMessage = errorMessage;
 		this.value = value;
 	}
 
@@ -96,8 +95,8 @@ public readonly partial struct CrudResult<T>
 	{
 		if (value is CrudResult<T> result)
 		{
-			CrudError? resultError = result.IsFail ? result.Error : null;
-			string? resultMessage = result.IsFail ? result.Message : null;
+			CrudError? resultError = result.IsFail ? result.ErrorCode : null;
+			string? resultMessage = result.IsFail ? result.ErrorMessage : null;
 			T? resultValue = result.IsOk ? result.Value : default;
 
 			return new CrudResult<T>(result.IsFail, resultError, resultMessage, resultValue);
@@ -112,7 +111,7 @@ public readonly partial struct CrudResult<T>
 		if (result.IsOk)
 			return CrudResult.Ok();
 		else
-			return CrudResult.Fail_Internal(result.Error, result.Message);
+			return CrudResult.Fail_Internal(result.ErrorCode, result.ErrorMessage);
 	}
 
 	// Implicit cast from the generic result version
@@ -121,8 +120,8 @@ public readonly partial struct CrudResult<T>
 		if (result.IsOk)
 			throw new ResultOkException("Can not convert from a CrudResult.Ok to a CrudResult.Ok<T>");
 		else
-			return CrudResult.Fail_Internal<T>(result.Error, result.Message);
+			return CrudResult.Fail_Internal<T>(result.ErrorCode, result.ErrorMessage);
 	}
 
-	public override string ToString() => IsFail ? $"Failed to return {typeof(T)}. Error: {Error}" : $"Successfully returned {typeof(T)} with value {Value}";
+	public override string ToString() => IsFail ? $"Failed to return {typeof(T)}. Error code: {ErrorCode}" : $"Successfully returned {typeof(T)} with value {Value}";
 }

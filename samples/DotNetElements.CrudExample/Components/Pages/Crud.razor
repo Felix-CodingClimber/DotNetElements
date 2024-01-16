@@ -212,7 +212,7 @@ else
 
 		if (createdTag.IsFail)
 		{
-			snackbar.Add($"Failed to create tag.\n{createdTag.Message}", Severity.Error);
+			snackbar.Add($"Failed to create tag.\n{createdTag.ErrorMessage}", Severity.Error);
 			return;
 		}
 
@@ -242,7 +242,7 @@ else
 
 		if (updatedTag.IsFail)
 		{
-			snackbar.Add($"Failed to update tag.\n{updatedTag.Message}", Severity.Error);
+			snackbar.Add($"Failed to update tag.\n{updatedTag.ErrorMessage}", Severity.Error);
 			return;
 		}
 
@@ -263,7 +263,7 @@ else
 
 		if(deleteResult.IsFail)
 		{
-			snackbar.Add($"Failed to delete tag.\n{deleteResult.Message}", Severity.Error);
+			snackbar.Add($"Failed to delete tag.\n{deleteResult.ErrorMessage}", Severity.Error);
 			return;
 		}
 
@@ -285,7 +285,7 @@ else
 
 		if(details.IsFail)
 		{
-			snackbar.Add($"Failed to fetch tag details.\n{details.Message}", Severity.Error);
+			snackbar.Add($"Failed to fetch tag details.\n{details.ErrorMessage}", Severity.Error);
 			return;
 		}
 
@@ -317,7 +317,7 @@ else
 
 		if (createdBlogPost.IsFail)
 		{
-			snackbar.Add($"Failed to create blog post.\n{createdBlogPost.Message}", Severity.Error);
+			snackbar.Add($"Failed to create blog post.\n{createdBlogPost.ErrorMessage}", Severity.Error);
 			return;
 		}
 
@@ -350,7 +350,7 @@ else
 
 		if (updatedBlogPost.IsFail)
 		{
-			snackbar.Add($"Failed to update blog post.\n{updatedBlogPost.Message}", Severity.Error);
+			snackbar.Add($"Failed to update blog post.\n{updatedBlogPost.ErrorMessage}", Severity.Error);
 			return;
 		}
 
@@ -370,7 +370,7 @@ else
 
 		if(deleteResult.IsFail)
 		{
-			snackbar.Add($"Failed to delete blog post.\n{deleteResult.Message}", Severity.Error);
+			snackbar.Add($"Failed to delete blog post.\n{deleteResult.ErrorMessage}", Severity.Error);
 			return;
 		}
 
@@ -391,7 +391,7 @@ else
 
 		if(details.IsFail)
 		{
-			snackbar.Add($"Failed to fetch blog post details.\n{details.Message}", Severity.Error);
+			snackbar.Add($"Failed to fetch blog post details.\n{details.ErrorMessage}", Severity.Error);
 			return;
 		}
 

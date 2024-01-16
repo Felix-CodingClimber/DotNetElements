@@ -70,8 +70,10 @@ public class ReadOnlyRepositoryTest
 			tagBeforeUpdate = tagsFromDb[0];
 
 			// Update value
-			EditTagModel editTagModel = new(tagBeforeUpdate.MapToModel());
-			editTagModel.Label = updatedLabelValue;
+			EditTagModel editTagModel = new(tagBeforeUpdate.MapToModel())
+			{
+				Label = updatedLabelValue
+			};
 
 			// Set new time and userId
 			factory.TimeProvider.SetUtcNow(utcUpdateTime);
@@ -124,8 +126,10 @@ public class ReadOnlyRepositoryTest
 			IReadOnlyList<Tag> tagsFromDb = await tagRepo.GetAllAsync();
 
 			// Update value
-			EditTagModel editTagModel = new(tagsFromDb[0].MapToModel());
-			editTagModel.Label = "Updated Label User 2";
+			EditTagModel editTagModel = new(tagsFromDb[0].MapToModel())
+			{
+				Label = "Updated Label User 2"
+			};
 
 			await tagRepo.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
 		}
@@ -134,13 +138,15 @@ public class ReadOnlyRepositoryTest
 		using (FakeTagRepository tagRepo = factory.CreateRepository())
 		{
 			// Update value
-			EditTagModel editTagModel = new(tagsForUser1[0].MapToModel());
-			editTagModel.Label = "Updated Label User 1";
+			EditTagModel editTagModel = new(tagsForUser1[0].MapToModel())
+			{
+				Label = "Updated Label User 1"
+			};
 
 			CrudResult<Tag> result = await tagRepo.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
 
 			result.IsFail.Should().BeTrue();
-			result.Error.Should().Be(CrudError.ConcurrencyConflict);
+			result.ErrorCode.Should().Be(CrudError.ConcurrencyConflict);
 		}
 	}
 }

@@ -4,7 +4,7 @@ namespace DotNetElements.Core;
 
 public interface IRepository<TEntity, TKey> : IReadOnlyRepository<TEntity, TKey>
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	Task ClearTable();
 

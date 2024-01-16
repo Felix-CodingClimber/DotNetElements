@@ -6,7 +6,7 @@ namespace DotNetElements.Core;
 public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository<TDbContext, TEntity, TKey>, IRepository<TEntity, TKey>, IAttachRelatedEntity
 	where TDbContext : DbContext
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	protected ICurrentUserProvider CurrentUserProvider { get; private init; }
 	protected TimeProvider TimeProvider { get; private init; }
@@ -61,7 +61,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 				auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
 			var createdEntity = DbContext.Set<TSelf>().Attach(entity);
-
+			
 			await DbContext.SaveChangesAsync();
 
 			return createdEntity.Entity;
@@ -96,6 +96,8 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 		where TUpdatableEntity : Entity<TKey>, IUpdatable<TFrom>
 		where TFrom : notnull
 	{
+		ThrowHelper.ThrowIfDefault(id);
+
 		IQueryable<TUpdatableEntity> query = DbContext.Set<TUpdatableEntity>();
 
 		RelatedEntitiesAttribute? relatedEntities = typeof(TUpdatableEntity).GetCustomAttribute<RelatedEntitiesAttribute>();
@@ -175,7 +177,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 	// todo protected would be better!
 	public TRelatedEntity AttachById<TRelatedEntity, TRelatedEntityKey>(TRelatedEntityKey id)
 		where TRelatedEntity : Entity<TRelatedEntityKey>, IRelatedEntity<TRelatedEntity, TRelatedEntityKey>
-		where TRelatedEntityKey : notnull
+		where TRelatedEntityKey : notnull, IEquatable<TRelatedEntityKey>
 	{
 		return DbContext.Set<TRelatedEntity>().Attach(TRelatedEntity.CreateRefById(id)).Entity;
 	}

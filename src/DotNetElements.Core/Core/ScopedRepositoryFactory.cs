@@ -4,7 +4,7 @@ namespace DotNetElements.Core;
 
 public sealed class ScopedRepositoryFactory<TRepository, TEntity, TKey> : IScopedRepositoryFactory<TRepository, TEntity, TKey>
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 	where TRepository : IRepository<TEntity, TKey>
 {
 	private readonly IServiceProvider serviceProvider;

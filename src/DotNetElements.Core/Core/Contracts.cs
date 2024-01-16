@@ -1,7 +1,7 @@
 ﻿namespace DotNetElements.Core;
 
 public interface IHasKey<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	TKey Id { get; }
 

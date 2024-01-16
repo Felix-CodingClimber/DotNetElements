@@ -5,7 +5,7 @@ namespace DotNetElements.Core;
 public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyRepository<TEntity, TKey>
 	where TDbContext : DbContext
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	protected TDbContext DbContext { get; private init; }
 	protected DbSet<TEntity> Entities { get; private init; }

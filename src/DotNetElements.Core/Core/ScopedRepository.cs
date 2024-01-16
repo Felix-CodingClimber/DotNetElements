@@ -4,7 +4,7 @@ namespace DotNetElements.Core;
 
 public sealed class ScopedRepository<TRepository, TEntity, TKey> : IDisposable
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 	where TRepository : IRepository<TEntity, TKey>
 {
 	public TRepository Inner { get; private init; }

@@ -4,10 +4,6 @@
 // Date of source:           20.02.2023
 // Commit version of source: Latest commit 361357d on Jan 30, 2023
 // 
-// Used classes included and modified:
-// - Result and Result<T>
-// - Helper classes for Result and Result<T>
-// 
 // Original License:
 //
 // The MIT License (MIT)
@@ -37,6 +33,7 @@ public interface IResult
 {
 	bool IsFail { get; }
 	bool IsOk { get; }
+	string ErrorMessage { get; }
 }
 
 public readonly partial struct Result : IResult
@@ -44,27 +41,31 @@ public readonly partial struct Result : IResult
 	public bool IsFail { get; }
 	public bool IsOk => !IsFail;
 
-	public string Error => IsFail ? error! : throw new ResultOkException();
-	private readonly string? error;
+	public string ErrorMessage => IsFail ? errorMessage! : throw new ResultOkException();
+	private readonly string? errorMessage;
 
-	private Result(bool isFail, string? error)
+	private Result(bool isFail, string? errorMessage)
 	{
 		IsFail = isFail;
-		this.error = error;
+		this.errorMessage = errorMessage;
 	}
 
 	// Create a successful result
 	public static Result Ok() => new Result(false, null);
 
-	// Create a failed result with the given error
-	public static Result Fail(string error) => new Result(true, error);
+	/// <summary>
+	/// Create a failed result with the given error message
+	/// </summary>
+	/// <param name="errorMessage">Friendly error message</param>
+	/// <returns></returns>
+	public static Result Fail(string errorMessage) => new Result(true, errorMessage);
 
 	// Helper to construct a Result<T> without the need to explicit define the generic T
 	// Create a successful result
 	public static Result<T> Ok<T>(T value) => new Result<T>(false, null, value);
 
-	// Create a failed result with the given error
-	internal static Result<T> Fail_Internal<T>(string error) => new Result<T>(true, error, default);
+	// Create a failed result with the given error message
+	internal static Result<T> Fail_Internal<T>(string errorMessage) => new Result<T>(true, errorMessage, default);
 
 	// Create a failed result from another failed result
 	public static Result<T> Fail<T>(Result failedResult)
@@ -72,10 +73,10 @@ public readonly partial struct Result : IResult
 		if (failedResult.IsOk)
 			throw new ResultOkException();
 
-		return new Result<T>(true, failedResult.Error, default);
+		return new Result<T>(true, failedResult.ErrorMessage, default);
 	}
 
-	public override string ToString() => IsFail ? $"Failure. Error: {Error}" : $"Success";
+	public override string ToString() => IsFail ? $"Failure. Error message: {ErrorMessage}" : $"Success";
 }
 
 public readonly partial struct Result<T> : IResult
@@ -84,18 +85,18 @@ public readonly partial struct Result<T> : IResult
 	public bool IsOk => !IsFail;
 
 	// Prevent accessing error on a successful result
-	public string Error => IsFail ? error! : throw new ResultOkException();
-	private readonly string? error;
+	public string ErrorMessage => IsFail ? errorMessage! : throw new ResultOkException();
+	private readonly string? errorMessage;
 
 	// Prevent accessing value on a failed result
-	public T Value => IsOk ? value! : throw new ResultFailException(error!);
+	public T Value => IsOk ? value! : throw new ResultFailException(errorMessage!);
 	private readonly T? value;
 
 	// A result should be constructed using the static Result.Ok and Result.Fail methods
-	internal Result(bool isFail, string? error, T? value)
+	internal Result(bool isFail, string? errorMessage, T? value)
 	{
 		IsFail = isFail;
-		this.error = error;
+		this.errorMessage = errorMessage;
 		this.value = value;
 	}
 
@@ -104,7 +105,7 @@ public readonly partial struct Result<T> : IResult
 	{
 		if (value is Result<T> result)
 		{
-			string? resultError = result.IsFail ? result.Error : null;
+			string? resultError = result.IsFail ? result.ErrorMessage : null;
 			T? resultValue = result.IsOk ? result.Value : default;
 
 			return new Result<T>(result.IsFail, resultError, resultValue);
@@ -119,7 +120,7 @@ public readonly partial struct Result<T> : IResult
 		if (result.IsOk)
 			return Result.Ok();
 		else
-			return Result.Fail(result.Error);
+			return Result.Fail(result.ErrorMessage);
 	}
 
 	// Implicit cast from the generic result version
@@ -128,8 +129,8 @@ public readonly partial struct Result<T> : IResult
 		if (result.IsOk)
 			throw new ResultOkException("Can not convert from a Result.Ok to a Result.Ok<T>");
 		else
-			return Result.Fail_Internal<T>(result.Error);
+			return Result.Fail_Internal<T>(result.ErrorMessage);
 	}
 
-	public override string ToString() => IsFail ? $"Failed to return {typeof(T)}. Error: {Error}" : $"Successfully returned {typeof(T)} with value {Value}";
+	public override string ToString() => IsFail ? $"Failed to return {typeof(T)}. Error message: {ErrorMessage}" : $"Successfully returned {typeof(T)} with value {Value}";
 }

@@ -3,10 +3,10 @@
 namespace DotNetElements.Core;
 
 public interface IEntity<TKey> : IHasKey<TKey>
-	where TKey : notnull;
+	where TKey : notnull, IEquatable<TKey>;
 
 public interface ICreationAuditedEntity<TKey> : IEntity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	Guid CreatorId { get; }
 
@@ -16,7 +16,7 @@ public interface ICreationAuditedEntity<TKey> : IEntity<TKey>
 }
 
 public interface IAuditedEntity<TKey> : ICreationAuditedEntity<TKey>
-		where TKey : notnull
+		where TKey : notnull, IEquatable<TKey>
 {
 	Guid? LastModifierId { get; }
 
@@ -55,7 +55,7 @@ public interface IUpdatable<TFrom>
 
 public interface IRelatedEntity<TSelf, TKey>
 	where TSelf : IEntity<TKey>, IRelatedEntity<TSelf, TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	static abstract TSelf CreateRefById(TKey id);
 }
@@ -63,13 +63,13 @@ public interface IRelatedEntity<TSelf, TKey>
 public abstract class Entity { }
 
 public abstract class Entity<TKey> : Entity, IEntity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	public TKey Id { get; protected set; } = default!;
 }
 
 public class CreationAuditedEntity<TKey> : Entity<TKey>, ICreationAuditedEntity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	public Guid CreatorId { get; private set; }
 
@@ -86,7 +86,7 @@ public class CreationAuditedEntity<TKey> : Entity<TKey>, ICreationAuditedEntity<
 }
 
 public class AuditedEntity<TKey> : CreationAuditedEntity<TKey>, IAuditedEntity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	public Guid? LastModifierId { get; private set; }
 
@@ -100,7 +100,7 @@ public class AuditedEntity<TKey> : CreationAuditedEntity<TKey>, IAuditedEntity<T
 }
 
 public class PersistentEntity<TKey> : CreationAuditedEntity<TKey>, IDeletionAuditedEntity
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	public bool IsDeleted { get; private set; }
 

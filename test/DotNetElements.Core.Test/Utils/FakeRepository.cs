@@ -3,7 +3,7 @@
 internal class FakeRepository<TDbContext, TEntity, TKey> : Repository<TDbContext, TEntity, TKey>, IDisposable
 	where TDbContext : DbContext
 	where TEntity : Entity<TKey>
-	where TKey : notnull
+	where TKey : notnull, IEquatable<TKey>
 {
 	public FakeRepository(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider) : base(
 		dbContext,

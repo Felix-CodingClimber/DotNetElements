@@ -17,5 +17,11 @@ public class ResultFailException : Exception
 
 public class ResultShouldNotFailException : Exception
 {
+	public static void ThrowIfFailed(IResult result)
+	{
+		if (result.IsFail)
+			throw new ResultShouldNotFailException();
+	}
+
 	public ResultShouldNotFailException(string message = "Result should not have failed") : base(message) { }
 }

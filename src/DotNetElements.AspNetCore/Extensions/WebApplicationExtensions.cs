@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetElements.Core.Extensions;
+namespace DotNetElements.AspNetCore.Extensions;
 
 public static class WebApplicationExtensions
 {

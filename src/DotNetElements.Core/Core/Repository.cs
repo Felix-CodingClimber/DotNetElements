@@ -61,7 +61,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 				auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
 			var createdEntity = DbContext.Set<TSelf>().Attach(entity);
-			
+
 			await DbContext.SaveChangesAsync();
 
 			return createdEntity.Entity;
@@ -133,7 +133,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 	// todo check if id and originalVersion is the right fit or if it would be better to get a entity as param
 	// Or consider to remove the default null value to force the user to be explicit
 	public virtual async Task<CrudResult> DeleteAsync<TEntityToDelete>(TEntityToDelete entityToDelete)
-		where TEntityToDelete : IHasKey<TKey>, IHasVersionReadOnly
+		where TEntityToDelete : IHasKey<TKey>
 	{
 		TEntity? existingEntity = await Entities.FirstOrDefaultAsync(WithId(entityToDelete.Id));
 
@@ -144,19 +144,19 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 		{
 			deletionAuditedEntity.Delete(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-			UpdateEntityVersion(existingEntity, entityToDelete.Version);
+			UpdateEntityVersion(existingEntity, entityToDelete);
 		}
 		else if (existingEntity is IHasDeletionTime entityWithDeletionTime)
 		{
 			entityWithDeletionTime.Delete(TimeProvider.GetUtcNow());
 
-			UpdateEntityVersion(existingEntity, entityToDelete.Version);
+			UpdateEntityVersion(existingEntity, entityToDelete);
 		}
 		else if (existingEntity is ISoftDelete softDeletableEntity)
 		{
 			softDeletableEntity.Delete();
 
-			UpdateEntityVersion(existingEntity, entityToDelete.Version);
+			UpdateEntityVersion(existingEntity, entityToDelete);
 		}
 		else
 		{

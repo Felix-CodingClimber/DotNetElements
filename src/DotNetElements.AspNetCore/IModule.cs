@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetElements.Core;
+namespace DotNetElements.AspNetCore;
 
 public interface IModule
 {

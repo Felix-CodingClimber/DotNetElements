@@ -12,7 +12,7 @@ public class BlogPostModel : VersionedModel<Guid>
 	}
 }
 
-public class EditBlogPostModel : VersionedEditModel<Guid>
+public class EditBlogPostModel : VersionedEditModel<BlogPostModel, Guid>
 {
 	public string Title { get; set; }
 	public List<TagModel> Tags { get; set; }

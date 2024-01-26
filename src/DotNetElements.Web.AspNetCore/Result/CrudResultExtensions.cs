@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using IHttpResult = Microsoft.AspNetCore.Http.IResult;
 
-namespace DotNetElements.AspNetCore;
+namespace DotNetElements.Web.AspNetCore;
 
 public static class CrudResultExtensions
 {

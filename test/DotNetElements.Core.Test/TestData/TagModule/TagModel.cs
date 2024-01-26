@@ -12,7 +12,7 @@ public class TagModel : VersionedModel<Guid>
 	public override string ToString() => Label;
 }
 
-public class EditTagModel : VersionedEditModel<Guid>
+public class EditTagModel : VersionedEditModel<TagModel, Guid>
 {
 	public string Label { get; set; }
 

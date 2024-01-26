@@ -4,246 +4,258 @@ using System.Reflection;
 namespace DotNetElements.Core;
 
 public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository<TDbContext, TEntity, TKey>, IRepository<TEntity, TKey>, IAttachRelatedEntity
-	where TDbContext : DbContext
-	where TEntity : Entity<TKey>
-	where TKey : notnull, IEquatable<TKey>
+    where TDbContext : DbContext
+    where TEntity : Entity<TKey>
+    where TKey : notnull, IEquatable<TKey>
 {
-	protected ICurrentUserProvider CurrentUserProvider { get; private init; }
-	protected TimeProvider TimeProvider { get; private init; }
+    protected ICurrentUserProvider CurrentUserProvider { get; private init; }
+    protected TimeProvider TimeProvider { get; private init; }
 
-	public Repository(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider) : base(dbContext)
-	{
-		CurrentUserProvider = currentUserProvider;
-		TimeProvider = timeProvider;
-	}
+    protected static readonly RelatedEntitiesAttribute? RelatedEntities = typeof(TEntity).GetCustomAttribute<RelatedEntitiesAttribute>();
 
-	public virtual async Task<CrudResult<TEntity>> CreateAsync(TEntity entity, Expression<Func<TEntity, bool>>? checkDuplicate = null)
-	{
-		ArgumentNullException.ThrowIfNull(entity);
+    public Repository(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider) : base(dbContext)
+    {
+        CurrentUserProvider = currentUserProvider;
+        TimeProvider = timeProvider;
+    }
 
-		if (checkDuplicate is not null)
-		{
-			bool isDuplicate = await Entities.AnyAsync(checkDuplicate);
+    public virtual async Task<CrudResult<TEntity>> CreateAsync(TEntity entity, Expression<Func<TEntity, bool>>? checkDuplicate = null)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
 
-			if (isDuplicate)
-				return CrudResult.DuplicateEntry();
-		}
+        if (checkDuplicate is not null)
+        {
+            bool isDuplicate = await Entities.AnyAsync(checkDuplicate);
 
-		// Set audit properties if needed
-		if (entity is ICreationAuditedEntity<TKey> auditedEntity)
-			auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+            if (isDuplicate)
+                return CrudResult.DuplicateEntry();
+        }
 
-		var createdEntity = Entities.Attach(entity);
+        // Set audit properties if needed
+        if (entity is ICreationAuditedEntity<TKey> auditedEntity)
+            auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-		await DbContext.SaveChangesAsync();
+        var createdEntity = Entities.Attach(entity);
 
-		return createdEntity.Entity;
-	}
+        await DbContext.SaveChangesAsync();
 
-	public virtual async Task<CrudResult<TSelf>> CreateOrUpdateAsync<TSelf>(TKey id, TSelf entity, Expression<Func<TSelf, bool>>? checkDuplicate = null)
-		where TSelf : Entity<TKey>, IUpdatable<TSelf>
-	{
-		ArgumentNullException.ThrowIfNull(entity);
+        // todo, review this part. Maybe add parameter returnRelatedEntities?
+        // (Was needed, so referenced entities got included when returning entity)
+        // Check if we can batch the loadings
+        if (RelatedEntities is not null)
+        {
+            foreach (string relatedProperty in RelatedEntities.ReferenceProperties)
+                await createdEntity.Reference(relatedProperty).LoadAsync();
+        }
 
-		// If id is not set yet, the entity must be new
-		if (id.Equals(default(TKey)))
-		{
-			if (checkDuplicate is not null)
-			{
-				bool isDuplicate = await DbContext.Set<TSelf>().AnyAsync(checkDuplicate);
+        return createdEntity.Entity;
+    }
 
-				if (isDuplicate)
-					return CrudResult.DuplicateEntry();
-			}
+    public virtual async Task<CrudResult<TSelf>> CreateOrUpdateAsync<TSelf>(TKey id, TSelf entity, Expression<Func<TSelf, bool>>? checkDuplicate = null)
+        where TSelf : Entity<TKey>, IUpdatable<TSelf>
+    {
+        ArgumentNullException.ThrowIfNull(entity);
 
-			// Set audit properties if needed
-			if (entity is ICreationAuditedEntity<TKey> auditedEntity)
-				auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+        // If id is not set yet, the entity must be new
+        if (id.Equals(default(TKey)))
+        {
+            if (checkDuplicate is not null)
+            {
+                bool isDuplicate = await DbContext.Set<TSelf>().AnyAsync(checkDuplicate);
 
-			var createdEntity = DbContext.Set<TSelf>().Attach(entity);
+                if (isDuplicate)
+                    return CrudResult.DuplicateEntry();
+            }
 
-			await DbContext.SaveChangesAsync();
+            // Set audit properties if needed
+            if (entity is ICreationAuditedEntity<TKey> auditedEntity)
+                auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-			return createdEntity.Entity;
-		}
-		else
-		{
-			// Update existing entity
-			TSelf? existingEntity = await DbContext.Set<TSelf>().FirstOrDefaultAsync(WithId<TSelf>(id));
+            var createdEntity = DbContext.Set<TSelf>().Attach(entity);
 
-			if (existingEntity is null)
-				return CrudResult.NotFound(id);
+            await DbContext.SaveChangesAsync();
 
-			entity.Update(entity, this);
+            return createdEntity.Entity;
+        }
+        else
+        {
+            // Update existing entity
+            TSelf? existingEntity = await DbContext.Set<TSelf>().FirstOrDefaultAsync(WithId<TSelf>(id));
 
-			// Check if entity has changed and set audit properties if needed
-			if (DbContext.ChangeTracker.HasChanges())
-			{
-				if (existingEntity is IAuditedEntity<TKey> auditedEntity)
-					auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+            if (existingEntity is null)
+                return CrudResult.NotFound(id);
 
-				UpdateEntityVersion(existingEntity, entity);
+            entity.Update(entity, this);
 
-				if (!await SaveChangesWithVersionCheckAsync())
-					return CrudResult.ConcurrencyConflict();
-			}
+            // Check if entity has changed and set audit properties if needed
+            if (DbContext.ChangeTracker.HasChanges())
+            {
+                if (existingEntity is IAuditedEntity<TKey> auditedEntity)
+                    auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-			return existingEntity;
-		}
-	}
+                UpdateEntityVersion(existingEntity, entity);
 
-	public virtual async Task<CrudResult<TUpdatableEntity>> UpdateAsync<TUpdatableEntity, TFrom>(TKey id, TFrom from)
-		where TUpdatableEntity : Entity<TKey>, IUpdatable<TFrom>
-		where TFrom : notnull
-	{
-		ThrowHelper.ThrowIfDefault(id);
+                if (!await SaveChangesWithVersionCheckAsync())
+                    return CrudResult.ConcurrencyConflict();
+            }
 
-		IQueryable<TUpdatableEntity> query = DbContext.Set<TUpdatableEntity>();
+            return existingEntity;
+        }
+    }
 
-		RelatedEntitiesAttribute? relatedEntities = typeof(TUpdatableEntity).GetCustomAttribute<RelatedEntitiesAttribute>();
+    public virtual async Task<CrudResult<TEntity>> UpdateAsync<TFrom>(TKey id, TFrom from)
+        where TFrom : notnull
+    {
+        ThrowHelper.ThrowIfDefault(id);
 
-		if (relatedEntities is not null)
-		{
-			foreach (string relatedProperty in relatedEntities.ReferenceProperties)
-				query = query.Include(relatedProperty);
-		}
+        TEntity? existingEntity = await Entities.FirstOrDefaultAsync(WithId(id));
 
-		TUpdatableEntity? existingEntity = await query.FirstOrDefaultAsync(WithId<TUpdatableEntity>(id));
+        if (existingEntity is null)
+            return CrudResult.NotFound(id);
 
-		if (existingEntity is null)
-			return CrudResult.NotFound(id);
+        if (existingEntity is not IUpdatable<TFrom> updatableEntity)
+            throw new InvalidOperationException("UpdateAsync<TFrom> is only supported for entities implementing IUpdatable<TFrom>.");
 
-		existingEntity.Update(from, this);
+        updatableEntity.Update(from, this);
 
-		// Check if entity has changed and set audit properties if needed
-		if (DbContext.ChangeTracker.HasChanges())
-		{
-			if (existingEntity is IAuditedEntity<TKey> auditedEntity)
-				auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+        // Check if entity has changed and set audit properties if needed
+        if (DbContext.ChangeTracker.HasChanges())
+        {
+            if (existingEntity is IAuditedEntity<TKey> auditedEntity)
+                auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-			UpdateEntityVersion(existingEntity, from);
+            UpdateEntityVersion(existingEntity, from);
 
-			if (!await SaveChangesWithVersionCheckAsync())
-				return CrudResult.ConcurrencyConflict();
-		}
+            if (!await SaveChangesWithVersionCheckAsync())
+                return CrudResult.ConcurrencyConflict();
+        }
 
-		return existingEntity;
-	}
+        // todo, review this part. Maybe add parameter returnRelatedEntities?
+        // (Was needed, so referenced entities got updated/included)
+        // Check if we can batch the loadings
+        if (RelatedEntities is not null)
+        {
+            foreach (string relatedProperty in RelatedEntities.ReferenceProperties)
+                await DbContext.Entry(existingEntity).Reference(relatedProperty).LoadAsync();
+        }
 
-	// todo check if id and originalVersion is the right fit or if it would be better to get a entity as param
-	// Or consider to remove the default null value to force the user to be explicit
-	public virtual async Task<CrudResult> DeleteAsync<TEntityToDelete>(TEntityToDelete entityToDelete)
-		where TEntityToDelete : IHasKey<TKey>
-	{
-		TEntity? existingEntity = await Entities.FirstOrDefaultAsync(WithId(entityToDelete.Id));
+        return CrudResult.OkIfNotNull(existingEntity, CrudError.Unknown);
+    }
 
-		if (existingEntity is null)
-			return CrudResult.NotFound(entityToDelete.Id);
+    // todo check if id and originalVersion is the right fit or if it would be better to get a entity as param
+    // Or consider to remove the default null value to force the user to be explicit
+    public virtual async Task<CrudResult> DeleteAsync<TEntityToDelete>(TEntityToDelete entityToDelete)
+        where TEntityToDelete : IHasKey<TKey>
+    {
+        TEntity? existingEntity = await Entities.FirstOrDefaultAsync(WithId(entityToDelete.Id));
 
-		if (existingEntity is IDeletionAuditedEntity deletionAuditedEntity)
-		{
-			deletionAuditedEntity.Delete(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+        if (existingEntity is null)
+            return CrudResult.NotFound(entityToDelete.Id);
 
-			UpdateEntityVersion(existingEntity, entityToDelete);
-		}
-		else if (existingEntity is IHasDeletionTime entityWithDeletionTime)
-		{
-			entityWithDeletionTime.Delete(TimeProvider.GetUtcNow());
+        if (existingEntity is IDeletionAuditedEntity deletionAuditedEntity)
+        {
+            deletionAuditedEntity.Delete(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-			UpdateEntityVersion(existingEntity, entityToDelete);
-		}
-		else if (existingEntity is ISoftDelete softDeletableEntity)
-		{
-			softDeletableEntity.Delete();
+            UpdateEntityVersion(existingEntity, entityToDelete);
+        }
+        else if (existingEntity is IHasDeletionTime entityWithDeletionTime)
+        {
+            entityWithDeletionTime.Delete(TimeProvider.GetUtcNow());
 
-			UpdateEntityVersion(existingEntity, entityToDelete);
-		}
-		else
-		{
-			Entities.Remove(existingEntity);
-		}
+            UpdateEntityVersion(existingEntity, entityToDelete);
+        }
+        else if (existingEntity is ISoftDelete softDeletableEntity)
+        {
+            softDeletableEntity.Delete();
 
-		if (!await SaveChangesWithVersionCheckAsync())
-			return CrudResult.ConcurrencyConflict();
+            UpdateEntityVersion(existingEntity, entityToDelete);
+        }
+        else
+        {
+            Entities.Remove(existingEntity);
+        }
 
-		return CrudResult.Ok();
-	}
+        if (!await SaveChangesWithVersionCheckAsync())
+            return CrudResult.ConcurrencyConflict();
 
-	public virtual async Task ClearTable()
-	{
-		await Entities.ExecuteDeleteAsync();
-	}
+        return CrudResult.Ok();
+    }
 
-	// todo protected would be better!
-	public TRelatedEntity AttachById<TRelatedEntity, TRelatedEntityKey>(TRelatedEntityKey id)
-		where TRelatedEntity : Entity<TRelatedEntityKey>, IRelatedEntity<TRelatedEntity, TRelatedEntityKey>
-		where TRelatedEntityKey : notnull, IEquatable<TRelatedEntityKey>
-	{
-		return DbContext.Set<TRelatedEntity>().Attach(TRelatedEntity.CreateRefById(id)).Entity;
-	}
+    public virtual async Task ClearTable()
+    {
+        await Entities.ExecuteDeleteAsync();
+    }
 
-	protected void UpdateEntityVersion<TTargetEntity>(TTargetEntity entityFromDb, Guid? originalVersion)
-		where TTargetEntity : notnull
-	{
-		if (entityFromDb is IHasVersion entityWithVersion)
-		{
-			entityWithVersion.Version = Guid.NewGuid();
+    // todo protected would be better!
+    public TRelatedEntity AttachById<TRelatedEntity, TRelatedEntityKey>(TRelatedEntityKey id)
+        where TRelatedEntity : Entity<TRelatedEntityKey>, IRelatedEntity<TRelatedEntity, TRelatedEntityKey>
+        where TRelatedEntityKey : notnull, IEquatable<TRelatedEntityKey>
+    {
+        return DbContext.Set<TRelatedEntity>().Attach(TRelatedEntity.CreateRefById(id)).Entity;
+    }
 
-			SetOriginalVersionQueried(entityFromDb, originalVersion);
-		}
-	}
+    protected void UpdateEntityVersion<TTargetEntity>(TTargetEntity entityFromDb, Guid? originalVersion)
+        where TTargetEntity : notnull
+    {
+        if (entityFromDb is IHasVersion entityWithVersion)
+        {
+            entityWithVersion.Version = Guid.NewGuid();
 
-	protected void UpdateEntityVersion<TTargetEntity, TSourceEntity>(TTargetEntity entityFromDb, TSourceEntity updatedEntity)
-		where TTargetEntity : notnull
-		where TSourceEntity : notnull
-	{
-		if (entityFromDb is IHasVersion entityWithVersion)
-		{
-			entityWithVersion.Version = Guid.NewGuid();
+            SetOriginalVersionQueried(entityFromDb, originalVersion);
+        }
+    }
 
-			if (updatedEntity is IHasVersionReadOnly entityWithVersionReadOnly)
-				SetOriginalVersionQueried(entityFromDb, entityWithVersionReadOnly.Version);
-		}
-	}
+    protected void UpdateEntityVersion<TTargetEntity, TSourceEntity>(TTargetEntity entityFromDb, TSourceEntity updatedEntity)
+        where TTargetEntity : notnull
+        where TSourceEntity : notnull
+    {
+        if (entityFromDb is IHasVersion entityWithVersion)
+        {
+            entityWithVersion.Version = Guid.NewGuid();
 
-	// Set queried entities version to the version of the updating entity to detect weather or not the data has changed
-	// between getting the data in the first place and updating it now
-	protected void SetOriginalVersionQueried<TTargetEntity>(TTargetEntity entityFromDb, Guid? originalVersion)
-		where TTargetEntity : notnull
-	{
-		if (originalVersion is not null)
-			DbContext.Entry(entityFromDb).OriginalValues[nameof(IHasVersion.Version)] = originalVersion;
-	}
+            if (updatedEntity is IHasVersionReadOnly entityWithVersionReadOnly)
+                SetOriginalVersionQueried(entityFromDb, entityWithVersionReadOnly.Version);
+        }
+    }
 
-	protected async Task<CrudResult> HardDeleteAsync<TSoftDeleteEntity>(TKey id, Expression<Func<TSoftDeleteEntity, bool>>? canBeDeleted = null)
-		where TSoftDeleteEntity : Entity<TKey>, ISoftDelete
-	{
-		TSoftDeleteEntity? entityToDelete = await DbContext.Set<TSoftDeleteEntity>().FirstOrDefaultAsync(WithId<TSoftDeleteEntity>(id));
+    // Set queried entities version to the version of the updating entity to detect weather or not the data has changed
+    // between getting the data in the first place and updating it now
+    protected void SetOriginalVersionQueried<TTargetEntity>(TTargetEntity entityFromDb, Guid? originalVersion)
+        where TTargetEntity : notnull
+    {
+        if (originalVersion is not null)
+            DbContext.Entry(entityFromDb).OriginalValues[nameof(IHasVersion.Version)] = originalVersion;
+    }
 
-		if (entityToDelete is null)
-			return CrudResult.NotFound(id);
+    protected async Task<CrudResult> HardDeleteAsync<TSoftDeleteEntity>(TKey id, Expression<Func<TSoftDeleteEntity, bool>>? canBeDeleted = null)
+        where TSoftDeleteEntity : Entity<TKey>, ISoftDelete
+    {
+        TSoftDeleteEntity? entityToDelete = await DbContext.Set<TSoftDeleteEntity>().FirstOrDefaultAsync(WithId<TSoftDeleteEntity>(id));
 
-		if (canBeDeleted is not null && !canBeDeleted.Compile().Invoke(entityToDelete))
-			return CrudResult.Fail("Entity can not be deleted. It is still in use.");
+        if (entityToDelete is null)
+            return CrudResult.NotFound(id);
 
-		DbContext.Set<TSoftDeleteEntity>().Remove(entityToDelete);
+        if (canBeDeleted is not null && !canBeDeleted.Compile().Invoke(entityToDelete))
+            return CrudResult.Fail("Entity can not be deleted. It is still in use.");
 
-		await DbContext.SaveChangesAsync();
+        DbContext.Set<TSoftDeleteEntity>().Remove(entityToDelete);
 
-		return CrudResult.Ok();
-	}
+        await DbContext.SaveChangesAsync();
 
-	protected async Task<bool> SaveChangesWithVersionCheckAsync()
-	{
-		try
-		{
-			await DbContext.SaveChangesAsync();
-		}
-		catch (DbUpdateConcurrencyException)
-		{
-			return false;
-		}
+        return CrudResult.Ok();
+    }
 
-		return true;
-	}
+    protected async Task<bool> SaveChangesWithVersionCheckAsync()
+    {
+        try
+        {
+            await DbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

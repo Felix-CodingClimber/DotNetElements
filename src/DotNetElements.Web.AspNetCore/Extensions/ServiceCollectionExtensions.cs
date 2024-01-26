@@ -2,7 +2,7 @@
 using DotNetElements.Core;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetElements.AspNetCore.Extensions;
+namespace DotNetElements.Web.AspNetCore.Extensions;
 
 public static class ServiceCollectionExtensions
 {

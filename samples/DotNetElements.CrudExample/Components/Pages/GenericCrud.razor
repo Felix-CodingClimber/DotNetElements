@@ -1,0 +1,364 @@
+﻿@* @page "/genericCrud"
+@using DotNetElements.CrudExample.Modules.BlogPostModule
+@using DotNetElements.CrudExample.Modules.TagModule
+@using System.Runtime.InteropServices
+
+<PageTitle>Tags</PageTitle>
+
+@if (tags is null || blogPosts is null)
+{
+	<MudText>Loading...</MudText>
+	<MudProgressLinear />
+}
+else
+{
+	<MudCard>
+		<MudCardHeader>
+			<MudText Typo="Typo.h5">Tags</MudText>
+			<MudSpacer />
+			<MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" OnClick="OnCreateNewTag" />
+		</MudCardHeader>
+
+		<MudCardContent>
+
+		</MudCardContent>
+	</MudCard>
+
+	<MudCard Class="mt-8">
+		<MudCardHeader>
+			<MudText Typo="Typo.h5">Blog Posts</MudText>
+			<MudSpacer />
+			<MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" OnClick="OnCreateNewBlogPost" />
+		</MudCardHeader>
+
+		<MudCardContent>
+			<MudSimpleTable Style="overflow-x: auto;">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Tags</th>
+						<th style="width: 140px;">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (ModelWithDetails<BlogPostModel, AuditedModelDetails> context in blogPosts)
+					{
+						<tr>
+							<td>@context.Value.Title</td>
+							<td class="py-0">
+								@foreach (TagModel tag in context.Value.Tags)
+								{
+									<MudTooltip Text="@tag.Id.ToString()">
+										<MudChip Variant="Variant.Outlined" Size="Size.Small">@tag.Label</MudChip>
+									</MudTooltip>
+								}
+							</td>
+							<td class="py-0 pl-2" style="width: 140px;">
+								<MudIconButton OnClick="() => OnEditBlogPost(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+								<MudIconButton OnClick="() => OnDeleteBlogPost(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+								<MudIconButton OnClick="() => OnShowBlogPostDetails(context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+							</td>
+						</tr>
+
+						
+						@if (context.DetailsShown && context.Details is not null)
+						{
+							<tr>
+								<td colspan="100">
+									<MudGrid Spacing="2">
+										<MudItem xs="12">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>ID</b></MudText>
+												<MudText Typo="Typo.caption">@context.Value.Id</MudText>
+											</MudStack>
+										</MudItem>
+										<MudItem xs="4">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>Creation Time</b></MudText>
+												<MudText Typo="Typo.caption">@context.Details.CreationTime</MudText>
+											</MudStack>
+										</MudItem>
+										<MudItem xs="4">
+											<MudStack Spacing="1">
+												<MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+												<MudText Typo="Typo.caption">@context.Details.LastModificationTime</MudText>
+											</MudStack>
+										</MudItem>
+									</MudGrid>
+								</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</MudSimpleTable>
+		</MudCardContent>
+	</MudCard>
+}
+
+<MudCard Class="mt-8">
+	<MudToolBar>
+		<MudButton Color="Color.Error" OnClick="OnResetDatabase">Reset Database</MudButton>
+	</MudToolBar>
+</MudCard>
+
+@code
+{
+	[Inject]
+	private ManagedTagRepository tagRepository { get; set; } = default!;
+
+	[Inject]
+	private ManagedBlogPostRepository blogPostRepository { get; set; } = default!;
+
+	[Inject]
+	private IDialogService dialogService { get; set; } = default!;
+
+	[Inject]
+	private ISnackbar snackbar { get; set; } = default!;
+
+	private IReadOnlyList<ModelWithDetails<TagModel, AuditedModelDetails>>? tags;
+	private IReadOnlyList<ModelWithDetails<BlogPostModel, AuditedModelDetails>>? blogPosts;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await UpdateTags();
+
+		await UpdateBlogPosts();
+	}
+
+	private async Task OnResetDatabase()
+	{
+		await tagRepository.ClearTable();
+		await blogPostRepository.ClearTable();
+
+		await tagRepository.CreateAsync(new Tag("Test Tag 1"));
+		await tagRepository.CreateAsync(new Tag("Test Tag 2"));
+
+		await UpdateTags();
+
+		BlogPost blogPost = new BlogPost("Test Blog Post 1", [ new EditTagModel(tags!.First().Value).MapToEntity() ]);
+		EditBlogPostModel editBlogPost = new EditBlogPostModel(blogPost.MapToModel());
+
+		await blogPostRepository.CreateAsync(editBlogPost.MapToEntity());
+
+		await UpdateBlogPosts();
+	}
+
+	private async Task OnCreateNewTag()
+	{
+		EditTagModel editTagModel = new EditTagModel();
+
+		var dialogParameters = new DialogParameters<TagInputDialog>
+		{
+			{ x => x.Tag, editTagModel }
+		};
+
+		DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+		IDialogReference dialog = await dialogService.ShowAsync<TagInputDialog>("New tag", dialogParameters, dialogOptions);
+		DialogResult result = await dialog.Result;
+
+		if (result.Canceled)
+			return;
+
+		CrudResult<Tag> createdTag = await tagRepository.CreateAsync(editTagModel.MapToEntity());
+
+		if (createdTag.IsFail)
+		{
+			snackbar.Add($"Failed to create tag.\n{createdTag.ErrorMessage}", Severity.Error);
+			return;
+		}
+
+		snackbar.Add("Tag created", Severity.Success);
+
+		await UpdateTags();
+	}
+
+	private async Task OnEditTag(TagModel tag)
+	{
+		EditTagModel editTagModel = new EditTagModel(tag);
+
+		var dialogParameters = new DialogParameters<TagInputDialog>
+		{
+			{ x => x.Tag, editTagModel }
+		};
+
+		DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+		IDialogReference dialog = await dialogService.ShowAsync<TagInputDialog>($"Edit tag {tag.Label}", dialogParameters, dialogOptions);
+		DialogResult result = await dialog.Result;
+
+		if (result.Canceled)
+			return;
+
+		CrudResult<Tag> updatedTag = await tagRepository.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
+
+		if (updatedTag.IsFail)
+		{
+			snackbar.Add($"Failed to update tag.\n{updatedTag.ErrorMessage}", Severity.Error);
+			return;
+		}
+
+		snackbar.Add("Tag updated", Severity.Success);
+
+		await UpdateTags();
+		await UpdateBlogPosts();
+	}
+
+	private async Task OnDeleteTag(TagModel tag)
+	{
+		Result confirmResult = await dialogService.ShowDeleteDialog("Delete tag?", tag.Label, "Tag");
+
+		if (confirmResult.IsFail)
+			return;
+
+		CrudResult deleteResult = await tagRepository.DeleteAsync(tag);
+
+		if(deleteResult.IsFail)
+		{
+			snackbar.Add($"Failed to delete tag.\n{deleteResult.ErrorMessage}", Severity.Error);
+			return;
+		}
+
+		snackbar.Add("Tag deleted", Severity.Success);
+
+		await UpdateTags();
+		await UpdateBlogPosts();
+	}
+
+	private async Task OnShowTagDetails(ModelWithDetails<TagModel, AuditedModelDetails> context)
+	{
+		if(context.DetailsShown)
+		{
+			context.DetailsShown = false;
+			return;
+		}
+
+		CrudResult<AuditedModelDetails> details = await tagRepository.GetAuditedModelDetailsByIdAsync<Tag>(context.Value.Id);
+
+		if(details.IsFail)
+		{
+			snackbar.Add($"Failed to fetch tag details.\n{details.ErrorMessage}", Severity.Error);
+			return;
+		}
+
+		context.Details = details.Value;
+		context.DetailsShown = true;
+	}
+
+	private async Task OnCreateNewBlogPost()
+	{
+		ArgumentNullException.ThrowIfNull(tags);
+
+		EditBlogPostModel editBlogPostModel = new EditBlogPostModel();
+
+		var dialogParameters = new DialogParameters<BlogPostInputDialog>
+		{
+			{ x => x.BlogPost, editBlogPostModel },
+			{ x => x.SelectableTags, tags.Select(tag => tag.Value).ToList() }
+		};
+
+		DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+		IDialogReference dialog = await dialogService.ShowAsync<BlogPostInputDialog>("New blog post", dialogParameters, dialogOptions);
+		DialogResult result = await dialog.Result;
+
+		if (result.Canceled)
+			return;
+
+		CrudResult<BlogPost> createdBlogPost = await blogPostRepository.CreateAsync(editBlogPostModel.MapToEntity());
+
+		if (createdBlogPost.IsFail)
+		{
+			snackbar.Add($"Failed to create blog post.\n{createdBlogPost.ErrorMessage}", Severity.Error);
+			return;
+		}
+
+		snackbar.Add("Blog post created", Severity.Success);
+
+		await UpdateBlogPosts();
+	}
+
+	private async Task OnEditBlogPost(BlogPostModel blogPost)
+	{
+		ArgumentNullException.ThrowIfNull(tags);
+
+		EditBlogPostModel editBlogPostModel = new EditBlogPostModel(blogPost);
+
+		var dialogParameters = new DialogParameters<BlogPostInputDialog>
+		{
+			{ x => x.BlogPost, editBlogPostModel },
+			{ x => x.SelectableTags, tags.Select(tag => tag.Value).ToList() }
+		};
+
+		DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+		IDialogReference dialog = await dialogService.ShowAsync<BlogPostInputDialog>($"Edit blog post {blogPost.Title}", dialogParameters, dialogOptions);
+		DialogResult result = await dialog.Result;
+
+		if (result.Canceled)
+			return;
+
+		CrudResult<BlogPost> updatedBlogPost = await blogPostRepository.UpdateAsync<BlogPost, EditBlogPostModel>(editBlogPostModel.Id, editBlogPostModel);
+
+		if (updatedBlogPost.IsFail)
+		{
+			snackbar.Add($"Failed to update blog post.\n{updatedBlogPost.ErrorMessage}", Severity.Error);
+			return;
+		}
+
+		snackbar.Add("Blog post updated", Severity.Success);
+
+		await UpdateBlogPosts();
+	}
+
+	private async Task OnDeleteBlogPost(BlogPostModel blogPost)
+	{
+		Result confirmResult = await dialogService.ShowDeleteDialog("Delete blog post?", blogPost.Title, "Blog post");
+
+		if (confirmResult.IsFail)
+			return;
+
+		CrudResult deleteResult = await blogPostRepository.DeleteAsync(blogPost);
+
+		if(deleteResult.IsFail)
+		{
+			snackbar.Add($"Failed to delete blog post.\n{deleteResult.ErrorMessage}", Severity.Error);
+			return;
+		}
+
+		snackbar.Add("Blog post deleted", Severity.Success);
+
+		await UpdateBlogPosts();
+	}
+
+	private async Task OnShowBlogPostDetails(ModelWithDetails<BlogPostModel, AuditedModelDetails> context)
+	{
+		if(context.DetailsShown)
+		{
+			context.DetailsShown = false;
+			return;
+		}
+
+		CrudResult<AuditedModelDetails> details = await blogPostRepository.GetAuditedModelDetailsByIdAsync<BlogPost>(context.Value.Id);
+
+		if(details.IsFail)
+		{
+			snackbar.Add($"Failed to fetch blog post details.\n{details.ErrorMessage}", Severity.Error);
+			return;
+		}
+
+		context.Details = details.Value;
+		context.DetailsShown = true;
+	}
+
+	private async Task UpdateTags()
+	{
+		tags = [..await tagRepository.GetAllWithProjectionAsync(query => query.MapToModelWithDetails())];
+	}
+
+	private async Task UpdateBlogPosts()
+	{
+		blogPosts = [..await blogPostRepository.GetAllWithProjectionAsync(query => query.MapToModelWithDetails())];
+	}
+}
+ *@

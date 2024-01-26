@@ -34,13 +34,12 @@ public abstract class ManagedRepository<TRepository, TEntity, TKey> : ManagedRea
 		return repository.Inner.DeleteAsync(entityToDelete);
 	}
 
-	public Task<CrudResult<TUpdatableEntity>> UpdateAsync<TUpdatableEntity, TFrom>(TKey id, TFrom from)
-		where TUpdatableEntity : Entity<TKey>, IUpdatable<TFrom>
+	public Task<CrudResult<TEntity>> UpdateAsync<TFrom>(TKey id, TFrom from)
 		where TFrom : notnull
 	{
 		using var repository = RepositoryFactory.Create();
 
-		return repository.Inner.UpdateAsync<TUpdatableEntity, TFrom>(id, from);
+		return repository.Inner.UpdateAsync(id, from);
 	}
 
 	public Task ClearTable()

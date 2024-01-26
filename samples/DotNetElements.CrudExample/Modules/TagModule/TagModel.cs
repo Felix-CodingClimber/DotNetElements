@@ -2,26 +2,28 @@
 
 public class TagModel : VersionedModel<Guid>
 {
-	public string Label { get; private init; }
+    public string Label { get; private init; }
 
-	public TagModel(Guid id, string label, Guid version) : base(id, version)
-	{
-		Label = label;
-	}
+    public TagModel(Guid id, string label, Guid version) : base(id, version)
+    {
+        Label = label;
+    }
 
-	public override string ToString() => Label;
+    public override string ToString() => Label;
 }
 
-public class EditTagModel : VersionedEditModel<Guid>
+public class EditTagModel : VersionedEditModel<TagModel, Guid>, IMapFromModel<EditTagModel, TagModel>
 {
-	public string Label { get; set; }
+    public string Label { get; set; }
 
 #nullable disable
-	public EditTagModel() : base(Guid.NewGuid()) { }
+    public EditTagModel() : base(Guid.NewGuid()) { }
 #nullable enable
 
-	public EditTagModel(TagModel tag) : base(tag.Id, tag.Version)
-	{
-		Label = tag.Label;
-	}
+    public EditTagModel(TagModel tag) : base(tag.Id, tag.Version)
+    {
+        Label = tag.Label;
+    }
+
+    public static EditTagModel MapFromModel(TagModel model) => new EditTagModel(model);
 }

@@ -16,7 +16,6 @@ public interface IRepository<TEntity, TKey> : IReadOnlyRepository<TEntity, TKey>
 	Task<CrudResult> DeleteAsync<TEntityToDelete>(TEntityToDelete entityToDelete)
 		where TEntityToDelete : IHasKey<TKey>;
 
-	Task<CrudResult<TUpdatableEntity>> UpdateAsync<TUpdatableEntity, TFrom>(TKey id, TFrom from)
-		where TUpdatableEntity : Entity<TKey>, IUpdatable<TFrom>
+    Task<CrudResult<TEntity>> UpdateAsync<TFrom>(TKey id, TFrom from)
 		where TFrom : notnull;
 }

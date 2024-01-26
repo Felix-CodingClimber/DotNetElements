@@ -3,7 +3,7 @@
 public class ModelWithDetails<TModel, TDetails>
 	where TDetails : ModelDetails
 {
-	public TModel Value { get; private init; }
+	public TModel Value { get; set; }
 
 	public TDetails? Details { get; set; }
 

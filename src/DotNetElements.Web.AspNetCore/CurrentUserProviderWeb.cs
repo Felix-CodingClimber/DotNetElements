@@ -1,7 +1,7 @@
 ﻿using DotNetElements.Core;
 using Microsoft.AspNetCore.Http;
 
-namespace DotNetElements.AspNetCore;
+namespace DotNetElements.Web.AspNetCore;
 
 public class CurrentUserProviderWeb : ICurrentUserProvider
 {

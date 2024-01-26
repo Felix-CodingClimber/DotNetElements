@@ -1,16 +1,16 @@
 ﻿namespace DotNetElements.Core;
 
 public interface IHasKey<TKey>
-	where TKey : notnull, IEquatable<TKey>
+    where TKey : notnull, IEquatable<TKey>
 {
-	TKey Id { get; }
+    TKey Id { get; }
 
-	bool HasKey => !Id.Equals(default(TKey));
+    bool HasKey => !Id.Equals(default(TKey));
 }
 
 public interface IHasVersionReadOnly
 {
-	Guid Version { get; }
+    Guid Version { get; }
 }
 
 // todo implement code analyzer to detect missing attribute
@@ -22,7 +22,17 @@ public interface IHasVersionReadOnly
 /// </summary>
 public interface IHasVersion : IHasVersionReadOnly
 {
-	Guid IHasVersionReadOnly.Version => Version;
+    Guid IHasVersionReadOnly.Version => Version;
 
-	new Guid Version { get; set; }
+    new Guid Version { get; set; }
+}
+
+public interface IMapFromModel<TEditModel, TModel>
+{
+    public static abstract TEditModel MapFromModel(TModel model);
+}
+
+public interface ICreateNew<TEditModel>
+{
+    public static abstract TEditModel Empty();
 }

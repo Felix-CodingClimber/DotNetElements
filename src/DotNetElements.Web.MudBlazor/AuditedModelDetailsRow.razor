@@ -1,0 +1,72 @@
+@inherits MudComponentBase
+
+@typeparam TKey where TKey : notnull, IEquatable<TKey>
+@typeparam TModel where TModel : IModel<TKey>
+@typeparam TDetails where TDetails : AuditedModelDetails
+
+@if (Context.DetailsShown && Context.Details is not null)
+{
+    @if (SimpleTable)
+    {
+        <tr>
+            <td colspan="100">
+                <MudGrid Spacing="2">
+                    <MudItem xs="12">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption"><b>ID</b></MudText>
+                            <MudText Typo="Typo.caption">@Context.Value.Id</MudText>
+                        </MudStack>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption"><b>Creation Time</b></MudText>
+                            <MudText Typo="Typo.caption">@Context.Details.CreationTime</MudText>
+                        </MudStack>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+                            <MudText Typo="Typo.caption">@Context.Details.LastModificationTime</MudText>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </td>
+        </tr>
+    }
+    else
+    {
+        <MudTr>
+            <MudTd colspan="100" Style="border-bottom: 3px solid var(--mud-palette-table-lines);" DataLabel="Row Details">
+                <MudGrid Spacing="2">
+                    <MudItem xs="12">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption"><b>ID</b></MudText>
+                            <MudText Typo="Typo.caption">@Context.Value.Id</MudText>
+                        </MudStack>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption"><b>Creation Time</b></MudText>
+                            <MudText Typo="Typo.caption">@Context.Details.CreationTime</MudText>
+                        </MudStack>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+                            <MudText Typo="Typo.caption">@Context.Details.LastModificationTime</MudText>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </MudTd>
+        </MudTr>
+    }
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public ModelWithDetails<TModel, TDetails> Context { get; set; } = default!;
+
+    [Parameter]
+    public bool SimpleTable { get; set; }
+}

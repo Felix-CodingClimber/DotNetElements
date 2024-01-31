@@ -1,0 +1,21 @@
+@inherits MudButton
+
+@{
+    ChildContent = @<span>Create New</span>;
+}
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code
+{
+    public CrudTableNewEntryButton()
+    {
+        StartIcon = Icons.Material.Outlined.Add;
+        Color = Color.Success;
+        Variant = Variant.Outlined;
+        Size = Size.Small;
+        Class = "ml-4";
+    }
+}

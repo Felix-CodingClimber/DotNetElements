@@ -1,0 +1,25 @@
+@if (DarkModeActive)
+{
+    <MudIconButton Icon="@Icons.Material.Filled.LightMode" Color="Color.Inherit" OnClick="@this.OnToggleDarkMode" Title="To light mode" />
+}
+else
+{
+    <MudIconButton Icon="@Icons.Material.Filled.DarkMode" Color="Color.Inherit" OnClick="@this.OnToggleDarkMode" Title="To dark mode" />
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public bool DarkModeActive { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> DarkModeActiveChanged { get; set; }
+
+    private async Task OnToggleDarkMode()
+    {
+        DarkModeActive = !DarkModeActive;
+
+        if (DarkModeActiveChanged.HasDelegate)
+            await DarkModeActiveChanged.InvokeAsync(DarkModeActive);
+    }
+}

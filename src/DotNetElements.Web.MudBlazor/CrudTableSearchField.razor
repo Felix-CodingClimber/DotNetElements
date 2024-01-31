@@ -1,0 +1,18 @@
+@inherits MudInput<string>
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code
+{
+    public CrudTableSearchField()
+    {
+        Placeholder = "Search";
+        Clearable = true;
+        Adornment = Adornment.Start;
+        AdornmentIcon = Icons.Material.Filled.Search;
+        IconSize = Size.Medium;
+        Style = "width: 40%";
+    }
+}

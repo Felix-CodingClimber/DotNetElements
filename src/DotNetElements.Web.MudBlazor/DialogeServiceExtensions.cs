@@ -2,7 +2,7 @@
 
 public static class DialogeServiceExtensions
 {
-	public static async Task<Result> ShowDeleteDialog(this IDialogService dialogService, string title, string itemValue, string itemLabel)
+	public static async Task<Result> ShowDeleteDialogAsync(this IDialogService dialogService, string title, string itemValue, string itemLabel)
 	{
 		var dialogParameters = new DialogParameters<DeleteDialog>
 		{

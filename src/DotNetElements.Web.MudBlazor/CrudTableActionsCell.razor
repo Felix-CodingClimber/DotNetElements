@@ -1,0 +1,40 @@
+@inherits MudComponentBase
+
+@typeparam TKey where TKey : notnull, IEquatable<TKey>
+@typeparam TModel where TModel : IModel<TKey>
+@typeparam TDetails where TDetails : ModelDetails
+
+@if (SimpleTable)
+{
+    <td class="py-0 pl-2" style="width: 140px;">
+        <MudIconButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+        <MudIconButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+        <MudIconButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+    </td>
+}
+else
+{
+    <MudTd Class="py-0 pl-2" Style="width: 140px;" DataLabel="Actions">
+        <MudIconButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+        <MudIconButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+        <MudIconButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+    </MudTd>
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public ModelWithDetails<TModel, TDetails> Context { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EventCallback<ModelWithDetails<TModel, TDetails>> OnEditEntry { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<ModelWithDetails<TModel, TDetails>> OnDeleteEntry { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<ModelWithDetails<TModel, TDetails>> OnShowEntryDetails { get; set; }
+
+    [Parameter]
+    public bool SimpleTable { get; set; }
+}

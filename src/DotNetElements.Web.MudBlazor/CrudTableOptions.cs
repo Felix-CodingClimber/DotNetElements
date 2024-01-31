@@ -1,6 +1,6 @@
 ﻿namespace DotNetElements.Web.MudBlazor;
 
-public class CrudTableOptions
+public class CrudTableOptions<TModel>
 {
     public string BaseEndpointUri { get; private init; }
 
@@ -16,6 +16,9 @@ public class CrudTableOptions
                 getAllEndpoint += $"/{value.TrimStart('/')}";
         }
     }
+
+    public required string DeleteEntryLabel { get; set; }
+    public required Func<TModel, string> DeleteEntryValue { get; set; }
 
     public string GetDetailsEndpoint(string id) => $"{BaseEndpointUri.TrimEnd('/')}/{id}/details";
 

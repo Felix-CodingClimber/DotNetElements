@@ -25,14 +25,14 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
 
     protected bool IsLoaded;
 
-    private readonly CrudTableOptions options;
+    private readonly CrudTableOptions<TModel> options;
 
     public CrudTable()
     {
         options = OnConfiguring();
     }
 
-    protected abstract CrudTableOptions OnConfiguring();
+    protected abstract CrudTableOptions<TModel> OnConfiguring();
 
     protected override async Task OnInitializedAsync()
     {
@@ -103,15 +103,11 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
         }
     }
 
-    protected async Task OnDeleteEntry(ModelWithDetails<TModel, TDetails> context, string modelName)
+    protected async Task OnDeleteEntry(ModelWithDetails<TModel, TDetails> context)
     {
-        bool? canDelete = await DialogService.ShowMessageBox(
-            "Attention",
-            $"Are you sure you want to delete this {modelName}?",
-            yesText: "Confirm",
-            cancelText: "Cancel");
+        Result canDelete = await DialogService.ShowDeleteDialogAsync($"Delete {options.DeleteEntryLabel}?", options.DeleteEntryValue.Invoke(context.Value), options.DeleteEntryLabel);
 
-        if (canDelete is false)
+        if (canDelete.IsFail)
             return;
 
         Result result = await HttpClient.DeleteWithResultAsync(options.BaseEndpointUri, context.Value);

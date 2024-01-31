@@ -6,6 +6,7 @@ namespace DotNetElements.Web.MudBlazor;
 
 public static class HttpClientExtensions
 {
+    // todo [Performance] Check if we can use custom Json converter for improved performance.
     public static async Task<Result<List<ModelWithDetails<TModel, TDetails>>>> GetModelWithDetailsListFromJsonAsync<TModel, TDetails>(this HttpClient httpClient, string? requestUri, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default)
         where TDetails : ModelDetails
     {
@@ -14,9 +15,12 @@ public static class HttpClientExtensions
         if (!response.IsSuccessStatusCode)
             return Result.Fail($"Get request failed with status: {response.StatusCode} and reason: {response.ReasonPhrase}");
 
-        List<ModelWithDetails<TModel, TDetails>>? returnValue = await response.Content.ReadFromJsonAsync<List<ModelWithDetails<TModel, TDetails>>>(cancellationToken);
+        List<TModel>? returnValue = await response.Content.ReadFromJsonAsync<List<TModel>>(cancellationToken);
 
-        return Result.OkIfNotNull(returnValue, $"Failed to convert response content to type ModelWithDetails<{typeof(TModel)}, {typeof(TDetails)}>");
+        if (returnValue is null)
+            return Result.Fail($"Failed to convert response content to type {typeof(TModel)}");
+
+        return returnValue.Select(model => new ModelWithDetails<TModel, TDetails>(model)).ToList();
     }
 
     public static async Task<Result<T>> GetFromJsonWithResultAsync<T>(this HttpClient httpClient, string? requestUri, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default)

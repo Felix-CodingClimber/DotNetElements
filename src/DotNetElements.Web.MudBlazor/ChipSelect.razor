@@ -1,0 +1,183 @@
+@using System.Linq.Expressions
+
+@inherits MudComponentBase
+@typeparam T
+
+<style>
+    .chipselect {
+        display: flex;
+        flex-direction: column;
+        min-height: 41px;
+        height: auto;
+    }
+
+    .chipselect-select-container {
+        position: absolute;
+        left: 0;
+        right: 14px;
+        top: 0;
+        bottom: 0;
+    }
+
+        .chipselect-select-container .mud-input-label {
+            left: 16px;
+            top: -10px;
+        }
+
+    .chipselect-select-input {
+        margin-top: 0 !important;
+        height: 41px;
+    }
+
+    .chipselect .mud-input-slot {
+        height: 100% !important;
+        padding-left: 0 !important;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .chipselect .mud-input {
+        height: 100% !important;
+    }
+
+    .chipselect .mud-input-control-input-container {
+        height: 100%;
+    }
+
+    .chipselect-chipset {
+        padding-left: 8px;
+        padding-right: 16px;
+    }
+</style>
+
+<MudField Variant="Variant.Outlined" InnerPadding="false" Label="@HasValueLabel" Class="chipselect" ErrorText="@ErrorMessage" Error="@hasErrors">
+    <MudSelect @bind-SelectedValues="selectedItemsBinding"
+               ToStringFunc="SelectedItemTextFunc"
+               DisableUnderLine="true"
+               MultiSelection="true"
+               OuterClass="chipselect-select-container"
+               InputClass="chipselect-select-input"
+               Variant="Variant.Text"
+               Margin="Margin.Dense"
+               Strict="true"
+               AnchorOrigin="Origin.BottomCenter">
+        @foreach (T item in ItemsCollection)
+        {
+            <MudSelectItem Value="@item">@SelectedItemTextFunc.Invoke(item)</MudSelectItem>
+        }
+    </MudSelect>
+    @if (HasValueLabel is not null)
+    {
+        <MudChipSet AllClosable="true" OnClose="OnSelectedChipClosed" Class="chipselect-chipset">
+            @foreach (T item in selectedItems_Internal)
+            {
+                <MudChip Value="@item" Text="@SelectedItemTextFunc.Invoke(item)" Size="Size.Small" />
+            }
+        </MudChipSet>
+    }
+    else
+    {
+        <MudText Color="Color.Inherit" Style="margin-left: 14px; margin-top: 3px; margin-bottom: 4px">@Label</MudText>
+    }
+</MudField>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public IEnumerable<T> ItemsCollection { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Func<T, string> SelectedItemTextFunc { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public List<T> SelectedItems { get; set; } = default!;
+
+    // todo update logic 2 (check which of the two update logics are better)
+    // [Parameter]
+    // public EventCallback<List<T>> SelectedItemsChanged { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    [Parameter]
+    public int? MinSelectedItems { get; set; }
+
+    [Parameter]
+    public int? MaxSelectedItems { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private HashSet<T> selectedItems_Internal = [];
+    private IEnumerable<T> selectedItemsBinding
+    {
+        get => selectedItems_Internal;
+        set
+        {
+            selectedItems_Internal = (HashSet<T>)value;
+            SelectedItems.Clear();
+            SelectedItems.AddRange(value);
+
+            // todo update logic 2 (check which of the two update logics are better)
+            // SelectedItems = [..value];
+            // if (SelectedItemsChanged.HasDelegate)
+            //     SelectedItemsChanged.InvokeAsync(SelectedItems).AndForget();
+
+            UpdateState();
+        }
+    }
+
+    private string? HasValueLabel;
+
+    private bool hasErrors;
+
+    protected override void OnInitialized()
+    {
+        selectedItems_Internal = [.. SelectedItems];
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ErrorMessage is null)
+        {
+            ErrorMessage = $"The {Label} field {(Required ? "is required" : "")} {(MinSelectedItems is not null || MaxSelectedItems is not null ? "and" : ".")} must contain {(MaxSelectedItems is not null ? $"between {MinSelectedItems} and {MaxSelectedItems}" : MinSelectedItems)} values.";
+        }
+    }
+
+    public bool IsValid()
+    {
+        bool isValid = true;
+
+        if (Required)
+            isValid = isValid && selectedItems_Internal.Count > 0;
+
+        if (MinSelectedItems is not null)
+            isValid = isValid && selectedItems_Internal.Count >= MinSelectedItems;
+
+        if (MaxSelectedItems is not null)
+            isValid = isValid && selectedItems_Internal.Count <= MaxSelectedItems;
+
+        hasErrors = !isValid;
+
+        return isValid;
+    }
+
+    private void OnSelectedChipClosed(MudChip chip)
+    {
+        selectedItems_Internal.Remove((T)chip.Value);
+        SelectedItems.Remove((T)chip.Value);
+
+        UpdateState();
+    }
+
+    private void UpdateState()
+    {
+        IsValid();
+
+        HasValueLabel = selectedItems_Internal.Count > 0 ? Label : null;
+    }
+}

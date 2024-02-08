@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace DotNetElements.Core;
 
@@ -12,6 +13,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
     protected TimeProvider TimeProvider { get; private init; }
 
     protected static readonly RelatedEntitiesAttribute? RelatedEntities = typeof(TEntity).GetCustomAttribute<RelatedEntitiesAttribute>();
+    protected static readonly RelatedEntitiesCollectionsAttribute? RelatedEntitiesCollections = typeof(TEntity).GetCustomAttribute<RelatedEntitiesCollectionsAttribute>();
 
     public Repository(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider) : base(dbContext)
     {
@@ -35,18 +37,11 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         if (entity is ICreationAuditedEntity<TKey> auditedEntity)
             auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-        var createdEntity = Entities.Attach(entity);
+        EntityEntry<TEntity> createdEntity = Entities.Attach(entity);
 
         await DbContext.SaveChangesAsync();
 
-        // todo, review this part. Maybe add parameter returnRelatedEntities?
-        // (Was needed, so referenced entities got included when returning entity)
-        // Check if we can batch the loadings
-        if (RelatedEntities is not null)
-        {
-            foreach (string relatedProperty in RelatedEntities.ReferenceProperties)
-                await createdEntity.Reference(relatedProperty).LoadAsync();
-        }
+        await LoadRelatedEntities(createdEntity);
 
         return createdEntity.Entity;
     }
@@ -71,7 +66,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
             if (entity is ICreationAuditedEntity<TKey> auditedEntity)
                 auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
 
-            var createdEntity = DbContext.Set<TSelf>().Attach(entity);
+            EntityEntry<TSelf> createdEntity = DbContext.Set<TSelf>().Attach(entity);
 
             await DbContext.SaveChangesAsync();
 
@@ -130,14 +125,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
                 return CrudResult.ConcurrencyConflict();
         }
 
-        // todo, review this part. Maybe add parameter returnRelatedEntities?
-        // (Was needed, so referenced entities got updated/included)
-        // Check if we can batch the loadings
-        if (RelatedEntities is not null)
-        {
-            foreach (string relatedProperty in RelatedEntities.ReferenceProperties)
-                await DbContext.Entry(existingEntity).Reference(relatedProperty).LoadAsync();
-        }
+        await LoadRelatedEntities(existingEntity);
 
         return CrudResult.OkIfNotNull(existingEntity, CrudError.Unknown);
     }
@@ -257,5 +245,28 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         }
 
         return true;
+    }
+
+    private Task LoadRelatedEntities(TEntity entity)
+    {
+        return LoadRelatedEntities(DbContext.Entry(entity));
+    }
+
+    // todo, review loading related entities. Maybe add parameter returnRelatedEntities?
+    // (Was needed, so referenced entities got included when returning entity)
+    // Check if we can batch the loadings
+    private static async Task LoadRelatedEntities(EntityEntry<TEntity> entity)
+    {
+        if (RelatedEntities is not null)
+        {
+            foreach (string relatedProperty in RelatedEntities.ReferenceProperties)
+                await entity.Reference(relatedProperty).LoadAsync();
+        }
+
+        if (RelatedEntitiesCollections is not null)
+        {
+            foreach (string relatedProperty in RelatedEntitiesCollections.ReferenceProperties)
+                await entity.Collection(relatedProperty).LoadAsync();
+        }
     }
 }

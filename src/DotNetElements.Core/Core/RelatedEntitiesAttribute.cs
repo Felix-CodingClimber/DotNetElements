@@ -11,3 +11,15 @@ public class RelatedEntitiesAttribute : Attribute
 
 	}
 }
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+public class RelatedEntitiesCollectionsAttribute : Attribute
+{
+    public string[] ReferenceProperties { get; private init; }
+
+    public RelatedEntitiesCollectionsAttribute(string[] referenceProperties)
+    {
+        ReferenceProperties = referenceProperties;
+
+    }
+}

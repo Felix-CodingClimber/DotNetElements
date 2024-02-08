@@ -5,6 +5,7 @@ public static class CrudTable
     public static readonly DialogOptions DefaultEditDialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true };
 }
 
+// todo used CrudService
 public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog> : MudComponentBase
     where TKey : notnull, IEquatable<TKey>
     where TModel : IModel<TKey>
@@ -131,7 +132,7 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
             return;
         }
 
-        Result<TDetails> details = await HttpClient.GetFromJsonWithResultAsync<TDetails>(string.Format(options.GetDetailsEndpoint(context.Value.Id.ToString()), context.Value.Id));
+        Result<TDetails> details = await HttpClient.GetFromJsonWithResultAsync<TDetails>(options.GetDetailsEndpoint(context.Value.Id.ToString()));
 
         if (details.IsFail)
         {
@@ -145,7 +146,7 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
 
     protected async Task UpdateEntries()
     {
-        Result<List<ModelWithDetails<TModel, TDetails>>> result = await HttpClient.GetModelWithDetailsListFromJsonAsync<TModel, TDetails>(options.GetAllEndpoint);
+        Result<List<ModelWithDetails<TModel, TDetails>>> result = await HttpClient.GetModelWithDetailsListFromJsonAsync<TModel, TDetails>(options.GetAllWithDetailsEndpoint);
 
         if (result.IsFail)
         {

@@ -1,7 +1,7 @@
 ﻿namespace DotNetElements.Core;
 
 public interface IModel<TKey> : IHasKey<TKey>
-        where TKey : notnull, IEquatable<TKey>;
+    where TKey : notnull, IEquatable<TKey>;
 
 public interface IEditModel<TModel, TKey>
     where TModel : Model<TKey>

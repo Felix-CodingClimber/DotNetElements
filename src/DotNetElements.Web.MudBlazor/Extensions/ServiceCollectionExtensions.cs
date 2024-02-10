@@ -10,6 +10,11 @@ public static class ServiceCollectionExtensions
         where TDetails : ModelDetails
         where TEditModel : IMapFromModel<TEditModel, TModel>, ICreateNew<TEditModel>
     {
+        // todo consider using the options pattern
+        // Action<CrudOptions<TModel>> configureOptions as parameter
+        // Call services.Configure(configureOptions);
+        // In CrudService inject a IOptions<CrudOptions<TModel>>
+
         services.AddScoped<ICrudService<TKey, TModel, TDetails, TEditModel>>(provider => new CrudService<TKey, TModel, TDetails, TEditModel>(
             provider.GetRequiredService<ISnackbar>(),
             provider.GetRequiredService<HttpClient>(),

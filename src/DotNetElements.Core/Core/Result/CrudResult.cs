@@ -8,6 +8,11 @@ public enum CrudError
 	ConcurrencyConflict,
 }
 
+// todo make abstract base class with TErrorCodeEnum as type parameter
+// and where TErrorCodeEnum is enum constraint
+// Inherited classes can provide custom error codes
+// Error codes should be used to communicate errors back to client
+
 public readonly partial struct CrudResult : IResult
 {
 	public bool IsFail { get; }

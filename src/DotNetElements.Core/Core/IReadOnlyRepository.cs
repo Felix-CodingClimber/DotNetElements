@@ -47,7 +47,12 @@ public interface IReadOnlyRepository<TEntity, TKey>
 		Expression<Func<TEntity, bool>>? filter = null,
 		CancellationToken cancellationToken = default);
 
-	Task<CrudResult<TProjection>> GetByIdWithProjectionAsync<TProjection>(
+    Task<CrudResult<TProjection>> GetFilteredWithProjectionAsync<TProjection>(
+        Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
+        Expression<Func<TEntity, bool>> filter,
+		CancellationToken cancellationToken = default);
+
+    Task<CrudResult<TProjection>> GetByIdWithProjectionAsync<TProjection>(
 		TKey id,
 		Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
 		Expression<Func<TEntity, bool>>? filter = null,

@@ -182,6 +182,19 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         return DbContext.Set<TRelatedEntity>().Attach(TRelatedEntity.CreateRefById(id)).Entity;
     }
 
+    protected async Task<CrudResult> UpdateAsync(TEntity entity)
+    {
+        if (entity is IAuditedEntity<TKey> auditedEntity)
+            auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+
+        UpdateEntityVersion(entity, entity);
+
+        if (!await SaveChangesWithVersionCheckAsync())
+            return CrudResult.ConcurrencyConflict();
+
+        return CrudResult.Ok();
+    }
+
     protected void UpdateEntityVersion<TTargetEntity>(TTargetEntity entityFromDb, Guid? originalVersion)
         where TTargetEntity : notnull
     {

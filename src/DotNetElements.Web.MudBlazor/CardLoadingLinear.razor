@@ -1,0 +1,15 @@
+@inherits MudProgressLinear
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code
+{
+    public CardLoadingLinear()
+    {
+        Color = Color.Primary;
+        Indeterminate = true;
+        Class = "my-4";
+    }
+}

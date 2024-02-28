@@ -1,0 +1,53 @@
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.JSInterop
+
+@implements IDisposable
+
+<NavigationLock ConfirmExternalNavigation="@(fieldsChanged && !CanNavigate)" OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+
+@code
+{
+    [Inject]
+    private IJSRuntime jsRuntime { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EditContext[] EditContexts { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public bool CanNavigate { get; set; }
+
+    private bool fieldsChanged = false;
+
+    public void Dispose()
+    {
+        foreach (EditContext editContext in EditContexts)
+            editContext.OnFieldChanged -= OnEditContextFieldChanged;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        foreach (EditContext editContext in EditContexts)
+            editContext.OnFieldChanged += OnEditContextFieldChanged;
+    }
+
+    private void OnEditContextFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        fieldsChanged = true;
+    }
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        if (CanNavigate || !fieldsChanged)
+            return;
+
+        bool proceed = await jsRuntime.InvokeAsync<bool>("confirm", "Changes you made may not be saved.");
+
+        if (proceed)
+            return;
+
+        context.PreventNavigation();
+    }
+}

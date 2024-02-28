@@ -109,7 +109,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
             return CrudResult.NotFound(id);
 
         if (existingEntity is not IUpdatable<TFrom> updatableEntity)
-            throw new InvalidOperationException("UpdateAsync<TFrom> is only supported for entities implementing IUpdatable<TFrom>.");
+            throw new InvalidOperationException($"UpdateAsync<TFrom> is only supported for entities implementing IUpdatable<{typeof(TFrom)}>.");
 
         updatableEntity.Update(from, this);
 

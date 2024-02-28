@@ -8,6 +8,7 @@ public interface ICrudService<TKey, TModel, TDetails, TEditModel>
 {
     Task<Result<TModel>> CreateEntryAsync(TEditModel editModel);
     Task<Result> DeleteEntryAsync(TModel model);
+    Task<Result<TModel>> GetEntryByIdAsync(TKey id);
     Task<Result<List<TModel>>> GetAllEntriesAsync();
     Task<Result<List<ModelWithDetails<TModel, TDetails>>>> GetAllEntriesWithDetailsAsync();
     Task<Result> GetEntryDetailsAsync(ModelWithDetails<TModel, TDetails> modelWithDetails);
@@ -82,6 +83,21 @@ public class CrudService<TKey, TModel, TDetails, TEditModel> : ICrudService<TKey
         else
         {
             Snackbar.Add("Failed to delete entry", Severity.Error);
+        }
+
+        return result;
+    }
+
+    public virtual async Task<Result<TModel>> GetEntryByIdAsync(TKey id)
+    {
+        Result<TModel> result = await HttpClient.GetFromJsonWithResultAsync<TModel>(Options.GetByIdEndpoint(id));
+
+        // todo add logging
+        // todo wrap Snackbar call in bool option NotifyUser
+        // todo add function OnDeleteSuccess
+        if (result.IsFail)
+        {
+            Snackbar.Add("Failed to fetch entry from server", Severity.Error);
         }
 
         return result;

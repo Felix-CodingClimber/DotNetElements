@@ -10,7 +10,7 @@ public class CrudOptions<TModel>
         get => getAllEndpoint;
         init
         {
-            getAllEndpoint = $"{BaseEndpointUri.TrimEnd('/')}";
+            getAllEndpoint = $"{BaseEndpointUri}";
 
             if (!string.IsNullOrEmpty(value))
                 getAllEndpoint += $"/{value.TrimStart('/')}";
@@ -23,18 +23,19 @@ public class CrudOptions<TModel>
         get => getAllWithDetailsEndpoint;
         init
         {
-            getAllWithDetailsEndpoint = $"{BaseEndpointUri.TrimEnd('/')}";
+            getAllWithDetailsEndpoint = $"{BaseEndpointUri}";
 
             if (!string.IsNullOrEmpty(value))
                 getAllWithDetailsEndpoint += $"/{value.TrimStart('/')}";
         }
     }
 
-    public string GetDetailsEndpoint(string id) => $"{BaseEndpointUri.TrimEnd('/')}/{id}/details";
+    public string GetDetailsEndpoint<TKey>(TKey id) => $"{BaseEndpointUri}/{id}/details";
+    public string GetByIdEndpoint<TKey>(TKey id) => $"{BaseEndpointUri}/{id}";
 
     public CrudOptions(string baseEndpointUri)
     {
-        BaseEndpointUri = baseEndpointUri;
+        BaseEndpointUri = baseEndpointUri.TrimEnd('/');
         GetAllEndpoint = "";
         GetAllWithDetailsEndpoint = "";
     }

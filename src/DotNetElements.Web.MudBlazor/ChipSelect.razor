@@ -93,6 +93,9 @@
     [Parameter, EditorRequired]
     public List<T> SelectedItems { get; set; } = default!;
 
+    [Parameter, EditorRequired]
+    public Func<IEnumerable<T>> InitialSelectedItemsFunc { get; set; } = default!;
+
     // todo update logic 2 (check which of the two update logics are better)
     // [Parameter]
     // public EventCallback<List<T>> SelectedItemsChanged { get; set; }
@@ -137,7 +140,7 @@
 
     protected override void OnInitialized()
     {
-        selectedItems_Internal = [.. SelectedItems];
+        selectedItemsBinding = new HashSet<T>(InitialSelectedItemsFunc.Invoke());
     }
 
     protected override void OnParametersSet()

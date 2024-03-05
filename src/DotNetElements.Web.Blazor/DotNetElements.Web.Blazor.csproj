@@ -6,6 +6,13 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <Compile Remove="ImageCropper\**" />
+	  <Content Remove="ImageCropper\**" />
+	  <EmbeddedResource Remove="ImageCropper\**" />
+	  <None Remove="ImageCropper\**" />
+	</ItemGroup>
+
 	<!-- Use to debug razor source generator -->
 	<!--<PropertyGroup>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>

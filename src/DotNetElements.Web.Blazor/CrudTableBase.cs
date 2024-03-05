@@ -1,4 +1,4 @@
-﻿namespace DotNetElements.Web.MudBlazor;
+﻿namespace DotNetElements.Web.Blazor;
 
 // todo use CrudService
 public abstract class CrudTable<TKey, TModel, TDetails, TEditModel> : MudComponentBase

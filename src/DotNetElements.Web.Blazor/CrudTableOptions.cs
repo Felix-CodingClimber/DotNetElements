@@ -1,4 +1,4 @@
-﻿namespace DotNetElements.Web.MudBlazor;
+﻿namespace DotNetElements.Web.Blazor;
 
 public class CrudTableOptions<TModel> : CrudOptions<TModel>
 {

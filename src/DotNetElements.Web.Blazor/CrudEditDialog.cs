@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
-namespace DotNetElements.Web.MudBlazor;
+namespace DotNetElements.Web.Blazor;
 
 public class CrudEditDialog<TModel, TEditModel> : MudDialog
 {

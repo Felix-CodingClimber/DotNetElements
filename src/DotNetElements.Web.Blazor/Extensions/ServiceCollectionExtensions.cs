@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetElements.Web.MudBlazor.Extensions;
+namespace DotNetElements.Web.Blazor.Extensions;
 
 public static class ServiceCollectionExtensions
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-namespace DotNetElements.Web.MudBlazor;
+namespace DotNetElements.Web.Blazor;
 
 public static class Environment
 {

@@ -1,4 +1,4 @@
-﻿namespace DotNetElements.Web.MudBlazor;
+﻿namespace DotNetElements.Web.Blazor;
 
 public interface ICrudService<TKey, TModel, TDetails, TEditModel>
     where TKey : notnull, IEquatable<TKey>

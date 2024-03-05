@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace DotNetElements.Web.MudBlazor.Extensions;
+namespace DotNetElements.Web.Blazor.Extensions;
 
 public static class EditContextExtensions
 {

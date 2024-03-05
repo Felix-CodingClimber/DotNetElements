@@ -1,0 +1,50 @@
+@inherits MudComponentBase
+
+<MudStack Row="true" Style="@Style" Class="@Class">
+    <MudStack>
+        <div>
+            <MudText>Uploaded Images</MudText>
+        </div>
+        <div style="overflow-y: auto">
+            <MudList @bind-SelectedValue="selectedImage" Clickable="true">
+                @foreach (string imageFilePath in FilePaths)
+                {
+                    <MudListItem Value="imageFilePath">
+                        <MudPaper Class="d-flex align-center flex-column">
+                            <MudIconButton OnClick="OnDeleteImage" Icon="@Icons.Material.Rounded.Delete" Color="Color.Error" Size="Size.Small" Style="position: absolute; right: 20px; top: 16px;" />
+                            <MudImage Src="@imageFilePath" Height="ThumbnailSize" Width="ThumbnailSize" ObjectFit="ObjectFit.Contain" />
+                            <MudText>@imageFilePath</MudText>
+                        </MudPaper>
+                    </MudListItem>
+                }
+            </MudList>
+        </div>
+        <div>
+            <DneImageUpload OnImageUploaded="OnImageUploaded" ShowImagePreview="false" />
+        </div>
+    </MudStack>
+    <div>
+        <MudImage Src="@(selectedImage as string)" Height="300" ObjectFit="ObjectFit.Contain" />
+    </div>
+</MudStack>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> FilePaths { get; set; } = default!;
+
+    [Parameter]
+    public int ThumbnailSize { get; set; } = 128;
+
+    private object? selectedImage;
+
+    private void OnDeleteImage()
+    {
+
+    }
+
+    private void OnImageUploaded(ImageData imageData)
+    {
+
+    }
+}

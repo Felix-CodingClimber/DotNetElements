@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace DotNetElements.Web.MudBlazor;
+namespace DotNetElements.Web.Blazor;
 
 public static class HttpClientExtensions
 {

@@ -1,50 +1,183 @@
 @inherits MudComponentBase
+@typeparam TImage where TImage : class, IImage
+@typeparam TEditImage where TEditImage : class, IEditImage, IMapFromModel<TEditImage, TImage>
 
-<MudStack Row="true" Style="@Style" Class="@Class">
-    <MudStack>
-        <div>
-            <MudText>Uploaded Images</MudText>
-        </div>
-        <div style="overflow-y: auto">
-            <MudList @bind-SelectedValue="selectedImage" Clickable="true">
-                @foreach (string imageFilePath in FilePaths)
+<style>
+    .image-browser-container {
+        display: grid;
+        max-height: calc(100vh - 200px);
+        height: calc(100vh - 200px);
+        grid-template-columns: 1fr repeat(2, 1.5fr);
+        grid-template-rows: auto 3fr auto;
+        grid-column-gap: 16px;
+        grid-row-gap: 16px;
+        grid-template-areas:
+            "image-list-header preview-header preview-header"
+            "image-list preview preview"
+            "image-list upload image-info"
+    }
+</style>
+
+<div style="@Style" class="@(Class + " image-browser-container")">
+    <MudText Style="grid-area: image-list-header">Uploaded Images</MudText>
+    <MudPaper Outlined="true" Elevation="0" style="overflow-y: auto; grid-area: image-list">
+        <MudList SelectedValueChanged="OnSelectedImageChanged" Clickable="true">
+            @foreach (TImage image in Images)
+            {
+                <MudListItem Value="image">
+                    <MudPaper Class="d-flex align-center flex-column">
+                        <MudIconButton OnClick="() => OnDeleteImage_Internal(image)" Icon="@Icons.Material.Rounded.Delete" Color="Color.Error" Size="Size.Small" Style="position: absolute; right: 20px; top: 16px;" />
+                        <MudImage Src="@($"data/images/{image.StoredFileName}")" Height="ThumbnailSize" Width="ThumbnailSize" ObjectFit="ObjectFit.Contain" />
+                        <MudText>@image.FileName</MudText>
+                    </MudPaper>
+                </MudListItem>
+            }
+        </MudList>
+    </MudPaper>
+    <MudText Style="grid-area: preview-header">Image Preview</MudText>
+    <MudPaper Outlined="true" Elevation="0" Class="pa-4 d-flex" Style="grid-area: preview; max-height: calc(100vh - 460px);">
+        @if (selectedImage is not null)
+        {
+            if (isNewImage && selectedImage.Data is not null)
+            {
+                <MudImage Src="@selectedImage.GetBase64Preview()" ObjectFit="ObjectFit.Contain" Style="height: auto; max-width: 100%;" />
+            }
+            else
+            {
+                <MudImage Src="@($"data/images/{selectedImage.StoredFileName}")" ObjectFit="ObjectFit.Contain" Style="height: auto; max-width: 100%;" />
+            }
+        }
+    </MudPaper>
+    <MudPaper Outlined="true" Elevation="0" Style="grid-area: upload">
+        <DneImageUpload OnImageUploaded="OnImageUploaded_Internal" ShowImagePreview="false" />
+    </MudPaper>
+    <MudPaper Outlined="true" Elevation="0" Style="grid-area: image-info;" Class="pa-4 d-flex flex-column justify-space-between ">
+        @if (selectedImage is not null)
+        {
+            <div class="d-flex flex-column gap-2">
+                <p>Image info</p>
+                <MudTextField Value="selectedImage.FileName" Variant="Variant.Outlined" Label="File Name" Margin="Margin.Dense" ReadOnly="true" />
+                <EditForm EditContext="@selectedImageEditContext">
+                    <DneDataAnnotationsValidator />
+                    <MudTextField @bind-Value="selectedImage.AlternateText" For="() => selectedImage.AlternateText" Variant="Variant.Outlined" Label="Alternate Text" Margin="Margin.Dense" ReadOnly="@(!isImageInfoEditModeActive)" Required="true" />
+                </EditForm>
+            </div>
+            <div>
+                @if (isImageInfoEditModeActive)
                 {
-                    <MudListItem Value="imageFilePath">
-                        <MudPaper Class="d-flex align-center flex-column">
-                            <MudIconButton OnClick="OnDeleteImage" Icon="@Icons.Material.Rounded.Delete" Color="Color.Error" Size="Size.Small" Style="position: absolute; right: 20px; top: 16px;" />
-                            <MudImage Src="@imageFilePath" Height="ThumbnailSize" Width="ThumbnailSize" ObjectFit="ObjectFit.Contain" />
-                            <MudText>@imageFilePath</MudText>
-                        </MudPaper>
-                    </MudListItem>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" EndIcon="@Icons.Material.Rounded.Save" OnClick="OnImageSaved_Internal">Save</MudButton>
                 }
-            </MudList>
-        </div>
-        <div>
-            <DneImageUpload OnImageUploaded="OnImageUploaded" ShowImagePreview="false" />
-        </div>
-    </MudStack>
-    <div>
-        <MudImage Src="@(selectedImage as string)" Height="300" ObjectFit="ObjectFit.Contain" />
-    </div>
-</MudStack>
+                else
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Warning" Size="Size.Small" EndIcon="@Icons.Material.Rounded.Edit" OnClick="() => isImageInfoEditModeActive = true">Edit</MudButton>
+                }
+            </div>
+        }
+    </MudPaper>
+</div>
 
 @code
 {
     [Parameter, EditorRequired]
-    public IReadOnlyList<string> FilePaths { get; set; } = default!;
+    public List<TImage> Images { get; set; } = default!;
 
     [Parameter]
     public int ThumbnailSize { get; set; } = 128;
 
-    private object? selectedImage;
+    [Parameter, EditorRequired]
+    public EventCallback<ImageAction<TImage>> OnDeleteImageAsync { get; set; }
 
-    private void OnDeleteImage()
+    [Parameter, EditorRequired]
+    public EventCallback<ImageAction<TEditImage, TImage>> OnImageUploadedAsync { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<ImageAction<TEditImage, TImage>> OnImageSavedAsync { get; set; }
+
+    private TEditImage? selectedImage;
+    private EditContext? selectedImageEditContext;
+
+    private bool isImageInfoEditModeActive;
+    private bool isNewImage;
+
+    private void OnSelectedImageChanged(object selectedValue)
     {
+        isNewImage = false;
+        isImageInfoEditModeActive = false;
 
+        selectedImage = TEditImage.MapFromModel((TImage)selectedValue);
+        selectedImageEditContext = new EditContext(selectedImage);
     }
 
-    private void OnImageUploaded(ImageData imageData)
+    private async Task OnDeleteImage_Internal(TImage image)
     {
+        if (!OnDeleteImageAsync.HasDelegate)
+            return;
 
+        ImageAction<TImage> imageAction = new(image);
+        await OnDeleteImageAsync.InvokeAsync(imageAction);
+
+        if (imageAction.Result?.IsOk is not true)
+            return;
+
+        Images.Remove(image);
+
+        // todo not working
+        if (selectedImage?.Id.Equals(image.Id) is true)
+            ResetSelectedImage();
+    }
+
+    private void OnImageUploaded_Internal(ImageData imageData)
+    {
+        selectedImage = TEditImage.CreateFromData(imageData, "") as TEditImage;
+
+        ArgumentNullException.ThrowIfNull(selectedImage);
+
+        selectedImageEditContext = new EditContext(selectedImage);
+        isNewImage = true;
+        isImageInfoEditModeActive = true;
+    }
+
+    private async Task OnImageSaved_Internal()
+    {
+        ArgumentNullException.ThrowIfNull(selectedImage);
+
+        if (selectedImageEditContext?.Validate() is not true || !OnImageSavedAsync.HasDelegate)
+            return;
+
+        if (isNewImage)
+        {
+            ImageAction<TEditImage, TImage> imageAction = new(selectedImage);
+            await OnImageUploadedAsync.InvokeAsync(imageAction);
+
+            if (imageAction.Result?.IsOk is not true)
+                return;
+
+            ResetSelectedImage();
+            Images.Add(imageAction.Result.Value.Value);
+        }
+        else
+        {
+            ImageAction<TEditImage, TImage> imageAction = new(selectedImage);
+            await OnImageSavedAsync.InvokeAsync(imageAction);
+
+            if (imageAction.Result?.IsOk is not true)
+                return;
+
+            int index = Images.FindIndex(image => image.Id == imageAction.Result.Value.Value.Id);
+
+            if (index == -1)
+                throw new ArgumentException($"Index of image with Id {imageAction.Result.Value.Value.Id} not found");
+
+            Images[index] = imageAction.Result.Value.Value;
+            ResetSelectedImage();
+        }
+    }
+
+    private void ResetSelectedImage()
+    {
+        isNewImage = false;
+        isImageInfoEditModeActive = false;
+        selectedImage = null;
+        selectedImageEditContext = null;
     }
 }

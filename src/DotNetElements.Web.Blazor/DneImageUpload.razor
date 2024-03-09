@@ -1,7 +1,7 @@
 @inherits MudComponentBase
 
-<div class="@($"{dragClass} {Class}")" style="@($"{Style}; display:flex; flex-direction: column; border-color: var(--mud-palette-lines-inputs); border-width: 1px; border-radius: var(--mud-default-borderradius);")">
-    <label style="position: absolute; display: block; padding: 0 5px; align-self: start; transform-origin: top left; transform: translate(14px,-7px) scale(.75); line-height: 18px; font-size: 1rem; font-weight: 400; color: var(--mud-palette-text-primary); background-color: var(--mud-palette-surface);">@Label</label>
+@* <div class="@($"{dragClass} {Class}")" style="@($"{Style}; display:flex; flex-direction: column; border-color: var(--mud-palette-lines-inputs); border-width: 1px; border-radius: var(--mud-default-borderradius);")">
+    <label style="position: absolute; display: block; padding: 0 5px; align-self: start; transform-origin: top left; transform: translate(14px,-7px) scale(.75); line-height: 18px; font-size: 1rem; font-weight: 400; color: var(--mud-palette-text-primary); background-color: var(--mud-palette-surface);">@Label</label> *@
     <MudFileUpload T="IBrowserFile" FilesChanged="OnUploadPreviewImage"
                    Hidden="@false"
                    InputStyle="opacity: 0"
@@ -39,7 +39,7 @@
             </div>
         </ButtonTemplate>
     </MudFileUpload>
-</div>
+@* </div> *@
 
 @code
 {

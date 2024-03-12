@@ -1,0 +1,21 @@
+@using System.Linq.Expressions
+@inherits MudField
+@typeparam TValue
+
+<div>
+    @{
+        base.BuildRenderTree(__builder);
+    }
+    <div class="mud-input-control-helper-container px-2 ">
+        <ValidationMessage class="mud-input-helper-text mud-input-error" For="@For" />
+    </div>
+</div>
+
+@code
+{
+    //
+    // Summary:
+    //     Specifies the field for which validation messages should be displayed.
+    [Parameter]
+    public Expression<Func<TValue>>? For { get; set; }
+}

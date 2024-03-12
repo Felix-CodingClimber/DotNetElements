@@ -2,7 +2,7 @@
 
 public static class CrudTable
 {
-    public static readonly DialogOptions DefaultEditDialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true };
+    public static DialogOptions DefaultEditDialogOptions => new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true };
 }
 
 // todo use CrudService
@@ -25,7 +25,7 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
             { x => x.ApiEndpoint, Options.BaseEndpointUri }
         };
 
-        var dialog = await DialogService.ShowAsync<TEditDialog>("New entry", parameters);
+        var dialog = await DialogService.ShowAsync<TEditDialog>("New entry", parameters, Options.EditDialogOptions);
         var result = await dialog.Result;
 
         if (result.Canceled)
@@ -52,7 +52,7 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
         {
             { x => x.IsEditMode, true },
             { x => x.Model, editModel },
-            { x => x.EditContext, new EditContext(context.Value) },
+            { x => x.EditContext, new EditContext(editModel) },
             { x => x.ApiEndpoint, Options.BaseEndpointUri }
         };
 

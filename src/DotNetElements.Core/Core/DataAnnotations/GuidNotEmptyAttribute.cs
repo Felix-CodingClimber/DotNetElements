@@ -4,13 +4,19 @@
 public class GuidNotEmptyAttribute : ValidationAttribute
 {
     public const string DefaultErrorMessage = "The {0} field must not be empty";
-    public GuidNotEmptyAttribute() : base(DefaultErrorMessage) { }
+
+    private readonly bool allowNull;
+
+    public GuidNotEmptyAttribute(bool allowNull = false) : base(DefaultErrorMessage)
+    {
+        this.allowNull = allowNull;
+    }
 
     public override bool IsValid(object? value)
     {
         // NotEmpty doesn't necessarily mean required
         if (value is null)
-            return true;
+            return allowNull;
 
         return value switch
         {

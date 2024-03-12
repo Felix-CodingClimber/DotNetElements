@@ -33,15 +33,13 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
                 return CrudResult.DuplicateEntry();
         }
 
-        // Set audit properties if needed
-        if (entity is ICreationAuditedEntity<TKey> auditedEntity)
-            auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+        SetCreationAudited(entity);
 
         EntityEntry<TEntity> createdEntity = Entities.Attach(entity);
 
         await DbContext.SaveChangesAsync();
 
-        await LoadRelatedEntities(createdEntity);
+        await LoadRelatedEntities(createdEntity.Entity);
 
         return createdEntity.Entity;
     }
@@ -62,9 +60,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
                     return CrudResult.DuplicateEntry();
             }
 
-            // Set audit properties if needed
-            if (entity is ICreationAuditedEntity<TKey> auditedEntity)
-                auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+            SetCreationAudited(entity);
 
             EntityEntry<TSelf> createdEntity = DbContext.Set<TSelf>().Attach(entity);
 
@@ -85,8 +81,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
             // Check if entity has changed and set audit properties if needed
             if (DbContext.ChangeTracker.HasChanges())
             {
-                if (existingEntity is IAuditedEntity<TKey> auditedEntity)
-                    auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+                SetModificationAudited(existingEntity);
 
                 UpdateEntityVersion(existingEntity, entity);
 
@@ -116,8 +111,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         // Check if entity has changed and set audit properties if needed
         if (DbContext.ChangeTracker.HasChanges())
         {
-            if (existingEntity is IAuditedEntity<TKey> auditedEntity)
-                auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+            SetModificationAudited(existingEntity);
 
             UpdateEntityVersion(existingEntity, from);
 
@@ -182,10 +176,9 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         return DbContext.Set<TRelatedEntity>().Attach(TRelatedEntity.CreateRefById(id)).Entity;
     }
 
-    protected async Task<CrudResult> UpdateAsync(TEntity entity)
+    protected async Task<CrudResult> UpdateAndSaveAsync(TEntity entity)
     {
-        if (entity is IAuditedEntity<TKey> auditedEntity)
-            auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+        SetModificationAudited(entity);
 
         UpdateEntityVersion(entity, entity);
 
@@ -217,6 +210,18 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
             if (updatedEntity is IHasVersionReadOnly entityWithVersionReadOnly)
                 SetOriginalVersionQueried(entityFromDb, entityWithVersionReadOnly.Version);
         }
+    }
+
+    protected void SetCreationAudited<TCreationAuditedEntity>(TCreationAuditedEntity entity)
+    {
+        if (entity is ICreationAuditedEntity<Guid> auditedEntity)
+            auditedEntity.SetCreationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
+    }
+
+    protected void SetModificationAudited<TModificationAuditedEntity>(TModificationAuditedEntity entity)
+    {
+        if (entity is IAuditedEntity<TKey> auditedEntity)
+            auditedEntity.SetModificationAudited(CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow());
     }
 
     // Set queried entities version to the version of the updating entity to detect weather or not the data has changed
@@ -260,7 +265,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         return true;
     }
 
-    private Task LoadRelatedEntities(TEntity entity)
+    protected Task LoadRelatedEntities(TEntity entity)
     {
         return LoadRelatedEntities(DbContext.Entry(entity));
     }

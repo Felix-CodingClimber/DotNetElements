@@ -21,18 +21,21 @@
 <div style="@Style" class="@(Class + " image-browser-container")">
     <MudText Style="grid-area: image-list-header">Uploaded Images</MudText>
     <MudPaper Outlined="true" Elevation="0" style="overflow-y: auto; grid-area: image-list">
-        <MudList SelectedValueChanged="OnSelectedImageChanged" Clickable="true">
-            @foreach (TImage image in Images)
-            {
-                <MudListItem Value="image">
-                    <MudPaper Class="d-flex align-center flex-column">
-                        <MudIconButton OnClick="() => OnDeleteImage_Internal(image)" Icon="@Icons.Material.Rounded.Delete" Color="Color.Error" Size="Size.Small" Style="position: absolute; right: 20px; top: 16px;" />
-                        <MudImage Src="@($"data/images/{image.StoredFileName}")" Height="ThumbnailSize" Width="ThumbnailSize" ObjectFit="ObjectFit.Contain" />
-                        <MudText>@image.FileName</MudText>
-                    </MudPaper>
-                </MudListItem>
-            }
-        </MudList>
+        @if (Images is not null)
+        {
+            <MudList SelectedValueChanged="OnSelectedImageChanged" Clickable="true">
+                @foreach (TImage image in Images)
+                {
+                    <MudListItem Value="image">
+                        <MudPaper Class="d-flex align-center flex-column">
+                            <MudIconButton OnClick="() => OnDeleteImage_Internal(image)" Icon="@Icons.Material.Rounded.Delete" Color="Color.Error" Size="Size.Small" Style="position: absolute; right: 20px; top: 16px;" />
+                            <MudImage Src="@($"data/images/{image.StoredFileName}")" Height="ThumbnailSize" Width="ThumbnailSize" ObjectFit="ObjectFit.Contain" />
+                            <MudText>@image.FileName</MudText>
+                        </MudPaper>
+                    </MudListItem>
+                }
+            </MudList>
+        }
     </MudPaper>
     <MudText Style="grid-area: preview-header">Image Preview</MudText>
     <MudPaper Outlined="true" Elevation="0" Class="pa-4 d-flex" Style="grid-area: preview; max-height: calc(100vh - 460px);">
@@ -57,10 +60,13 @@
             <div class="d-flex flex-column gap-2">
                 <p>Image info</p>
                 <MudTextField Value="selectedImage.FileName" Variant="Variant.Outlined" Label="File Name" Margin="Margin.Dense" ReadOnly="true" />
-                <EditForm EditContext="@selectedImageEditContext">
-                    <DneDataAnnotationsValidator />
-                    <MudTextField @bind-Value="selectedImage.AlternateText" For="() => selectedImage.AlternateText" Variant="Variant.Outlined" Label="Alternate Text" Margin="Margin.Dense" ReadOnly="@(!isImageInfoEditModeActive)" Required="true" />
-                </EditForm>
+                @if (selectedImageEditContext is not null)
+                {
+                    <EditForm EditContext="@selectedImageEditContext">
+                        <DneDataAnnotationsValidator />
+                        <MudTextField @bind-Value="selectedImage.AlternateText" For="() => selectedImage.AlternateText" Variant="Variant.Outlined" Label="Alternate Text" Margin="Margin.Dense" ReadOnly="@(!isImageInfoEditModeActive)" Required="true" />
+                    </EditForm>
+                }
             </div>
             <div>
                 @if (isImageInfoEditModeActive)
@@ -79,7 +85,7 @@
 @code
 {
     [Parameter, EditorRequired]
-    public List<TImage> Images { get; set; } = default!;
+    public List<TImage>? Images { get; set; }
 
     [Parameter]
     public int ThumbnailSize { get; set; } = 128;
@@ -93,23 +99,33 @@
     [Parameter, EditorRequired]
     public EventCallback<ImageAction<TEditImage, TImage>> OnImageSavedAsync { get; set; }
 
+    [Parameter]
+    public TImage? SelectedImage { get; set; }
+    [Parameter]
+    public EventCallback<TImage?> SelectedImageChanged { get; set; }
+
     private TEditImage? selectedImage;
     private EditContext? selectedImageEditContext;
 
     private bool isImageInfoEditModeActive;
     private bool isNewImage;
 
-    private void OnSelectedImageChanged(object selectedValue)
+    private async Task OnSelectedImageChanged(object selectedValue)
     {
         isNewImage = false;
         isImageInfoEditModeActive = false;
 
         selectedImage = TEditImage.MapFromModel((TImage)selectedValue);
         selectedImageEditContext = new EditContext(selectedImage);
+
+        SelectedImage = (TImage)selectedValue;
+        await SelectedImageChanged.InvokeAsync(SelectedImage);
     }
 
     private async Task OnDeleteImage_Internal(TImage image)
     {
+        ArgumentNullException.ThrowIfNull(Images);
+
         if (!OnDeleteImageAsync.HasDelegate)
             return;
 
@@ -121,7 +137,6 @@
 
         Images.Remove(image);
 
-        // todo not working
         if (selectedImage?.Id.Equals(image.Id) is true)
             ResetSelectedImage();
     }
@@ -133,13 +148,16 @@
         ArgumentNullException.ThrowIfNull(selectedImage);
 
         selectedImageEditContext = new EditContext(selectedImage);
-        isNewImage = true;
         isImageInfoEditModeActive = true;
+        isNewImage = true;
     }
 
     private async Task OnImageSaved_Internal()
     {
         ArgumentNullException.ThrowIfNull(selectedImage);
+
+        if (Images is null)
+            Images = [];
 
         if (selectedImageEditContext?.Validate() is not true || !OnImageSavedAsync.HasDelegate)
             return;

@@ -53,5 +53,5 @@ public interface IEditImage : IModel<Guid>
 
     public string? GetBase64Preview() => Data is not null ? $"data:Image/*;base64,{Convert.ToBase64String(Data)}" : null;
 
-    public static abstract IEditImage CreateFromData(ImageData data, string AlternateText);
+    public static abstract object CreateFromData(ImageData data, string AlternateText);
 }

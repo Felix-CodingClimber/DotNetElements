@@ -60,12 +60,16 @@ public class CrudEditDialog<TModel, TEditModel> : MudDialog
 
 	private async Task OnSubmit()
 	{
-		bool isValid = EditContext?.Validate() is true;
+		OnBeforeValidate();
+
+        bool isValid = EditContext?.Validate() is true;
 
 		if (!isValid)
 			return;
 
-		Result<TModel> result;
+        OnAfterValidate();
+
+        Result<TModel> result;
 
 		if (IsEditMode)
 			result = await HttpClient.PostAsJsonWithResultAsync<TEditModel, TModel>(ApiEndpoint, Model!);
@@ -79,4 +83,7 @@ public class CrudEditDialog<TModel, TEditModel> : MudDialog
 	{
 		Dialog?.Cancel();
 	}
+
+	protected virtual void OnBeforeValidate() { }
+    protected virtual void OnAfterValidate() { }
 }

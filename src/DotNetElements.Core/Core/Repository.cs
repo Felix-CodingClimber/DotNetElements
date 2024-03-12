@@ -12,6 +12,8 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
     protected ICurrentUserProvider CurrentUserProvider { get; private init; }
     protected TimeProvider TimeProvider { get; private init; }
 
+    protected static readonly RelatedEntitiesOnUpdateAttribute? RelatedEntitiesOnUpdate = typeof(TEntity).GetCustomAttribute<RelatedEntitiesOnUpdateAttribute>();
+
     protected static readonly RelatedEntitiesAttribute? RelatedEntities = typeof(TEntity).GetCustomAttribute<RelatedEntitiesAttribute>();
     protected static readonly RelatedEntitiesCollectionsAttribute? RelatedEntitiesCollections = typeof(TEntity).GetCustomAttribute<RelatedEntitiesCollectionsAttribute>();
 
@@ -71,7 +73,9 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         else
         {
             // Update existing entity
-            TSelf? existingEntity = await DbContext.Set<TSelf>().FirstOrDefaultAsync(WithId<TSelf>(id));
+            IQueryable<TSelf> query = LoadRelatedEntitiesOnUpdate(DbContext.Set<TSelf>());
+
+            TSelf? existingEntity = await query.FirstOrDefaultAsync(WithId<TSelf>(id));
 
             if (existingEntity is null)
                 return CrudResult.NotFound(id);
@@ -98,7 +102,9 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
     {
         ThrowHelper.ThrowIfDefault(id);
 
-        TEntity? existingEntity = await Entities.FirstOrDefaultAsync(WithId(id));
+        IQueryable<TEntity> query = LoadRelatedEntitiesOnUpdate(Entities);
+
+        TEntity? existingEntity = await query.FirstOrDefaultAsync(WithId(id));
 
         if (existingEntity is null)
             return CrudResult.NotFound(id);
@@ -263,6 +269,17 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         }
 
         return true;
+    }
+
+    protected IQueryable<TUpdatedEntity> LoadRelatedEntitiesOnUpdate<TUpdatedEntity>(IQueryable<TUpdatedEntity> query)
+        where TUpdatedEntity : Entity<TKey>
+    {
+        if (RelatedEntitiesOnUpdate is not null)
+        {
+            foreach (string relatedProperty in RelatedEntitiesOnUpdate.ReferenceProperties)
+                query = query.Include(relatedProperty);
+        }
+        return query;
     }
 
     protected Task LoadRelatedEntities(TEntity entity)

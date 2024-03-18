@@ -110,6 +110,15 @@
     private bool isImageInfoEditModeActive;
     private bool isNewImage;
 
+    protected override void OnInitialized()
+    {
+        if (SelectedImage is null)
+            return;
+
+        selectedImage = TEditImage.MapFromModel((TImage)SelectedImage);
+        selectedImageEditContext = new EditContext(selectedImage);
+    }
+
     private async Task OnSelectedImageChanged(object selectedValue)
     {
         isNewImage = false;

@@ -1,0 +1,20 @@
+@inherits MudCheckBox<bool>
+
+<style>
+    .dne-check-box .mud-button-root {
+        padding: 0;
+        margin-right: 8px;
+    }
+</style>
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code
+{
+    public DneCheckBox()
+    {
+        Class = "dne-check-box";
+    }
+}

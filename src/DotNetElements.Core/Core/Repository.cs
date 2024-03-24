@@ -175,10 +175,17 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
     }
 
     // todo protected would be better!
-    public TRelatedEntity AttachById<TRelatedEntity, TRelatedEntityKey>(TRelatedEntityKey id)
+    public TRelatedEntity AttachById<TRelatedEntity, TRelatedEntityKey>(TRelatedEntityKey id, bool checkAlreadyTracked = false)
         where TRelatedEntity : Entity<TRelatedEntityKey>, IRelatedEntity<TRelatedEntity, TRelatedEntityKey>
         where TRelatedEntityKey : notnull, IEquatable<TRelatedEntityKey>
     {
+        if (checkAlreadyTracked)
+        {
+            EntityEntry? existingEntity = DbContext.ChangeTracker.Entries().FirstOrDefault(entity => entity.Entity is TRelatedEntity relatedEntity && relatedEntity.Id.Equals(id));
+            if (existingEntity is not null)
+                return (TRelatedEntity)existingEntity.Entity;
+        }
+
         return DbContext.Set<TRelatedEntity>().Attach(TRelatedEntity.CreateRefById(id)).Entity;
     }
 

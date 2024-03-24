@@ -9,7 +9,9 @@ public interface ICrudService<TKey, TModel, TDetails, TEditModel>
     Task<Result<TModel>> CreateEntryAsync(TEditModel editModel);
     Task<Result> DeleteEntryAsync(TModel model);
     Task<Result<TModel>> GetEntryByIdAsync(TKey id);
+    Task<Result<IReadOnlyList<TModel>>> GetAllEntriesReadOnlyAsync();
     Task<Result<List<TModel>>> GetAllEntriesAsync();
+    Task<Result<IReadOnlyList<ModelWithDetails<TModel, TDetails>>>> GetAllEntriesWithDetailsReadOnlyAsync();
     Task<Result<List<ModelWithDetails<TModel, TDetails>>>> GetAllEntriesWithDetailsAsync();
     Task<Result> GetEntryDetailsAsync(ModelWithDetails<TModel, TDetails> modelWithDetails);
     Task<Result<TModel>> UpdateEntryAsync(TEditModel editModel);
@@ -121,6 +123,21 @@ public class CrudService<TKey, TModel, TDetails, TEditModel> : ICrudService<TKey
         return detailsResult;
     }
 
+    public virtual async Task<Result<IReadOnlyList<TModel>>> GetAllEntriesReadOnlyAsync()
+    {
+        Result<IReadOnlyList<TModel>> result = await HttpClient.GetFromJsonWithResultAsync<IReadOnlyList<TModel>>(Options.GetAllEndpoint);
+
+        // todo add logging
+        // todo wrap Snackbar call in bool option NotifyUser
+        // todo add function OnDeleteSuccess
+        if (result.IsFail)
+        {
+            Snackbar.Add("Failed to fetch entries from server", Severity.Error);
+        }
+
+        return result;
+    }
+
     public virtual async Task<Result<List<TModel>>> GetAllEntriesAsync()
     {
         Result<List<TModel>> result = await HttpClient.GetFromJsonWithResultAsync<List<TModel>>(Options.GetAllEndpoint);
@@ -134,6 +151,21 @@ public class CrudService<TKey, TModel, TDetails, TEditModel> : ICrudService<TKey
         }
 
         return result;
+    }
+
+    public virtual async Task<Result<IReadOnlyList<ModelWithDetails<TModel, TDetails>>>> GetAllEntriesWithDetailsReadOnlyAsync()
+    {
+        Result<List<ModelWithDetails<TModel, TDetails>>> result = await HttpClient.GetModelWithDetailsListFromJsonAsync<TModel, TDetails>(Options.GetAllEndpoint);
+
+        // todo add logging
+        // todo wrap Snackbar call in bool option NotifyUser
+        // todo add function OnDeleteSuccess
+        if (result.IsFail)
+        {
+            Snackbar.Add("Failed to fetch entries from server", Severity.Error);
+        }
+
+        return Result.Ok(result.Value as IReadOnlyList<ModelWithDetails<TModel, TDetails>>);
     }
 
     public virtual async Task<Result<List<ModelWithDetails<TModel, TDetails>>>> GetAllEntriesWithDetailsAsync()

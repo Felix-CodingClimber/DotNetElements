@@ -1,0 +1,45 @@
+﻿@using DotNetElements.Core.StringDiff
+
+@if (Diff?.HasDifferences is true)
+{
+    <table cellpadding="0" cellspacing="0">
+
+        @foreach (DiffPiece diffLine in Diff.Lines)
+        {
+            <tr>
+                <td>
+                    @(diffLine.Position?.ToString() ?? " ");
+                </td>
+                <td>
+                    <span style="@GetDiffLineStyle(diffLine)">
+                        @diffLine.Text
+                    </span>
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <span>No differences found</span>
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public InlineDiffModel Diff { get; set; } = default!;
+
+    // todo tmp
+    private string GetDiffLineStyle(DiffPiece diffLine)
+    {
+        return diffLine.Type switch
+        {
+            ChangeType.Unchanged => "",
+            ChangeType.Deleted => "background-color: red;",
+            ChangeType.Inserted => "background-color: green;",
+            ChangeType.Imaginary => "background-color: gray;",
+            ChangeType.Modified => "background-color: yellow;",
+            _ => throw new NotImplementedException(nameof(diffLine.Type)),
+        };
+    }
+}

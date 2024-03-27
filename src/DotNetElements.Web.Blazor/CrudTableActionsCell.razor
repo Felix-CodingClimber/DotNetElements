@@ -6,18 +6,20 @@
 
 @if (SimpleTable)
 {
-    <td class="py-0 pl-2" style="width: 140px;">
-        <MudIconButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
-        <MudIconButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
-        <MudIconButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+    <td class="py-0 pl-2" style="@($"width: {Width}px;")">
+        <CrudTableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+        <CrudTableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+        <CrudTableActionsButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+        @ChildContent
     </td>
 }
 else
 {
-    <MudTd Class="py-0 pl-2" Style="width: 140px;" DataLabel="Actions">
-        <MudIconButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
-        <MudIconButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
-        <MudIconButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+    <MudTd Class="py-0 pl-2" Style="@($"width: {Width}px;")" DataLabel="Actions">
+        <CrudTableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+        <CrudTableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+        <CrudTableActionsButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+        @ChildContent
     </MudTd>
 }
 
@@ -37,4 +39,10 @@ else
 
     [Parameter]
     public bool SimpleTable { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public int Width { get; set; } = 140;
 }

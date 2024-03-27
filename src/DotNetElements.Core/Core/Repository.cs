@@ -100,7 +100,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
     public virtual async Task<CrudResult<TEntity>> UpdateAsync<TFrom>(TKey id, TFrom from)
         where TFrom : notnull
     {
-        ThrowHelper.ThrowIfDefault(id);
+        ThrowIf.Default(id);
 
         IQueryable<TEntity> query = LoadRelatedEntitiesOnUpdate(Entities);
 

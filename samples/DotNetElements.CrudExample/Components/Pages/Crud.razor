@@ -238,7 +238,7 @@ else
 		if (result.Canceled)
 			return;
 
-		CrudResult<Tag> updatedTag = await tagRepository.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
+		CrudResult<Tag> updatedTag = await tagRepository.UpdateAsync<EditTagModel>(editTagModel.Id, editTagModel);
 
 		if (updatedTag.IsFail)
 		{
@@ -346,7 +346,7 @@ else
 		if (result.Canceled)
 			return;
 
-		CrudResult<BlogPost> updatedBlogPost = await blogPostRepository.UpdateAsync<BlogPost, EditBlogPostModel>(editBlogPostModel.Id, editBlogPostModel);
+		CrudResult<BlogPost> updatedBlogPost = await blogPostRepository.UpdateAsync<EditBlogPostModel>(editBlogPostModel.Id, editBlogPostModel);
 
 		if (updatedBlogPost.IsFail)
 		{

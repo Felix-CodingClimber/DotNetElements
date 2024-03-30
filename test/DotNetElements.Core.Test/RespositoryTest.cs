@@ -79,7 +79,7 @@ public class ReadOnlyRepositoryTest
 			factory.TimeProvider.SetUtcNow(utcUpdateTime);
 			factory.UserProvider.SetCurrentUserId(updateUserId);
 
-			CrudResult<Tag> result = await tagRepo.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
+			CrudResult<Tag> result = await tagRepo.UpdateAsync<EditTagModel>(editTagModel.Id, editTagModel);
 
 			// todo valide result here (see CreateAsync Test)
 		}
@@ -131,7 +131,7 @@ public class ReadOnlyRepositoryTest
 				Label = "Updated Label User 2"
 			};
 
-			await tagRepo.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
+			await tagRepo.UpdateAsync<EditTagModel>(editTagModel.Id, editTagModel);
 		}
 
 		// Assert update fails for user 1
@@ -143,7 +143,7 @@ public class ReadOnlyRepositoryTest
 				Label = "Updated Label User 1"
 			};
 
-			CrudResult<Tag> result = await tagRepo.UpdateAsync<Tag, EditTagModel>(editTagModel.Id, editTagModel);
+			CrudResult<Tag> result = await tagRepo.UpdateAsync<EditTagModel>(editTagModel.Id, editTagModel);
 
 			result.IsFail.Should().BeTrue();
 			result.ErrorCode.Should().Be(CrudError.ConcurrencyConflict);

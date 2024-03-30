@@ -26,7 +26,7 @@ public sealed class BlogPostModule : IModule
 
 		endpoints.MapPost(BaseUrl, async (EditBlogPostModel blogPost, BlogPostRepository blogPostRepo) =>
 		{
-			CrudResult<BlogPost> result = await blogPostRepo.UpdateAsync<BlogPost, EditBlogPostModel>(blogPost.Id, blogPost);
+			CrudResult<BlogPost> result = await blogPostRepo.UpdateAsync<EditBlogPostModel>(blogPost.Id, blogPost);
 
 			return result.MapToHttpResultWithProjection(entity => entity.MapToModel());
 		});

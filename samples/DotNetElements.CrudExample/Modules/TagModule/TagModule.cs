@@ -26,7 +26,7 @@ public sealed class TagModule : IModule
 
 		endpoints.MapPost(BaseUrl, async (EditTagModel tag, TagRepository tagRepo) =>
 		{
-			CrudResult<Tag> result = await tagRepo.UpdateAsync<Tag, EditTagModel>(tag.Id, tag);
+			CrudResult<Tag> result = await tagRepo.UpdateAsync<EditTagModel>(tag.Id, tag);
 
 			return result.MapToHttpResultWithProjection(entity => entity.MapToModel());
 		});

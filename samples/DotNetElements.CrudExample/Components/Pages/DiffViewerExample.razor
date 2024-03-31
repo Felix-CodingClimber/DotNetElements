@@ -1,0 +1,31 @@
+﻿@page "/diffViewer"
+@using DotNetElements.Core.StringDiff
+@using DotNetElements.Web.Blazor.DiffViewer
+
+<PageTitle>Diff viewer example</PageTitle>
+
+<h1>Diff viewer example</h1>
+
+<MudTextField AutoGrow="true" Lines="5" MaxLines="10" @bind-Value="textA" Variant="Variant.Outlined" Label="Text A" />
+<MudTextField AutoGrow="true" Lines="5" MaxLines="10" @bind-Value="textB" Variant="Variant.Outlined" Label="Text B" Class="mt-4" />
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnShowDiff" Class="mt-4">Show Diff</MudButton>
+
+<MudText Typo="Typo.h5" Class="my-4">Diff Result</MudText>
+<DiffViewer Diff="diff" />
+
+@code
+{
+    private SideBySideDiffModel? diff;
+
+    private string? textA;
+    private string? textB;
+
+    private void OnShowDiff()
+    {
+        if (string.IsNullOrWhiteSpace(textA) || string.IsNullOrWhiteSpace(textB))
+            return;
+
+        SideBySideDiffBuilder diffBuilder = new();
+        diff = diffBuilder.Diff(textA, textB);
+    }
+}

@@ -26,28 +26,24 @@
     private SideBySideDiffModel? diff;
 
     private string? textA =
-    @"
-        unchanged 1
-        unchanged 2
-        Huhu 1
-        test abc test1 abc
-        deleted
-        here is a unchanged line
-    ";
+@"unchanged 1
+unchanged 2
+Huhu 1
+test abc test1 abc
+deleted
+here is a unchanged line";
 
     private string? textB =
-    @"
-        unchanged 1
-        unchanged 2
-        Huhu 2
-        blub abc test2 abc
-        
-        new test 1
-        new test 2
-        new test 3
-        here is a unchanged line
-        but this is new again
-    ";
+@"unchanged 1
+unchanged 2
+Huhu 2
+blub abc test2 abc
+
+new test 1
+new test 2
+new test 3
+here is a unchanged line
+but this is new again";
 
     private void OnShowDiff()
     {

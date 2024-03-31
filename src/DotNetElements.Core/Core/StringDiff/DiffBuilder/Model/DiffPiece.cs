@@ -1,4 +1,6 @@
-﻿namespace DotNetElements.Core.StringDiff;
+﻿using System.Diagnostics;
+
+namespace DotNetElements.Core.StringDiff;
 
 public enum ChangeType
 {
@@ -73,4 +75,6 @@ public class DiffPiece : IEquatable<DiffPiece>
 
         return true;
     }
+
+    public override string ToString() => $"DiffPiece {{ {nameof(Position)} = {Position}, {nameof(Type)} = {Type}, {nameof(Text)} = {Text}, {nameof(SubPieces)} = List<{nameof(DiffPiece)}>(Count = {SubPieces?.Count})";
 }

@@ -2,91 +2,124 @@
 
 @if (Diff?.OldText.HasDifferences is true || Diff?.NewText.HasDifferences is true)
 {
-	<table cellpadding="0" cellspacing="0">
+    <table cellpadding="0" cellspacing="0" style="font-family: monospace, monospace; line-height: 1.5rem;">
+        <tr>
+            <th colspan="3" align="left" style="padding-left: 10px; border-bottom: 1px solid gray">Old &rarr; New</th>
+        </tr>
 
-		@foreach ((DiffPiece oldPiece, DiffPiece newPiece) in Diff.OldText.Lines.Zip(Diff.NewText.Lines))
-		{
-			<tr style="@(oldPiece.Type is ChangeType.Unchanged ? "" : "background-color: #FDF2D0;")">
-				<td>
-					@(oldPiece.Position?.ToString() ?? newPiece.Position?.ToString() ?? "");
-				</td>
-				<td style="padding-left: 16px;">
-					@if (oldPiece.Type is ChangeType.Unchanged)
-					{
-						<span style="@GetDiffStyle(oldPiece)">
-							@oldPiece.Text
-						</span>
-					}
-					else
-					{
-						@if (oldPiece.SubPieces.Count > 0)
-						{
-							@foreach (DiffPiece oldSubPiece in oldPiece.SubPieces)
-							{
-								<span style="@GetDiffStyle(oldSubPiece)">
-									@oldSubPiece.Text
-								</span>
-							}
-						}
-						else
-						{
-							<span style="@GetDiffStyle(oldPiece)">
-								@oldPiece.Text
-							</span>
-						}
-					}
-				</td>
-			</tr>
+        @foreach ((DiffPiece oldLine, DiffPiece newLine) in Diff.OldText.Lines.Zip(Diff.NewText.Lines))
+        {
+            @if (oldLine.Type is not ChangeType.Imaginary)
+            {
+                hasOldLine = true;
 
-			@if (newPiece.Type is not ChangeType.Unchanged)
-			{
-				<tr style="background-color: #DDEEDD">
-					<td>
-						@(newPiece.Position?.ToString() ?? "");
-					</td>
-					<td style="padding-left: 16px;">
-						@if (newPiece.SubPieces.Count > 0)
-						{
-							@foreach (DiffPiece newSubPiece in newPiece.SubPieces)
-							{
-								<span style="@GetDiffStyle(newSubPiece)">
-									@newSubPiece.Text
-								</span>
-							}
-						}
-						else
-						{
-							<span style="@GetDiffStyle(newPiece)">
-								@newPiece.Text
-							</span>
-						}
-					</td>
-				</tr>
-			}
-		}
-	</table>
+                <tr style="@GetOldDiffLineStyle(oldLine)">
+                    <td style="width: 64px; vertical-align: middle; padding-left: 10px; padding-right: 10px; border-right: 1px solid gray" align="left">
+                        @(oldLine.Position?.ToString() ?? "")
+                    </td>
+                    <td style="width: 32px; vertical-align: middle;" align="center">
+                        @if (oldLine.Type is not ChangeType.Unchanged)
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td style="vertical-align: middle;">
+                        @if (oldLine.Type is ChangeType.Unchanged)
+                        {
+                            <span style="@GetDiffPieceStyle(oldLine)">
+                                @oldLine.Text
+                            </span>
+                        }
+                        else
+                        {
+                            @if (oldLine.SubPieces.Count > 0)
+                            {
+                                @foreach (DiffPiece oldSubPiece in oldLine.SubPieces)
+                                {
+                                    <span style="@GetDiffPieceStyle(oldSubPiece)">
+                                        @oldSubPiece.Text
+                                    </span>
+                                }
+                            }
+                            else
+                            {
+                                <span style="@GetDiffPieceStyle(oldLine)">
+                                    @oldLine.Text
+                                </span>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+            else
+            {
+                hasOldLine = false;
+            }
+
+            @if (newLine.Type is not ChangeType.Unchanged and not ChangeType.Imaginary)
+            {
+                <tr style="@GetNewDiffLineStyle(newLine)">
+                    <td style="width: 64px; vertical-align: middle; padding-left: 10px; padding-right: 10px; border-right: 1px solid gray" align="right">
+                        @(newLine.Position?.ToString() ?? "")
+                    </td>
+                    <td style="width: 32px; vertical-align: middle;" align="center">
+                        <span>+</span>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        @if (newLine.SubPieces.Count > 0)
+                        {
+                            @foreach (DiffPiece newSubPiece in newLine.SubPieces)
+                            {
+                                <span style="@GetDiffPieceStyle(newSubPiece)">
+                                    @newSubPiece.Text
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <span style="@GetDiffPieceStyle(newLine)">
+                                @newLine.Text
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </table>
 }
 else
 {
-	<span>No differences found</span>
+    <span>No differences found</span>
 }
 
 @code
 {
-	[Parameter, EditorRequired]
-	public SideBySideDiffModel Diff { get; set; } = default!;
+    [Parameter, EditorRequired]
+    public SideBySideDiffModel Diff { get; set; } = default!;
 
-	// todo tmp
-	private string GetDiffStyle(DiffPiece diffLine)
-	{
-		return diffLine.Type switch
-		{
-			ChangeType.Unchanged => "",
-			ChangeType.Deleted => "background-color: #FFB6BA; border-radius: 10%; line-height: 1.5rem; padding: 1px 2px;",
-			ChangeType.Inserted => "background-color: #97F295; border-radius: 10%; line-height: 1.5rem; padding: 1px 2px;",
-			ChangeType.Imaginary => "background-color: #F8FAFD; border-radius: 10%; line-height: 1.5rem; padding: 1px 2px;",
-			ChangeType.Modified => "background-color: #FFB6BA; border-radius: 10%; line-height: 1.5rem; padding: 1px 2px;",
-			_ => throw new NotImplementedException(nameof(diffLine.Type)),
-		};
-	}
+    private bool hasOldLine;
+
+    private string GetOldDiffLineStyle(DiffPiece diffLine)
+    {
+        return diffLine.Type is ChangeType.Unchanged ? "" : "background-color: #FDF2D0;";
+    }
+
+    private string GetNewDiffLineStyle(DiffPiece diffLine)
+    {
+        return $"background-color: {(hasOldLine ? "#DDEEDD" : "#DDFFDD")}";
+    }
+
+    // todo only use for color. Move other styles to html
+    private string GetDiffPieceStyle(DiffPiece piece)
+    {
+        return piece.Type switch
+        {
+            ChangeType.Unchanged => "",
+            ChangeType.Deleted => "background-color: #FFB6BA; border-radius: 10%; padding: 1px 2px;",
+            ChangeType.Inserted => "background-color: #97F295; border-radius: 10%; padding: 1px 2px;",
+            ChangeType.Imaginary => "border-radius: 10%; padding: 1px 2px;",
+            ChangeType.Modified => "background-color: #FFB6BA; border-radius: 10%; padding: 1px 2px;",
+            _ => throw new NotImplementedException(nameof(piece.Type)),
+        };
+    }
 }

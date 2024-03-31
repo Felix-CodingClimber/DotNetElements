@@ -1,0 +1,90 @@
+﻿@using DotNetElements.Core.StringDiff
+
+<tr style="background-color: @BackgroundColor;">
+    <td style="width: 96px; vertical-align: middle; padding-left: 10px; padding-right: 10px; border-right: 1px solid var(--mud-palette-table-lines)" align="@(IsNewVersion ? "right" : "left")">
+        @if (ChangeType is ChangeType.Unchanged)
+        {
+            <div style="display: flex; justify-content: space-between;">
+                <span>@(Position.ToString() ?? "")</span>
+                <span>@(Position.ToString() ?? "")</span>
+            </div>
+        }
+        else
+        {
+            @(Position.ToString() ?? "")
+        }
+
+    </td>
+    <td style="width: 32px; vertical-align: middle;" align="center">
+        @if (IsNewVersion)
+        {
+            <span>+</span>
+        }
+        else if (ChangeType is not ChangeType.Unchanged)
+        {
+            <span>-</span>
+        }
+    </td>
+    <td style="vertical-align: middle;">
+        @if (ChangeType is ChangeType.Unchanged)
+        {
+            <span style="@GetDiffPieceStyle(ChangeType)">
+                @Text
+            </span>
+        }
+        else
+        {
+            @if (SubPieces?.Count > 0)
+            {
+                @foreach (DiffPiece subPiece in SubPieces)
+                {
+                    <span style="@GetDiffPieceStyle(subPiece.Type)">
+                        @subPiece.Text
+                    </span>
+                }
+            }
+            else
+            {
+                <span style="@GetDiffPieceStyle(ChangeType)">
+                    @Text
+                </span>
+            }
+        }
+    </td>
+</tr>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public string BackgroundColor { get; set; } = default!;
+
+    [Parameter]
+    public bool IsNewVersion { get; set; }
+
+    [Parameter, EditorRequired]
+    public ChangeType ChangeType { get; set; }
+
+    [Parameter, EditorRequired]
+    public int? Position { get; set; }
+
+    [Parameter, EditorRequired]
+    public string? Text { get; set; }
+
+    [Parameter, EditorRequired]
+    public List<DiffPiece>? SubPieces { get; set; }
+
+    private string GetDiffPieceStyle(ChangeType changeType)
+    {
+        if (changeType is ChangeType.Unchanged)
+            return "";
+
+        string style = "border-radius: 10%; padding: 1px 4px;";
+
+        if (changeType is ChangeType.Deleted or ChangeType.Modified)
+            style += " background-color: #FFB6BA;";
+        else if (changeType is ChangeType.Inserted)
+            style += "background-color: #97F295;";
+
+        return style;
+    }
+}

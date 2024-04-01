@@ -48,11 +48,11 @@ else
 
     private string GetOldDiffLineBackground(DiffPiece diffLine)
     {
-        return diffLine.Type is ChangeType.Unchanged or ChangeType.Imaginary ? "" : "#FDF2D0;";
+        return diffLine.Type is ChangeType.Unchanged or ChangeType.Imaginary ? $"var({DnePalette.DiffLineUnchanged})" : $"var({DnePalette.DiffLineOld})";
     }
 
     private string GetNewDiffLineBackground(DiffPiece diffLine)
     {
-        return diffLine.Type is ChangeType.Unchanged ? "" : "#DDFFDD";
+        return diffLine.Type is ChangeType.Unchanged ? $"var({DnePalette.DiffLineUnchanged})" : $"var({DnePalette.DiffLineNew})";
     }
 }

@@ -94,9 +94,9 @@
         string style = "border-radius: 10%; padding: 1px 4px;";
 
         if (changeType is ChangeType.Deleted or ChangeType.Modified)
-            style += " background-color: #FFB6BA;";
+            style += $" background-color: var({DnePalette.DiffPieceDeleted});";
         else if (changeType is ChangeType.Inserted)
-            style += "background-color: #97F295;";
+            style += $"background-color: var({DnePalette.DiffPieceInserted});";
 
         return style;
     }

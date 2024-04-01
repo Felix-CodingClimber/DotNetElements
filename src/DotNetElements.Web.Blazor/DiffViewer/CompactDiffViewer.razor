@@ -30,7 +30,7 @@
                               ChangeType="line.Type"
                               Text="@line.Text"
                               SubPieces="line.SubPieces"
-                              BackgroundColor="@GetNewDiffLineBackground()" />
+                              BackgroundColor="@($"var({DnePalette.DiffLineNew})")" />
                 </tr>
 
                 hasOldLine = false;
@@ -58,11 +58,6 @@ else
 
     private string GetOldDiffLineBackground(DiffPiece diffLine)
     {
-        return diffLine.Type is ChangeType.Unchanged ? "" : "#FDF2D0;";
-    }
-
-    private string GetNewDiffLineBackground()
-    {
-        return hasOldLine ? "#DDEEDD" : "#DDFFDD";
+        return diffLine.Type is ChangeType.Unchanged ? DnePalette.DiffLineUnchanged.ToString() : $"var({DnePalette.DiffLineOld})";
     }
 }

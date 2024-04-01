@@ -1,57 +1,58 @@
 ﻿@using DotNetElements.Core.StringDiff
 
-<tr style="background-color: @BackgroundColor;">
-    <td style="width: 96px; vertical-align: middle; padding-left: 10px; padding-right: 10px; border-right: 1px solid var(--mud-palette-table-lines)" align="@(IsNewVersion ? "right" : "left")">
-        @if (ChangeType is ChangeType.Unchanged)
-        {
-            <div style="display: flex; justify-content: space-between;">
-                <span>@(Position.ToString() ?? "")</span>
-                <span>@(Position.ToString() ?? "")</span>
-            </div>
-        }
-        else
-        {
-            @(Position.ToString() ?? "")
-        }
+<td style="@GetPositionStyle()" align="@(ViewMode is DiffViewerMode.SideBySide ? "left" : IsNewVersion ? "right" : "left")">
+    @if (ViewMode is DiffViewerMode.Compact && ChangeType is ChangeType.Unchanged)
+    {
+        <div style="display: flex; justify-content: space-between;">
+            <span>@(Position.ToString() ?? "")</span>
+            <span>@(Position.ToString() ?? "")</span>
+        </div>
+    }
+    else
+    {
+        @(Position.ToString() ?? "")
+    }
 
-    </td>
-    <td style="width: 32px; vertical-align: middle;" align="center">
+</td>
+<td style="width: 32px; vertical-align: middle; background-color: @BackgroundColor;" align="center">
+    @if (ChangeType is not (ChangeType.Unchanged or ChangeType.Imaginary))
+    {
         @if (IsNewVersion)
         {
             <span>+</span>
         }
-        else if (ChangeType is not ChangeType.Unchanged)
+        else
         {
             <span>-</span>
         }
-    </td>
-    <td style="vertical-align: middle;">
-        @if (ChangeType is ChangeType.Unchanged)
+    }
+</td>
+<td style="vertical-align: middle; background-color: @BackgroundColor;">
+    @if (ChangeType is ChangeType.Unchanged)
+    {
+        <span style="@GetDiffPieceStyle(ChangeType)">
+            @Text
+        </span>
+    }
+    else
+    {
+        @if (SubPieces?.Count > 0)
+        {
+            @foreach (DiffPiece subPiece in SubPieces)
+            {
+                <span style="@GetDiffPieceStyle(subPiece.Type)">
+                    @subPiece.Text
+                </span>
+            }
+        }
+        else
         {
             <span style="@GetDiffPieceStyle(ChangeType)">
                 @Text
             </span>
         }
-        else
-        {
-            @if (SubPieces?.Count > 0)
-            {
-                @foreach (DiffPiece subPiece in SubPieces)
-                {
-                    <span style="@GetDiffPieceStyle(subPiece.Type)">
-                        @subPiece.Text
-                    </span>
-                }
-            }
-            else
-            {
-                <span style="@GetDiffPieceStyle(ChangeType)">
-                    @Text
-                </span>
-            }
-        }
-    </td>
-</tr>
+    }
+</td>
 
 @code
 {
@@ -60,6 +61,9 @@
 
     [Parameter]
     public bool IsNewVersion { get; set; }
+
+    [Parameter]
+    public DiffViewerMode ViewMode { get; set; } = DiffViewerMode.Compact;
 
     [Parameter, EditorRequired]
     public ChangeType ChangeType { get; set; }
@@ -72,6 +76,15 @@
 
     [Parameter, EditorRequired]
     public List<DiffPiece>? SubPieces { get; set; }
+
+    private string GetPositionStyle()
+    {
+        string style = $"vertical-align: middle; padding-left: 10px; padding-right: 10px; border-right: 1px solid var(--mud-palette-table-lines); background-color: {BackgroundColor};";
+
+        style += $"width: {(ViewMode is DiffViewerMode.Compact ? "96px" : "64px")};";
+
+        return style;
+    }
 
     private string GetDiffPieceStyle(ChangeType changeType)
     {

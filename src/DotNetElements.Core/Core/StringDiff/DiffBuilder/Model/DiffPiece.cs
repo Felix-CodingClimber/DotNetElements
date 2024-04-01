@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace DotNetElements.Core.StringDiff;
+﻿namespace DotNetElements.Core.StringDiff;
 
 public enum ChangeType
 {
@@ -17,6 +15,8 @@ public class DiffPiece : IEquatable<DiffPiece>
     public int? Position { get; set; }
     public string? Text { get; set; }
     public List<DiffPiece> SubPieces { get; set; } = [];
+
+    public bool IsOldPiece { get; set; }
 
     public DiffPiece(string? text, ChangeType type, int? position = null)
     {

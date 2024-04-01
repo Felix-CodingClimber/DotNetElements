@@ -1,0 +1,58 @@
+﻿@using DotNetElements.Core.StringDiff
+
+@if (Diff?.OldText.HasDifferences is true || Diff?.NewText.HasDifferences is true)
+{
+    <table cellpadding="0" cellspacing="0" style="font-family: monospace, monospace; line-height: 1.5rem;">
+
+        <tr>
+            <th colspan="3" align="left" style="padding-left: 10px; border-bottom: 1px solid var(--mud-palette-table-lines)">@LabelOld</th>
+            <th colspan="3" align="left" style="padding-left: 10px; border-bottom: 1px solid var(--mud-palette-table-lines)">@LabelNew</th>
+        </tr>
+
+        @foreach ((DiffPiece oldPiece, DiffPiece newPiece) in Diff.OldText.Lines.Zip(Diff.NewText.Lines))
+        {
+            <tr>
+                <DiffLine ViewMode="DiffViewerMode.SideBySide"
+                          Position="oldPiece.Position"
+                          ChangeType="oldPiece.Type"
+                          Text="@oldPiece.Text"
+                          SubPieces="oldPiece.SubPieces"
+                          BackgroundColor="@GetOldDiffLineBackground(oldPiece)" />
+
+                <DiffLine ViewMode="DiffViewerMode.SideBySide"
+                          IsNewVersion="true"
+                          Position="newPiece.Position"
+                          ChangeType="newPiece.Type"
+                          Text="@newPiece.Text"
+                          SubPieces="newPiece.SubPieces"
+                          BackgroundColor="@GetNewDiffLineBackground(newPiece)" />
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <div style="padding: 16px;">No differences found</div>
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public SideBySideDiffModel Diff { get; set; } = default!;
+
+    [Parameter]
+    public string LabelOld { get; set; } = "Old";
+
+    [Parameter]
+    public string LabelNew { get; set; } = "New";
+
+    private string GetOldDiffLineBackground(DiffPiece diffLine)
+    {
+        return diffLine.Type is ChangeType.Unchanged or ChangeType.Imaginary ? "" : "#FDF2D0;";
+    }
+
+    private string GetNewDiffLineBackground(DiffPiece diffLine)
+    {
+        return diffLine.Type is ChangeType.Unchanged ? "" : "#DDFFDD";
+    }
+}

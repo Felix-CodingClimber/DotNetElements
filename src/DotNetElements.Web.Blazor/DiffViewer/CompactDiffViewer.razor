@@ -1,8 +1,10 @@
 ﻿@using DotNetElements.Core.StringDiff
 
+@inherits MudComponentBase
+
 @if (Diff?.HasDifferences is true)
 {
-    <table cellpadding="0" cellspacing="0" style="font-family: monospace, monospace; line-height: 1.5rem;">
+    <table cellpadding="0" cellspacing="0" class="@Class" style="background-color: var(@DnePalette.DiffLineUnchanged); font-family: monospace, monospace; line-height: 1.5rem; @Style">
 
         <tr>
             <th colspan="3" align="left" style="padding-left: 10px; border-bottom: 1px solid var(--mud-palette-table-lines)">@LabelOld &rarr; @LabelNew</th>
@@ -58,6 +60,6 @@ else
 
     private string GetOldDiffLineBackground(DiffPiece diffLine)
     {
-        return diffLine.Type is ChangeType.Unchanged ? DnePalette.DiffLineUnchanged.ToString() : $"var({DnePalette.DiffLineOld})";
+        return diffLine.Type is ChangeType.Unchanged ? $"var({DnePalette.DiffLineUnchanged})" : $"var({DnePalette.DiffLineOld})";
     }
 }

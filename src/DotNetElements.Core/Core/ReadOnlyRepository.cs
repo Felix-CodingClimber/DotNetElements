@@ -63,6 +63,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
         return CrudResult.OkIfNotNull(projectedEntity, CrudError.NotFound);
     }
 
+    // todo filter makes not sense here (If we use GetById... we should only expect one entity)
     public async Task<CrudResult<TProjection>> GetByIdWithProjectionAsync<TProjection>(
         TKey id,
         Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,

@@ -175,6 +175,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
     }
 
     // todo protected would be better!
+    // todo check if we should make checkAlreadyTracked true by default
     public TRelatedEntity AttachById<TRelatedEntity, TRelatedEntityKey>(TRelatedEntityKey id, bool checkAlreadyTracked = false)
         where TRelatedEntity : Entity<TRelatedEntityKey>, IRelatedEntity<TRelatedEntity, TRelatedEntityKey>
         where TRelatedEntityKey : notnull, IEquatable<TRelatedEntityKey>

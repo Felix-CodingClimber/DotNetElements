@@ -1,16 +1,25 @@
 ﻿namespace DotNetElements.Core;
 
-public class ModelWithDetails<TModel, TDetails>
-	where TDetails : ModelDetails
+public class ModelWithDetails<TModel, TDetails> : ModelWithDetails<TModel>
+    where TDetails : ModelDetails
 {
-	public TModel Value { get; set; }
+    public TDetails? Details { get; set; }
 
-	public TDetails? Details { get; set; }
+    public ModelWithDetails(TModel value) : base(value)
+    {
+    }
+}
 
-	public bool DetailsShown { get; set; }
+public class ModelWithDetails<TModel>
+{
+    public TModel Value { get; set; }
 
-	public ModelWithDetails(TModel value)
-	{
-		Value = value;
-	}
+    public bool DetailsShown { get; set; }
+
+    public ModelWithDetails(TModel value)
+    {
+        Value = value;
+    }
+
+    public void ToggleDetailsShown() => DetailsShown = !DetailsShown;
 }

@@ -49,7 +49,7 @@ public class InlineDiffBuilder
         foreach (var diffBlock in diffResult.DiffBlocks)
         {
             for (; bPos < diffBlock.InsertStartB; bPos++)
-                pieces.Add(new DiffPiece(diffResult.PiecesNew[bPos], ChangeType.Unchanged, bPos + 1));
+                pieces.Add(new DiffPiece(diffResult.PiecesNew[bPos], ChangeType.Unchanged, PositionNew: bPos + 1));
 
             int i = 0;
             for (; i < Math.Min(diffBlock.DeleteCountA, diffBlock.InsertCountB); i++)
@@ -57,7 +57,7 @@ public class InlineDiffBuilder
 
             for (i = 0; i < Math.Min(diffBlock.DeleteCountA, diffBlock.InsertCountB); i++)
             {
-                pieces.Add(new DiffPiece(diffResult.PiecesNew[i + diffBlock.InsertStartB], ChangeType.Inserted, bPos + 1));
+                pieces.Add(new DiffPiece(diffResult.PiecesNew[i + diffBlock.InsertStartB], ChangeType.Inserted, PositionNew: bPos + 1));
                 bPos++;
             }
 
@@ -70,13 +70,13 @@ public class InlineDiffBuilder
             {
                 for (; i < diffBlock.InsertCountB; i++)
                 {
-                    pieces.Add(new DiffPiece(diffResult.PiecesNew[i + diffBlock.InsertStartB], ChangeType.Inserted, bPos + 1));
+                    pieces.Add(new DiffPiece(diffResult.PiecesNew[i + diffBlock.InsertStartB], ChangeType.Inserted, PositionNew: bPos + 1));
                     bPos++;
                 }
             }
         }
 
         for (; bPos < diffResult.PiecesNew.Length; bPos++)
-            pieces.Add(new DiffPiece(diffResult.PiecesNew[bPos], ChangeType.Unchanged, bPos + 1));
+            pieces.Add(new DiffPiece(diffResult.PiecesNew[bPos], ChangeType.Unchanged, PositionNew: bPos + 1));
     }
 }

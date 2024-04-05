@@ -17,7 +17,8 @@
                 hasOldLine = true;
 
                 <tr>
-                    <DiffLine Position="line.Position"
+                    <DiffLine Position="line.PositionOld"
+                              PositionNew="line.PositionNew"
                               ChangeType="line.Type"
                               Text="@line.Text"
                               SubPieces="line.SubPieces"
@@ -28,7 +29,7 @@
             {
                 <tr>
                     <DiffLine IsNewVersion="true"
-                              Position="line.Position"
+                              Position="line.PositionNew"
                               ChangeType="line.Type"
                               Text="@line.Text"
                               SubPieces="line.SubPieces"

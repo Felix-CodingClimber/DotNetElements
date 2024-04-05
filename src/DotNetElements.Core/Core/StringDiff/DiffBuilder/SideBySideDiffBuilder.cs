@@ -60,8 +60,8 @@ public class SideBySideDiffBuilder
         {
             while (bPos < diffBlock.InsertStartB && aPos < diffBlock.DeleteStartA)
             {
-                oldPieces.Add(new DiffPiece(diffResult.PiecesOld[aPos], ChangeType.Unchanged, aPos + 1));
-                newPieces.Add(new DiffPiece(diffResult.PiecesNew[bPos], ChangeType.Unchanged, bPos + 1));
+                oldPieces.Add(new DiffPiece(diffResult.PiecesOld[aPos], ChangeType.Unchanged, PositionOld: aPos + 1));
+                newPieces.Add(new DiffPiece(diffResult.PiecesNew[bPos], ChangeType.Unchanged, PositionNew: bPos + 1));
                 aPos++;
                 bPos++;
             }
@@ -69,8 +69,8 @@ public class SideBySideDiffBuilder
             int i = 0;
             for (; i < Math.Min(diffBlock.DeleteCountA, diffBlock.InsertCountB); i++)
             {
-                DiffPiece oldPiece = new(diffResult.PiecesOld[i + diffBlock.DeleteStartA], ChangeType.Deleted, aPos + 1);
-                DiffPiece newPiece = new(diffResult.PiecesNew[i + diffBlock.InsertStartB], ChangeType.Inserted, bPos + 1);
+                DiffPiece oldPiece = new(diffResult.PiecesOld[i + diffBlock.DeleteStartA], ChangeType.Deleted, PositionOld: aPos + 1);
+                DiffPiece newPiece = new(diffResult.PiecesNew[i + diffBlock.InsertStartB], ChangeType.Inserted, PositionNew: bPos + 1);
 
                 if (subPieceBuilder is not null)
                 {
@@ -88,7 +88,7 @@ public class SideBySideDiffBuilder
             {
                 for (; i < diffBlock.DeleteCountA; i++)
                 {
-                    oldPieces.Add(new DiffPiece(diffResult.PiecesOld[i + diffBlock.DeleteStartA], ChangeType.Deleted, aPos + 1));
+                    oldPieces.Add(new DiffPiece(diffResult.PiecesOld[i + diffBlock.DeleteStartA], ChangeType.Deleted, PositionOld: aPos + 1));
                     newPieces.Add(new DiffPiece());
                     aPos++;
                 }
@@ -97,7 +97,7 @@ public class SideBySideDiffBuilder
             {
                 for (; i < diffBlock.InsertCountB; i++)
                 {
-                    newPieces.Add(new DiffPiece(diffResult.PiecesNew[i + diffBlock.InsertStartB], ChangeType.Inserted, bPos + 1));
+                    newPieces.Add(new DiffPiece(diffResult.PiecesNew[i + diffBlock.InsertStartB], ChangeType.Inserted, PositionNew: bPos + 1));
                     oldPieces.Add(new DiffPiece());
                     bPos++;
                 }
@@ -106,8 +106,8 @@ public class SideBySideDiffBuilder
 
         while (bPos < diffResult.PiecesNew.Length && aPos < diffResult.PiecesOld.Length)
         {
-            oldPieces.Add(new DiffPiece(diffResult.PiecesOld[aPos], ChangeType.Unchanged, aPos + 1));
-            newPieces.Add(new DiffPiece(diffResult.PiecesNew[bPos], ChangeType.Unchanged, bPos + 1));
+            oldPieces.Add(new DiffPiece(diffResult.PiecesOld[aPos], ChangeType.Unchanged, PositionOld: aPos + 1));
+            newPieces.Add(new DiffPiece(diffResult.PiecesNew[bPos], ChangeType.Unchanged, PositionNew: bPos + 1));
             aPos++;
             bPos++;
         }

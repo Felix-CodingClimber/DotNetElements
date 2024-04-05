@@ -15,7 +15,7 @@
         {
             <tr>
                 <DiffLine ViewMode="DiffViewerMode.SideBySide"
-                          Position="oldPiece.Position"
+                          Position="oldPiece.PositionOld"
                           ChangeType="oldPiece.Type"
                           Text="@oldPiece.Text"
                           SubPieces="oldPiece.SubPieces"
@@ -23,7 +23,7 @@
 
                 <DiffLine ViewMode="DiffViewerMode.SideBySide"
                           IsNewVersion="true"
-                          Position="newPiece.Position"
+                          Position="newPiece.PositionNew"
                           ChangeType="newPiece.Type"
                           Text="@newPiece.Text"
                           SubPieces="newPiece.SubPieces"

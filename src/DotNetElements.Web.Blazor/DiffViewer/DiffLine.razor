@@ -5,7 +5,7 @@
     {
         <div style="display: flex; justify-content: space-between;">
             <span>@(Position.ToString() ?? "")</span>
-            <span>@(Position.ToString() ?? "")</span>
+            <span>@(PositionNew.ToString() ?? "")</span>
         </div>
     }
     else
@@ -45,7 +45,7 @@
                 </span>
             }
         }
-        else
+        else if (!string.IsNullOrEmpty(Text))
         {
             <span style="@GetDiffPieceStyle(ChangeType)">
                 @Text
@@ -71,6 +71,9 @@
     [Parameter, EditorRequired]
     public int? Position { get; set; }
 
+    [Parameter]
+    public int? PositionNew { get; set; }
+
     [Parameter, EditorRequired]
     public string? Text { get; set; }
 
@@ -91,7 +94,7 @@
         if (changeType is ChangeType.Unchanged)
             return "";
 
-        string style = "border-radius: 10%; padding: 1px 4px;";
+        string style = "border-radius: 3px; padding: 1px 4px;";
 
         if (changeType is ChangeType.Deleted or ChangeType.Modified)
             style += $" background-color: var({DnePalette.DiffPieceDeleted});";

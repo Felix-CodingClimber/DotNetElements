@@ -74,5 +74,43 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
             Snackbar.Add("Failed to save changes", Severity.Error);
         }
     }
+
+    protected async Task<Result<TDialogModel>> ShowCrudEditDialogAsync<TDialog, TDialogModel, TDialogEditModel>(
+        bool isEditMode,
+        string title,
+        string apiEndpoint,
+        TDialogEditModel editModel,
+        DialogParameters<TDialog>? additionalParameters = null,
+        DialogOptions? dialogOptions = null)
+        where TDialog : CrudEditDialog<TDialogModel, TDialogEditModel>
+        where TDialogEditModel : notnull
+    {
+        DialogParameters<TDialog> parameters = new()
+        {
+            { x => x.IsEditMode, isEditMode },
+            { x => x.Model, editModel },
+            { x => x.EditContext, new EditContext(editModel) },
+            { x => x.ApiEndpoint, apiEndpoint }
+        };
+
+        foreach ((string key, object value) in additionalParameters ?? [])
+            parameters.Add(key, value);
+
+        IDialogReference dialog = await DialogService.ShowAsync<TDialog>(title, parameters, dialogOptions ?? CrudTable.DefaultEditDialogOptions);
+        DialogResult result = await dialog.Result;
+
+        Result<TDialogModel> dialogResult = (Result<TDialogModel>)result.Data;
+
+        if (dialogResult.IsOk)
+        {
+            Snackbar.Add("Entry saved", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Failed to save entry", Severity.Error);
+        }
+
+        return dialogResult;
+    }
 }
 

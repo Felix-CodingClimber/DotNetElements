@@ -1,5 +1,4 @@
-﻿using DotNetElements.Core;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace DotNetElements.Web.AspNetCore;
 
@@ -15,6 +14,6 @@ public class CurrentUserProviderWeb : ICurrentUserProvider
     // todo
     public Guid GetCurrentUserId()
     {
-        return new Guid("FF4F759C-0916-4611-9B66-306543A51B2A");
+        return new Guid("e8d118e0-18c6-4fff-9d86-e91a915d8198");
     }
 }

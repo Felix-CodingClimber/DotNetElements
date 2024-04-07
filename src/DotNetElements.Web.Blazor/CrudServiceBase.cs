@@ -68,4 +68,16 @@ public class CrudServiceBase<TKey, TModel> : ICrudServiceBase<TKey, TModel>
 
         return result;
     }
+
+    // todo use everywhere
+    protected void NotifyUserIfFailed(Result result, string message= "Failed to fetch entries from server")
+    {
+        // todo add logging
+        // todo wrap Snackbar call in bool option NotifyUser
+        // todo add function OnDeleteSuccess
+        if (result.IsFail)
+        {
+            Snackbar.Add(message, Severity.Error);
+        }
+    }
 }

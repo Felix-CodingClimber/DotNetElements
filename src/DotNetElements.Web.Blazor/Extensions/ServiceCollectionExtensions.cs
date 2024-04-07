@@ -48,7 +48,6 @@ public static class ServiceCollectionExtensions
         where TKey : notnull, IEquatable<TKey>
         where TModel : IModel<TKey>
         where TDetails : ModelDetails
-        where TEditModel : IMapFromModel<TEditModel, TModel>, ICreateNew<TEditModel>
     {
         // todo consider using the options pattern
         // Action<CrudOptions<TModel>> configureOptions as parameter

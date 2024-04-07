@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace DotNetElements.Web.Blazor;
+namespace DotNetElements.Web.Blazor.Extensions;
 
 public static class DialogeServiceExtensions
 {

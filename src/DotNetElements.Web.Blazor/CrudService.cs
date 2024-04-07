@@ -4,7 +4,6 @@ public interface ICrudService<TKey, TModel, TDetails, TEditModel> : IReadOnlyCru
     where TKey : notnull, IEquatable<TKey>
     where TModel : IModel<TKey>
     where TDetails : ModelDetails
-    where TEditModel : IMapFromModel<TEditModel, TModel>, ICreateNew<TEditModel>
 {
     Task<Result<TModel>> CreateEntryAsync(TEditModel editModel);
     Task<Result> DeleteEntryAsync(TModel model);
@@ -15,7 +14,6 @@ public class CrudService<TKey, TModel, TDetails, TEditModel> : ReadOnlyCrudServi
     where TKey : notnull, IEquatable<TKey>
     where TModel : IModel<TKey>
     where TDetails : ModelDetails
-    where TEditModel : IMapFromModel<TEditModel, TModel>, ICreateNew<TEditModel>
 {
     public CrudService(ISnackbar snackbar, HttpClient httpClient, CrudOptions<TModel> options) : base(snackbar, httpClient, options)
     {
@@ -76,5 +74,21 @@ public class CrudService<TKey, TModel, TDetails, TEditModel> : ReadOnlyCrudServi
         }
 
         return result;
+    }
+
+    // todo use everywhere
+    protected void NotifyUser(Result result, string messageOk, string messageFail)
+    {
+        // todo add logging
+        // todo wrap Snackbar call in bool option NotifyUser
+        // todo add function OnDeleteSuccess
+        if (result.IsOk)
+        {
+            Snackbar.Add(messageOk, Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(messageFail, Severity.Error);
+        }
     }
 }

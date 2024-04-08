@@ -7,18 +7,18 @@
 @if (SimpleTable)
 {
     <td class="py-0 pl-2" style="@($"width: {Width}px;")">
-        <CrudTableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
-        <CrudTableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
-        <CrudTableActionsButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+        <CrudTableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        <CrudTableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        <CrudTableActionsButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" Style="@(DetailsButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
         @ChildContent
     </td>
 }
 else
 {
     <MudTd Class="py-0 pl-2" Style="@($"width: {Width}px;")" DataLabel="Actions">
-        <CrudTableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
-        <CrudTableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
-        <CrudTableActionsButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+        <CrudTableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        <CrudTableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        <CrudTableActionsButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" Style="@(DetailsButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
         @ChildContent
     </MudTd>
 }
@@ -39,6 +39,15 @@ else
 
     [Parameter]
     public bool SimpleTable { get; set; }
+
+    [Parameter]
+    public bool EditButtonShown { get; set; } = true;
+
+    [Parameter]
+    public bool DeleteButtonShown { get; set; } = true;
+
+    [Parameter]
+    public bool DetailsButtonShown { get; set; } = true;
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

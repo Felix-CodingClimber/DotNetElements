@@ -1,0 +1,75 @@
+@inherits MudComponentBase
+
+@typeparam TKey where TKey : notnull, IEquatable<TKey>
+@typeparam TModel where TModel : IModel<TKey>
+@typeparam TDetails where TDetails : ModelDetails
+
+<style>
+    .dne-crud-actions-menu {
+    }
+
+        .dne-crud-actions-menu button {
+            padding: 4px;
+        }
+</style>
+
+<MudMenu Icon="@Icons.Material.Filled.MoreVert" Dense="true" Class="@($"dne-crud-actions-menu {Class}")" Style="@Style" Size="MenuButtonSize" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin">
+    @if (EditButtonShown)
+    {
+        <MudMenuItem OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Disabled="EditButtonDisabled" IconColor="Color.Warning">Edit</MudMenuItem>
+    }
+    @if (DeleteButtonShown)
+    {
+        <MudMenuItem OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Disabled="DeleteButtonDisabled" IconColor="Color.Error">Delete</MudMenuItem>
+    }
+    @if (DetailsButtonShown)
+    {
+        <MudMenuItem OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Disabled="DetailsButtonDisabled" IconColor="Color.Default">Info</MudMenuItem>
+    }
+    @ChildContent
+</MudMenu>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public TModel Context { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EventCallback<TModel> OnEditEntry { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<TModel> OnDeleteEntry { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<TModel> OnShowEntryDetails { get; set; }
+
+    [Parameter]
+    public Size MenuButtonSize { get; set; } = Size.Medium;
+
+    [Parameter]
+    public Origin TransformOrigin { get; set; } = Origin.TopRight;
+
+    [Parameter]
+    public Origin AnchorOrigin { get; set; } = Origin.BottomRight;
+
+    [Parameter]
+    public bool EditButtonShown { get; set; } = true;
+
+    [Parameter]
+    public bool DeleteButtonShown { get; set; } = true;
+
+    [Parameter]
+    public bool DetailsButtonShown { get; set; } = true;
+
+    [Parameter]
+    public bool EditButtonDisabled { get; set; }
+
+    [Parameter]
+    public bool DeleteButtonDisabled { get; set; }
+
+    [Parameter]
+    public bool DetailsButtonDisabled { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

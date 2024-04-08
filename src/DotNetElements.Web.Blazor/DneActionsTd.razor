@@ -1,0 +1,23 @@
+﻿@inherits MudComponentBase
+
+@if (SimpleTable)
+{
+    <td class="@($"py-0 pl-2 {Class}")" style="@($"width: 0px; white-space: nowrap; {Style}")">
+        @ChildContent
+    </td>
+}
+else
+{
+    <MudTd Class="@($"py-0 pl-2 {Class}")" Style="@($"width: 0px; white-space: nowrap; {Style}")" DataLabel="Actions">
+        @ChildContent
+    </MudTd>
+}
+
+@code
+{
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public bool SimpleTable { get; set; }
+}

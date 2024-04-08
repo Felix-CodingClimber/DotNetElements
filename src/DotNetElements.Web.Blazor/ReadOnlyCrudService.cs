@@ -7,7 +7,7 @@ public interface IReadOnlyCrudService<TKey, TModel, TDetails> : ICrudServiceBase
 {
     Task<Result<IReadOnlyList<ModelWithDetails<TModel, TDetails>>>> GetAllEntriesWithDetailsReadOnlyAsync();
     Task<Result<List<ModelWithDetails<TModel, TDetails>>>> GetAllEntriesWithDetailsAsync();
-    Task<Result> GetEntryDetailsAsync(ModelWithDetails<TModel, TDetails> modelWithDetails);
+    Task<Result<TDetails>> GetEntryDetailsAsync(TKey id);
 }
 
 public class ReadOnlyCrudService<TKey, TModel, TDetails> : CrudServiceBase<TKey, TModel>, IReadOnlyCrudService<TKey, TModel, TDetails>
@@ -19,9 +19,9 @@ public class ReadOnlyCrudService<TKey, TModel, TDetails> : CrudServiceBase<TKey,
     {
     }
 
-    public virtual async Task<Result> GetEntryDetailsAsync(ModelWithDetails<TModel, TDetails> modelWithDetails)
+    public virtual async Task<Result<TDetails>> GetEntryDetailsAsync(TKey id)
     {
-        Result<TDetails> detailsResult = await HttpClient.GetFromJsonWithResultAsync<TDetails>(Options.GetDetailsEndpoint(modelWithDetails.Value.Id.ToString()));
+        Result<TDetails> detailsResult = await HttpClient.GetFromJsonWithResultAsync<TDetails>(Options.GetDetailsEndpoint(id.ToString()));
 
         // todo add logging
         // todo wrap Snackbar call in bool option NotifyUser
@@ -29,10 +29,7 @@ public class ReadOnlyCrudService<TKey, TModel, TDetails> : CrudServiceBase<TKey,
         if (detailsResult.IsFail)
         {
             Snackbar.Add($"Failed to fetch details.\n{detailsResult.ErrorMessage}", Severity.Error);
-            return detailsResult;
         }
-
-        modelWithDetails.Details = detailsResult.Value;
 
         return detailsResult;
     }

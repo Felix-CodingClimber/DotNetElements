@@ -52,6 +52,26 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel> : MudCompone
         if (result.IsOk)
         {
             Snackbar.Add("Entry deleted", Severity.Success);
+            TableEntries.Remove(context); // todo remove here and rename method to OnSoftDeleteEntry
+        }
+        else
+        {
+            Snackbar.Add("Failed to delete entry", Severity.Error);
+        }
+    }
+
+    protected virtual async Task OnHardDeleteEntry(ModelWithDetails<TModel, TDetails> context)
+    {
+        Result canDelete = await DialogService.ShowDeleteDialogAsync($"Delete {Options.DeleteEntryLabel} forever?", Options.DeleteEntryValue.Invoke(context.Value), Options.DeleteEntryLabel);
+
+        if (canDelete.IsFail)
+            return;
+
+        Result result = await HttpClient.DeleteWithResultAsync(Options.HardDeleteEndpoint(), context.Value);
+
+        if (result.IsOk)
+        {
+            Snackbar.Add("Entry deleted", Severity.Success);
             TableEntries.Remove(context);
         }
         else

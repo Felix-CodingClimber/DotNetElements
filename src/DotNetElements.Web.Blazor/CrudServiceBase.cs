@@ -70,7 +70,10 @@ public class CrudServiceBase<TKey, TModel> : ICrudServiceBase<TKey, TModel>
     }
 
     // todo use everywhere
-    protected void NotifyUserIfFailed(Result result, string message= "Failed to fetch entries from server")
+    protected void NotifyUserIfGetByIdFailed(Result result) => NotifyUserIfFailed(result, "Failed to fetch entry from server");
+    protected void NotifyUserIfGetAllFailed(Result result) => NotifyUserIfFailed(result, "Failed to fetch entries from server");
+
+    protected void NotifyUserIfFailed(Result result, string message)
     {
         // todo add logging
         // todo wrap Snackbar call in bool option NotifyUser

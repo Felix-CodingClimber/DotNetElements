@@ -32,6 +32,7 @@ public class CrudOptions<TModel>
 
     public string GetDetailsEndpoint<TKey>(TKey id) => $"{BaseEndpointUri}/{id}/details";
     public string GetByIdEndpoint<TKey>(TKey id) => $"{BaseEndpointUri}/{id}";
+    public string HardDeleteEndpoint() => $"{BaseEndpointUri}/hardDelete";
 
     public CrudOptions(string baseEndpointUri)
     {

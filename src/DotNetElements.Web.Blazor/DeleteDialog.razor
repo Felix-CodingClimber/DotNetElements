@@ -1,11 +1,15 @@
 ﻿<MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" Class="mr-3 mb-n1" />
+            <MudIcon Icon="@(IsHardDelete ? Icons.Material.Filled.DeleteForever : Icons.Material.Filled.Delete)" Color="Color.Error" Class="mr-3 mb-n1" />
             @DialogInstance.Title
         </MudText>
     </TitleContent>
     <DialogContent>
+        @if (AdditionalMessage is not null)
+        {
+            <MudText>@AdditionalMessage</MudText>
+        }
         <MudTextField Value="@ItemValue" Label="@ItemLabel" FullWidth="true" ReadOnly="true" />
     </DialogContent>
     <DialogActions>

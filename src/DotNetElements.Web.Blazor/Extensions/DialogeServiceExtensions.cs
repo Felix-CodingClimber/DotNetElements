@@ -10,10 +10,29 @@ public static class DialogeServiceExtensions
         DisableBackdropClick = false,
     };
 
-    public static async Task<Result> ShowDeleteDialogAsync(this IDialogService dialogService, string title, string itemValue, string itemLabel)
+    // todo rename to ShowSoftDeleteDialogAsync
+    public static async Task<Result> ShowDeleteDialogAsync(this IDialogService dialogService, string title, string itemValue, string itemLabel, string? additionalMessage = null)
     {
         var dialogParameters = new DialogParameters<DeleteDialog>
         {
+            { x => x.IsHardDelete, false },
+            { x => x.AdditionalMessage, additionalMessage },
+            { x => x.ItemValue, itemValue },
+            { x => x.ItemLabel, itemLabel }
+        };
+
+        IDialogReference dialog = await dialogService.ShowAsync<DeleteDialog>(title, dialogParameters);
+        DialogResult result = await dialog.Result;
+
+        return result.Canceled ? Result.Fail("Canceled by user") : Result.Ok();
+    }
+
+    public static async Task<Result> ShowHardDeleteDialogAsync(this IDialogService dialogService, string title, string itemValue, string itemLabel, string? additionalMessage = null)
+    {
+        var dialogParameters = new DialogParameters<DeleteDialog>
+        {
+            { x => x.IsHardDelete, true },
+            { x => x.AdditionalMessage, additionalMessage },
             { x => x.ItemValue, itemValue },
             { x => x.ItemLabel, itemLabel }
         };

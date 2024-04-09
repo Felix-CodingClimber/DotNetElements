@@ -11,6 +11,12 @@ public partial class DeleteDialog : ComponentBase
     [Parameter, EditorRequired]
     public string ItemLabel { get; set; } = default!;
 
+    [Parameter]
+    public bool IsHardDelete { get; set; }
+
+    [Parameter]
+    public string? AdditionalMessage { get; set; }
+
     private void OnConfirm()
     {
         DialogInstance.Close(DialogResult.Ok(true));

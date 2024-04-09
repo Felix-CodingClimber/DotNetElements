@@ -77,6 +77,9 @@ public class CrudService<TKey, TModel, TDetails, TEditModel> : ReadOnlyCrudServi
     }
 
     // todo use everywhere
+    protected void NotifyUserCreateResult(Result result) => NotifyUser(result, "Entry saved", "Failed to save entry");
+    protected void NotifyUserUpdateResult(Result result) => NotifyUser(result, "Changes saved", "Failed to save changes");
+    protected void NotifyUserDeleteResult(Result result) => NotifyUser(result, "Entry deleted", "Failed to delete entry");
     protected void NotifyUser(Result result, string messageOk, string messageFail)
     {
         // todo add logging

@@ -63,4 +63,7 @@ public class ReadOnlyCrudService<TKey, TModel, TDetails> : CrudServiceBase<TKey,
 
         return result;
     }
+
+    // todo use everywhere
+    protected void NotifyUserIfGetDetailsFailed(Result result) => NotifyUserIfFailed(result, "Failed to fetch details.");
 }

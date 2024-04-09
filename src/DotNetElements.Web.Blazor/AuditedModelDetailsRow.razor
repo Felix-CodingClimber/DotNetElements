@@ -11,11 +11,14 @@
         <tr>
             <td colspan="100">
                 <MudGrid Spacing="2">
-                    <MudItem xs="12">
+                    <MudItem xs="11">
                         <MudStack Spacing="1">
                             <MudText Typo="Typo.caption"><b>ID</b></MudText>
                             <MudText Typo="Typo.caption">@Context.Value.Id</MudText>
                         </MudStack>
+                    </MudItem>
+                    <MudItem xs="1" Class="d-flex flex-row align-start justify-end">
+                        <CrudTableActionsButton OnClick="() => Context.DetailsShown = false" Icon="@Icons.Material.Outlined.ExpandLess" Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" />
                     </MudItem>
                     <MudItem xs="4">
                         <MudStack Spacing="1">
@@ -38,11 +41,14 @@
         <MudTr>
             <MudTd colspan="100" Style="border-bottom: 3px solid var(--mud-palette-table-lines);" DataLabel="Row Details">
                 <MudGrid Spacing="2">
-                    <MudItem xs="12">
+                    <MudItem xs="11">
                         <MudStack Spacing="1">
                             <MudText Typo="Typo.caption"><b>ID</b></MudText>
                             <MudText Typo="Typo.caption">@Context.Value.Id</MudText>
                         </MudStack>
+                    </MudItem>
+                    <MudItem xs="1" Class="d-flex flex-row align-start justify-end">
+                        <CrudTableActionsButton OnClick="() => Context.DetailsShown = false" Icon="@Icons.Material.Outlined.ExpandLess" Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" />
                     </MudItem>
                     <MudItem xs="4">
                         <MudStack Spacing="1">

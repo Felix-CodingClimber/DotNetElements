@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 
 namespace DotNetElements.Web.AspNetCore;
 
 public interface IModule
 {
-	IServiceCollection RegisterModules(IServiceCollection services);
+    WebApplicationBuilder RegisterModules(WebApplicationBuilder builder);
 
 	IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints);
 }

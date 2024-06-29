@@ -74,11 +74,10 @@ internal partial class MaterialIconsFontGenerator
 
             iconBuilder.AppendLine($"		{varName},");
 
-            iconDictionaryBuilder.AppendLine($"            {{ {varName}, \"\\u{icon.Unicode}\" }},");
+            iconDictionaryBuilder.AppendLine($"        {{ Icons.Material.{varName}, \"&#x{icon.Unicode};\" }},");
         }
 
         resultBuilder.Append(iconBuilder);
-        resultBuilder.Append(iconDictionaryHeader);
         resultBuilder.Append(iconDictionaryBuilder);
         resultBuilder.Append(fileFooter);
 
@@ -105,25 +104,27 @@ internal partial class MaterialIconsFontGenerator
     private const string iconDictionaryHeader =
     """
         }
-        
-        public static class MaterialIconsExtensions
+    }
+
+    public static partial class MaterialIconsExtensions
+    {
+        private readonly static Dictionary<Icons.Material, string> unicodeMap = new()
         {
-            private readonly static Dictionary<Material, string> unicodeMap = new()
-            {
     """;
 
     private const string fileFooter =
     """
-            };
-            
-            public static string ToUnicode(this Material materialIcon)
-            {
-                return unicodeMap[materialIcon];
-            }
+        };
+    
+        public static string ToUnicode(this Icons.Material materialIcon)
+        {
+            return unicodeMap[materialIcon];
         }
     }
         
     """;
+
+    private record MaterialIconFontInfo(string Name, string UnicodeUrl);
 
     private record MaterialIcon(string Id, string Unicode);
 }

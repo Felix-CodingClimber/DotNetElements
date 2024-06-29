@@ -27,6 +27,10 @@ static IHostBuilder CreateHostBuilder()
             {
                 options.DefaultRequestHeaders.Add("User-Agent", "request");
             });
+            services.AddHttpClient<MaterialIconsFontGenerator>(options =>
+            {
+                options.DefaultRequestHeaders.Add("User-Agent", "request");
+            });
         });
 }
 

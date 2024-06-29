@@ -9,15 +9,19 @@ internal sealed class ConsoleApplication : IHostedService
     private readonly FontAwesomeSvgGenerator fontAwesomeSvgGenerator;
     private readonly MaterialIconsSvgGenerator materialIconsSvgGenerator;
 
+    private readonly MaterialIconsFontGenerator materialIconsFontGenerator;
+
     public ConsoleApplication(
         ILogger<ConsoleApplication> logger,
         IHostApplicationLifetime appLifetime,
         FontAwesomeSvgGenerator fontAwesomeSvgGenerator,
-		MaterialIconsSvgGenerator materialIconsSvgGenerator)
+		MaterialIconsSvgGenerator materialIconsSvgGenerator,
+        MaterialIconsFontGenerator materialIconsFontGenerator)
     {
         this.logger = logger;
         this.fontAwesomeSvgGenerator = fontAwesomeSvgGenerator;
         this.materialIconsSvgGenerator = materialIconsSvgGenerator;
+        this.materialIconsFontGenerator = materialIconsFontGenerator;
 
         appLifetime.ApplicationStarted.Register(OnStarted);
         appLifetime.ApplicationStopping.Register(OnStopping);
@@ -42,8 +46,9 @@ internal sealed class ConsoleApplication : IHostedService
     {
         logger.LogInformation("Application started.");
 
-        await fontAwesomeSvgGenerator.Run();
-        await materialIconsSvgGenerator.Run();
+        await materialIconsFontGenerator.Run();
+        //await fontAwesomeSvgGenerator.Run();
+        //await materialIconsSvgGenerator.Run();
     }
 
     private void OnStopping()

@@ -1,188 +1,129 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Net.Http.Json;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace DotNetElements.Extensions.Icons;
 
+
 internal partial class MaterialIconsFontGenerator
 {
-	private readonly HttpClient httpClient;
-	private readonly ILogger<MaterialIconsFontGenerator> logger;
+    private readonly HttpClient httpClient;
+    private readonly ILogger<MaterialIconsFontGenerator> logger;
 
-	public MaterialIconsFontGenerator(HttpClient httpClient, ILogger<MaterialIconsFontGenerator> logger)
-	{
-		this.httpClient = httpClient;
-		this.logger = logger;
-	}
+    public MaterialIconsFontGenerator(HttpClient httpClient, ILogger<MaterialIconsFontGenerator> logger)
+    {
+        this.httpClient = httpClient;
+        this.logger = logger;
+    }
 
-	[GeneratedRegex("<\\s*svg.*height=\"(?<height>\\d+)\".*width=\"(?<width>\\d+)\"[^>]*>\\s*<\\s*path\\s*d=\"(?<path>.*?)\"\\/>\\s*<\\s*\\/svg>")]
-	private partial Regex SvgRegex();
+    public async Task Run()
+    {
+        IReadOnlyList<MaterialIcon>? iconInfo = await GetIconInfoAsync();
 
-	public async Task Run()
-	{
-		IReadOnlyList<MaterialIcon>? iconInfo = await GetIconInfoAsync();
+        if (iconInfo is null)
+            return;
 
-		if (iconInfo is null)
-			return;
+        await WriteToFileAsync(iconInfo);
 
-		await WriteToFileAsync(iconInfo);
+        logger.LogInformation("Generated Material icons");
+    }
 
-		logger.LogInformation("Generated Material icons");
-	}
+    private async Task<IReadOnlyList<MaterialIcon>?> GetIconInfoAsync()
+    {
+        string codepointInfo = await httpClient.GetStringAsync("https://raw.githubusercontent.com/google/material-design-icons/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.codepoints");
 
-	private async Task<IReadOnlyList<MaterialIcon>?> GetIconInfoAsync()
-	{
-		GitRef? masterBranchRef = await httpClient.GetFromJsonAsync<GitRef>("https://api.github.com/repos/google/material-design-icons/git/refs/heads/master");
-		if (masterBranchRef is null)
-		{
-			logger.LogError("Failed to get available icons from Github! (Failed to fetch master branch info.)");
-			return null;
-		}
+        if (string.IsNullOrEmpty(codepointInfo))
+        {
+            logger.LogError("Failed to get available icons from Github! (Failed to fetch codepoint info.)");
+            return null;
+        }
 
-		GitTreeResult? mainBranchTree = await httpClient.GetFromJsonAsync<GitTreeResult>($"https://api.github.com/repos/google/material-design-icons/git/trees/{masterBranchRef.Object.Sha}");
-		if (mainBranchTree is null)
-		{
-			logger.LogError("Failed to get available icons from Github! (Failed to fetch master branch main tree.)");
-			return null;
-		}
+        List<MaterialIcon> iconSet = [];
 
-		GitTree? symbolsFolder = mainBranchTree.Tree.FirstOrDefault(tree => tree.Path == "symbols");
-		if (symbolsFolder is null)
-		{
-			logger.LogError("Failed to get available icons from Github! (Missing symbols folder tree.)");
-			return null;
-		}
+        foreach (string codepointInfoLine in codepointInfo.Split('\n'))
+        {
+            string[] glyphInfo = codepointInfoLine.Split(" ");
 
-		GitTreeResult? symbolsFolderTree = await httpClient.GetFromJsonAsync<GitTreeResult>($"https://api.github.com/repos/google/material-design-icons/git/trees/{symbolsFolder.Sha}");
-		if (symbolsFolderTree is null)
-		{
-			logger.LogError("Failed to get available icons from Github! (Failed to fetch symbols folder tree.)");
-			return null;
-		}
+            if (glyphInfo.Length == 1 & glyphInfo[0] == "")
+                continue;
 
-		GitTree? webFolder = symbolsFolderTree.Tree.FirstOrDefault(tree => tree.Path == "web");
-		if (webFolder is null)
-		{
-			logger.LogError("Failed to get available icons from Github! (Missing web folder tree.)");
-			return null;
-		}
+            if (glyphInfo.Length != 2)
+            {
+                logger.LogError("Failed to get available icons from Github! (Failed to read codepoint info.)");
+                return null;
+            }
 
-		GitTreeResult? webFolderTree = await httpClient.GetFromJsonAsync<GitTreeResult>($"https://api.github.com/repos/google/material-design-icons/git/trees/{webFolder.Sha}");
-		if (webFolderTree is null)
-		{
-			logger.LogError("Failed to get available icons from Github! (Failed to fetch web folder tree.)");
-			return null;
-		}
+            iconSet.Add(new MaterialIcon(glyphInfo[0], glyphInfo[1]));
+        }
 
-		List<MaterialIcon> iconSet = new List<MaterialIcon>();
+        return iconSet;
+    }
 
-		foreach (string iconName in webFolderTree.Tree.Select(treeItem => treeItem.Path))
-		{
-			HttpResponseMessage response = await httpClient.GetAsync($"https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/{iconName}/materialsymbolsrounded/{iconName}_24px.svg");
+    private async Task WriteToFileAsync(IReadOnlyList<MaterialIcon> iconInfo)
+    {
+        StringBuilder resultBuilder = new();
+        resultBuilder.AppendLine(fileHeader);
 
-			if (!response.IsSuccessStatusCode)
-			{
-				logger.LogError($"Failed to get icon description from Github! (Icon: {iconName}, Error: {response.StatusCode})");
-				continue;
-			}
+        StringBuilder iconBuilder = new();
 
-			string? iconDescription = await response.Content.ReadAsStringAsync();
+        StringBuilder iconDictionaryBuilder = new();
+        iconDictionaryBuilder.AppendLine(iconDictionaryHeader);
 
-			Match match = SvgRegex().Match(iconDescription);
+        foreach (MaterialIcon icon in iconInfo)
+        {
+            string varName = icon.Id!.ConvertSnakeToPascalCase();
 
-			if (!match.Success)
-			{
-				logger.LogError($"Failed to parse icon description from Github! (Icon: {iconName})");
-				continue;
-			}
+            iconBuilder.AppendLine($"		{varName},");
 
-			iconSet.Add(new MaterialIcon(iconName, new SvgDescription(match.Groups["width"].Value, match.Groups["height"].Value, match.Groups["path"].Value)));
+            iconDictionaryBuilder.AppendLine($"            {{ {varName}, \"\\u{icon.Unicode}\" }},");
+        }
 
-			//// Uncomment for debug purpose
-			//if (iconSet.Count > 30)
-			//	break;
-		}
+        resultBuilder.Append(iconBuilder);
+        resultBuilder.Append(iconDictionaryHeader);
+        resultBuilder.Append(iconDictionaryBuilder);
+        resultBuilder.Append(fileFooter);
 
-		return iconSet.ToList();
-	}
+        await File.WriteAllTextAsync("MaterialIcons.cs", resultBuilder.ToString());
+    }
 
-	private async Task WriteToFileAsync(IReadOnlyList<MaterialIcon> iconInfo)
-	{
-		StringBuilder resultBuilder = new StringBuilder();
-		resultBuilder.AppendLine(fileHeader);
-
-		StringBuilder iconBuilder = new StringBuilder();
-
-		foreach (MaterialIcon icon in iconInfo)
-		{
-			SvgDescription? svgDescription = icon.SvgDescription;
-
-			if (svgDescription is null
-				|| string.IsNullOrEmpty(svgDescription.Width)
-				|| string.IsNullOrEmpty(svgDescription.Height)
-				|| string.IsNullOrEmpty(svgDescription.Path))
-			{
-				logger.LogWarning($"Skipped icon {icon.Id}, invalid svg description");
-				continue;
-			}
-
-			iconBuilder.AppendLine(
-			$"""
-					/// <summary>
-					/// <para>
-					/// <b>GoogleFontIcon</b>
-					/// </para>
-					/// <para>
-					/// <b>Label:</b> {icon.Id}
-					/// </para>
-					/// </summary>
-			""");
-
-			string varName = icon.Id!.ConvertSnakeToPascalCase();
-
-			iconBuilder.AppendLine($"		public const string {varName} = \"{svgDescription.Width},{svgDescription.Height},{svgDescription.Path}\";");
-			iconBuilder.AppendLine();
-		}
-
-		resultBuilder.Append(iconBuilder);
-		resultBuilder.Append(fileFooter);
-
-		await File.WriteAllTextAsync("MaterialIcons.cs", resultBuilder.ToString());
-	}
-
-	private const string fileHeader =
+    private const string fileHeader =
     """
 	//----------------------
 	// <auto-generated>
-	//     Generated by the BlazorSpa.Tools MaterialIconsGenerator. DO NOT EDIT!
-	//     source: MaterialIconsGenerator.cs
+	//     Generated by the DotNetElements.Extensions.Icons MaterialIconsFontGenerator. DO NOT EDIT!
+	//     source: MaterialIconsFontGenerator.cs
 	// </auto-generated>
 	//----------------------
 
-	namespace BlazorSpa.Components;
+	namespace DotNetElements.Extensions.Icons;
 
 	public static partial class Icons
 	{
-		public static partial class Material
+		public enum Material
 		{
 	""";
 
-	private const string fileFooter =
-	"""
-		}
-	}
+    private const string iconDictionaryHeader =
+    """
+        }
+        
+        public static class MaterialIconsExtensions
+        {
+            private readonly static Dictionary<Material, string> unicodeMap = new()
+            {
+    """;
 
-	""";
+    private const string fileFooter =
+    """
+            };
+            
+            public static string ToUnicode(this Material materialIcon)
+            {
+                return unicodeMap[materialIcon];
+            }
+        }
+    }
+        
+    """;
 
-	private record MaterialIcon(string Id, SvgDescription SvgDescription);
-
-	private record SvgDescription(string Width, string Height, string Path);
-
-	private record SymbolIconName(string Name);
-
-	private record GitTreeResult(string Sha, IReadOnlyList<GitTree> Tree);
-	private record GitTree(string Path, string Sha);
-	private record GitRef(string Ref, GitObject Object);
-	private record GitObject(string Sha);
+    private record MaterialIcon(string Id, string Unicode);
 }

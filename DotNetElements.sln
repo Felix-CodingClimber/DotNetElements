@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetElements.Web.Blazor",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetElements.Web.AspNetCore", "src\DotNetElements.Web.AspNetCore\DotNetElements.Web.AspNetCore.csproj", "{8097E610-C806-44A2-B367-9F7EA4888BEA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.Extensions.Icons", "src\DotNetElements.Extensions.Icons\DotNetElements.Extensions.Icons.csproj", "{12509DFE-E26F-4B58-84C3-3E099AD94082}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{8097E610-C806-44A2-B367-9F7EA4888BEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8097E610-C806-44A2-B367-9F7EA4888BEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8097E610-C806-44A2-B367-9F7EA4888BEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12509DFE-E26F-4B58-84C3-3E099AD94082}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12509DFE-E26F-4B58-84C3-3E099AD94082}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12509DFE-E26F-4B58-84C3-3E099AD94082}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12509DFE-E26F-4B58-84C3-3E099AD94082}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

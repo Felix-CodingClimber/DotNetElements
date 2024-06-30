@@ -31,6 +31,10 @@ static IHostBuilder CreateHostBuilder()
             {
                 options.DefaultRequestHeaders.Add("User-Agent", "request");
             });
+            services.AddHttpClient<CodiconsFontGenerator>(options =>
+            {
+                options.DefaultRequestHeaders.Add("User-Agent", "request");
+            });
         });
 }
 

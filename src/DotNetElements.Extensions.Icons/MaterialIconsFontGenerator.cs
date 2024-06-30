@@ -68,7 +68,7 @@ internal partial class MaterialIconsFontGenerator
         {
             string varName = icon.Id!.ConvertSnakeToPascalCase();
 
-            iconBuilder.AppendLine($"		{varName} = {$"0x{icon.Unicode}"},");
+            iconBuilder.AppendLine($"        {varName} = {$"0x{icon.Unicode}"},");
         }
 
         resultBuilder.Append(iconBuilder);
@@ -92,7 +92,7 @@ internal partial class MaterialIconsFontGenerator
     {
     	public enum Material
     	{
-               None = 0,
+            None = 0,
     """;
 
     private const string fileFooter =
@@ -101,8 +101,6 @@ internal partial class MaterialIconsFontGenerator
     }
         
     """;
-
-    private record MaterialIconFontInfo(string Name, string UnicodeUrl);
 
     private record MaterialIcon(string Id, string Unicode);
 }

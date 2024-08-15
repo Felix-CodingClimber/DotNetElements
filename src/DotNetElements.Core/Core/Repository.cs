@@ -169,6 +169,21 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         return CrudResult.Ok();
     }
 
+    public async Task<CrudResult> DeleteByIdAsync(TKey id)
+    {
+       TEntity? entityToDelete = await Entities.FirstOrDefaultAsync(WithId(id));
+
+        if (entityToDelete is null)
+            return CrudResult.NotFound(id);
+
+        Entities.Remove(entityToDelete);
+
+        await DbContext.SaveChangesAsync();
+
+        return CrudResult.Ok();
+    }
+
+
     public virtual async Task ClearTable()
     {
         await Entities.ExecuteDeleteAsync();

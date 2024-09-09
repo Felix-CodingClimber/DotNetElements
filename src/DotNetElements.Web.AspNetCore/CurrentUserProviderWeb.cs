@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace DotNetElements.Web.AspNetCore;
 
@@ -11,9 +12,14 @@ public class CurrentUserProviderWeb : ICurrentUserProvider
         this.contextAccessor = contextAccessor;
     }
 
-    // todo
     public Guid GetCurrentUserId()
     {
-        return new Guid("e8d118e0-18c6-4fff-9d86-e91a915d8198");
+        string? userId = contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        // todo better error handling
+        if (userId is null)
+            throw new ArgumentNullException(nameof(userId));
+
+        return new Guid(userId);
     }
 }

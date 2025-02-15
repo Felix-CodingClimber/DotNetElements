@@ -1,225 +1,138 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-<a name="readme-top"></a>
+## About
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-[![Uptime Robot status](https://img.shields.io/uptimerobot/status/m796178913-32633fee88c8a4bfdc895a64?label=DOCs%20STATUS)](https://dotnet-elements.felixstrauss.dev/)
+This project provides simple `Result` and `Result<TValue>` types to be used as return types of functions as an alternative to exceptions.
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/Felix-CodingClimber/DotNetElements">
-    <img src="brand/Logo.png" alt="Logo" width="424" height="123">
-  </a>
+The default types have a .IsOk and .IsFail property to check wether the function returned success or failure. In case of a Result<TValue> the result contains the return value of the function.
 
-<h3 align="center">DotNet Elements</h3>
+To include error state in the Result, one has to implement a custom `ErrorResult<TValue, TError>`.
+A source generator automatically provides the class implementation.
 
-  <p align="center">
-    Opinionated framework to build .NET applications fast and easy while focusing more on the final product and less on writing low-level code.
-    <br />
-    <a href="https://dotnet-elements.felixstrauss.dev/"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <!--
-    <a href="https://github.com/Felix-CodingClimber/DotNetElements">View Demo</a>
-    ·
-    -->
-    <a href="https://github.com/Felix-CodingClimber/DotNetElements/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/Felix-CodingClimber/DotNetElements/issues">Request Feature</a>
-  </p>
-</div>
+There are helper functions like `Fail()`, `Ok()` or `TryGetValue(out string? resultValue)` to make working with Results as simple as possible.
 
+## Recommended setup
 
+1. Install nuget package `> dotnet add package DotNetElements.Core.Result --version <insert-latest-version-here>`
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <!--
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    -->
-    <li><a href="#license">License</a></li>
-    <!--
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-    -->
-  </ol>
-</details>
+2. Add the following to a GlobalUsing.cs
+```cs
+global using static DotNetElements.Core.Result.ResultHelper;
+```
 
+## Usage examples for basic Result and Result<TValue> types
 
+### Example function using a Result as return type
+```cs
+static Result<string> GetResultFunction(bool expectedResult)
+{
+    // With logging
+    if (!expectedResult)
+        return Fail(() => Console.WriteLine("Fail from method"));
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
-<!--
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
--->
-> [!CAUTION]
-> Framework is work in progress and not considered production ready (while still used in some personal projects). Feel free to try it out and share your thoughts.
+    // Without logging
+    if (!expectedResult)
+        return Fail();
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+    return "Success from method";
+}
+```
 
+### Usage example using the .TryGetValue semantic
+```cs
+if (GetResultFunction(true).TryGetValue(out string? resultValue))
+{
+    Console.WriteLine($"Success from caller with value <{resultValue}>");
+}
+else
+{
+    Console.WriteLine("Fail from caller";
+}
+```
 
+### Usage example using manual check and GetValueUnsafe()
+```cs
+Result<string> result = GetResultFunction(false);
 
-### Built With
+if (result.IsOk)
+{
+    Console.WriteLine($"Success from caller with value <{result.GetValueUnsafe()}>");
+}
+else
+{
+    Console.WriteLine("Fail from caller");
+}
+```
 
-[![NET][.NET]][.NET-url]
+### Usage example using explicit conversions to prevent data loss for Result with value
+```cs
+Result resultWithoutValue = result.AsResult();
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Usage examples for source generated custom ErrorResult<TError> and ErrorResult<TValue, TError> types
 
+### Define a custom ErrorResult
+```cs
+namespace MyNamespace;
 
+public enum CrudError
+{
+  InternalError,
+  NotFound,
+  DuplicateEntry
+}
 
-<!-- GETTING STARTED -->
-<!--
-## Getting Started
+[ErrorResult<CrudError>]
+public partial class CrudResult<TValue>;
+```
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+### Example function using a custom CrudResult as return type
+```cs
+// This is needed to enable the usage of Ok() and Fail methods
+// Can be in each file or in a GlobalUsing.cs
+using static MyNamespace.CrudResultHelper;
 
-### Prerequisites
+static CrudResult<string> GetCrudResultFunction(bool expectedResult)
+{
+    // With logging
+    if (!expectedResult)
+        return Fail(CrudError.InternalError, () => Console.WriteLine("Fail from method"));
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+    // Without logging
+    if (!expectedResult)
+        return Fail(CrudError.InternalError);
 
-### Installation
+    return "Success from method";
+}
+```
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
+### Usage example using the .TryGetValue semantic
+```cs
+if (GetCrudResultFunction(true).TryGetValue(out string? crudValue, out CrudError? error))
+{
+    Console.WriteLine($"Success from caller with value <{crudValue}>");
+}
+else
+{
+    Console.WriteLine($"Fail from caller with error <{error}>");
+}
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
+### Usage example using manual check and GetValueUnsafe()
+```cs
+CrudResult<string> crudResult = GetCrudResultFunction(false);
 
-
-<!-- USAGE EXAMPLES -->
-<!--## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
-
-
-<!-- ROADMAP -->
-<!--
-## Roadmap
-
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
-
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
-
-
-<!-- CONTRIBUTING -->
-<!--
-## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
-
-
-<!-- LICENSE -->
-## License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTACT -->
-<!--
-## Contact
-
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
-
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
-
-
-<!-- ACKNOWLEDGMENTS -->
-<!--
-## Acknowledgments
-
-* []()
-* []()
-* []()
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[.NET]: https://img.shields.io/badge/.NET-000000?style=for-the-badge&logo=dotnet&labelColor=512BD4
-[.NET-url]: https://dotnet.microsoft.com/en-us/
-
-<!--
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
-[product-screenshot]: images/screenshot.png
--->
+if (crudResult.IsOk)
+{
+    Console.WriteLine($"Success from caller with value <{crudResult.GetValueUnsafe()}>");
+}
+else
+{
+    Console.WriteLine($"Fail from caller with error <{crudResult.GetErrorUnsafe()}>");
+}
+```
+ 
+### Usage example using explicit conversions to prevent data loss
+```cs
+CrudResult crudResultWithoutValue = crudResult.AsCrudResult();
+Result<string> simpleResultWithValue = crudResult.AsResultWithValue();
+Result simpleResultWithoutValue = crudResult.AsResult();
+```

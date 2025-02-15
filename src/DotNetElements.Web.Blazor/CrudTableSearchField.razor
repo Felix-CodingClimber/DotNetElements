@@ -6,6 +6,18 @@
 
 @code
 {
+    [Parameter]
+    public string? SearchString { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SearchStringChanged { get; set; }
+
+    [Parameter]
+    public Guid? SearchId { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid?> SearchIdChanged { get; set; }
+
     public CrudTableSearchField()
     {
         Placeholder = "Search";
@@ -14,5 +26,44 @@
         AdornmentIcon = Icons.Material.Filled.Search;
         IconSize = Size.Medium;
         Style = "width: 40%";
+
+        ValueChanged = EventCallback.Factory.Create<string>(this, OnValueChanged);
+    }
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine($"OnParameterSet SearchString: {SearchString}, Searchid: {SearchId}"); // todo
+
+        if (SearchString is null && SearchId is null)
+            Value = "";
+
+        Value = SearchString ?? "";
+    }
+
+    private void OnValueChanged(string value)
+    {
+        Console.WriteLine($"OnValueChanged: {value}"); // todo
+
+        if (string.IsNullOrEmpty(value))
+        {
+            SearchString = null;
+            SearchId = null;
+        }
+        else
+        {
+            if (Guid.TryParse(value, out Guid guid))
+            {
+                SearchId = guid;
+            }
+            else
+            {
+                SearchString = value;
+                SearchId = null;
+            }
+        }
+
+        // todo check if this needs to be awaited
+        SearchStringChanged.InvokeAsync(SearchString);
+        SearchIdChanged.InvokeAsync(SearchId);
     }
 }

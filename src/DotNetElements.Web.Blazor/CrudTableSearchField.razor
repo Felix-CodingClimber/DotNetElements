@@ -30,20 +30,24 @@
         ValueChanged = EventCallback.Factory.Create<string>(this, OnValueChanged);
     }
 
-    protected override void OnParametersSet()
+    public override async Task SetParametersAsync(ParameterView parameters)
     {
-        Console.WriteLine($"OnParameterSet SearchString: {SearchString}, Searchid: {SearchId}"); // todo
+        string? oldSearchString = SearchString;
+        Guid? oldSearchId = SearchId;
 
-        if (SearchString is null && SearchId is null)
-            Value = "";
+        await base.SetParametersAsync(parameters);
 
-        Value = SearchString ?? "";
+        if (SearchString == oldSearchString && SearchId == oldSearchId)
+            return;
+
+        if (SearchId is not null)
+            SearchString = SearchId.ToString();
+
+        await SetTextAsync(SearchString ?? "");
     }
 
-    private void OnValueChanged(string value)
+    private void OnValueChanged(string? value)
     {
-        Console.WriteLine($"OnValueChanged: {value}"); // todo
-
         if (string.IsNullOrEmpty(value))
         {
             SearchString = null;

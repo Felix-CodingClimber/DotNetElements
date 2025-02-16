@@ -6,12 +6,12 @@ public sealed class BlogPostModule : IModule
 {
 	public const string BaseUrl = "/api/blogPosts";
 
-	public IServiceCollection RegisterModules(IServiceCollection services)
+	public WebApplicationBuilder RegisterModules(WebApplicationBuilder builder)
 	{
-		services.AddScoped<BlogPostRepository>();
-		services.AddManagedRepository<ManagedBlogPostRepository, BlogPostRepository, BlogPost, Guid>();
+		builder.Services.AddScoped<BlogPostRepository>();
+		builder.Services.AddManagedRepository<ManagedBlogPostRepository, BlogPostRepository, BlogPost, Guid>();
 
-		return services;
+		return builder;
 	}
 
 	public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)

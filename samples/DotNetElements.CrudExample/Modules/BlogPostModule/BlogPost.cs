@@ -2,7 +2,8 @@
 
 namespace DotNetElements.CrudExample.Modules.BlogPostModule;
 
-[RelatedEntities([nameof(Tags)])]
+[RelatedEntitiesCollections([nameof(Tags)])]
+[RelatedEntitiesOnUpdate([nameof(Tags)])]
 public class BlogPost : AuditedEntity<Guid>, IUpdatable<EditBlogPostModel>, IHasVersion
 {
 	[SQLStringColumn(Length = 256)]

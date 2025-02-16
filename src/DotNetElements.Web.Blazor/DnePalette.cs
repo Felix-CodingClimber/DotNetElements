@@ -1,6 +1,4 @@
-﻿using MudBlazor.Utilities;
-
-namespace DotNetElements.Web.Blazor;
+﻿namespace DotNetElements.Web.Blazor;
 
 public static class DnePalette
 {

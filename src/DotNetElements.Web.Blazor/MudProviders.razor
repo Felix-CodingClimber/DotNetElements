@@ -1,6 +1,7 @@
-﻿<MudDialogProvider />
+﻿<MudThemeProvider @ref="@mudThemeProvider" @bind-IsDarkMode="@DarkModeActive" />
+<MudPopoverProvider />
+<MudDialogProvider />
 <MudSnackbarProvider />
-<DneThemeProvider @ref="@mudThemeProvider" @bind-IsDarkMode="@DarkModeActive" />
 
 @code
 {
@@ -10,7 +11,7 @@
     [Parameter]
     public EventCallback<bool> DarkModeActiveChanged { get; set; }
 
-    private DneThemeProvider mudThemeProvider = default!;
+    private MudThemeProvider mudThemeProvider = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

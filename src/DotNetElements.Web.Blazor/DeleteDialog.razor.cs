@@ -3,7 +3,7 @@
 public partial class DeleteDialog : ComponentBase
 {
     [CascadingParameter]
-    private MudDialogInstance DialogInstance { get; set; } = default!;
+    private IMudDialogInstance DialogInstance { get; set; } = default!;
 
     [Parameter, EditorRequired]
     public string ItemValue { get; set; } = default!;

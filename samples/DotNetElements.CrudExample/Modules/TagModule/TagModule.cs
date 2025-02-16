@@ -6,12 +6,12 @@ public sealed class TagModule : IModule
 {
 	public const string BaseUrl = "/api/tags";
 
-	public IServiceCollection RegisterModules(IServiceCollection services)
+	public WebApplicationBuilder RegisterModules(WebApplicationBuilder builder)
 	{
-		services.AddScoped<TagRepository>();
-		services.AddManagedRepository<ManagedTagRepository, TagRepository, Tag, Guid>();
+		builder.Services.AddScoped<TagRepository>();
+        builder.Services.AddManagedRepository<ManagedTagRepository, TagRepository, Tag, Guid>();
 
-		return services;
+		return builder;
 	}
 
 	public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)

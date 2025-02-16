@@ -54,7 +54,7 @@
 <MudField Variant="Variant.Outlined" InnerPadding="false" Label="@HasValueLabel" Class="chipselect" ErrorText="@ErrorMessage" Error="@hasErrors">
     <MudSelect @bind-SelectedValues="selectedItemsBinding"
                ToStringFunc="SelectedItemTextFunc"
-               DisableUnderLine="true"
+               UnderLine="false"
                MultiSelection="true"
                OuterClass="chipselect-select-container"
                InputClass="chipselect-select-input"
@@ -69,7 +69,7 @@
     </MudSelect>
     @if (HasValueLabel is not null)
     {
-        <MudChipSet AllClosable="true" OnClose="OnSelectedChipClosed" Class="chipselect-chipset">
+        <MudChipSet T="T" AllClosable="true" OnClose="OnSelectedChipClosed" Class="chipselect-chipset">
             @foreach (T item in selectedItems_Internal)
             {
                 <MudChip Value="@item" Text="@SelectedItemTextFunc.Invoke(item)" Size="Size.Small" />
@@ -169,10 +169,10 @@
         return isValid;
     }
 
-    private void OnSelectedChipClosed(MudChip chip)
+    private void OnSelectedChipClosed(MudChip<T> chip)
     {
-        selectedItems_Internal.Remove((T)chip.Value);
-        SelectedItems.Remove((T)chip.Value);
+        selectedItems_Internal.Remove(chip.Value);
+        SelectedItems.Remove(chip.Value);
 
         UpdateState();
     }

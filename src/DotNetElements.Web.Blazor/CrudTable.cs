@@ -2,7 +2,7 @@
 
 public static class CrudTable
 {
-    public static DialogOptions DefaultEditDialogOptions => new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true, DisableBackdropClick = true };
+    public static DialogOptions DefaultEditDialogOptions => new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true, BackdropClick = false };
 }
 
 // todo use CrudService
@@ -26,9 +26,9 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
         };
 
         var dialog = await DialogService.ShowAsync<TEditDialog>("New entry", parameters, Options.EditDialogOptions);
-        var result = await dialog.Result;
+        DialogResult? result = await dialog.Result;
 
-        if (result.Canceled)
+        if (result?.Canceled is not false)
             return;
 
         Result<TModel> dialogResult = (Result<TModel>)result.Data;
@@ -57,9 +57,9 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
         };
 
         var dialog = await DialogService.ShowAsync<TEditDialog>("Edit entry", parameters, Options.EditDialogOptions);
-        var result = await dialog.Result;
+        DialogResult? result = await dialog.Result;
 
-        if (result.Canceled)
+        if (result?.Canceled is not false)
             return;
 
         Result<TModel> dialogResult = (Result<TModel>)result.Data;
@@ -93,11 +93,14 @@ public abstract class CrudTable<TKey, TModel, TDetails, TEditModel, TEditDialog>
             { x => x.ApiEndpoint, apiEndpoint }
         };
 
-        foreach ((string key, object value) in additionalParameters ?? [])
+        foreach ((string key, object? value) in additionalParameters ?? [])
             parameters.Add(key, value);
 
         IDialogReference dialog = await DialogService.ShowAsync<TDialog>(title, parameters, dialogOptions ?? CrudTable.DefaultEditDialogOptions);
-        DialogResult result = await dialog.Result;
+        DialogResult? result = await dialog.Result;
+
+        if (result?.Canceled is not false)
+            return Result.Fail("Canceled by user");
 
         Result<TDialogModel> dialogResult = (Result<TDialogModel>)result.Data;
 

@@ -2,43 +2,41 @@
 
 @* <div class="@($"{dragClass} {Class}")" style="@($"{Style}; display:flex; flex-direction: column; border-color: var(--mud-palette-lines-inputs); border-width: 1px; border-radius: var(--mud-default-borderradius);")">
     <label style="position: absolute; display: block; padding: 0 5px; align-self: start; transform-origin: top left; transform: translate(14px,-7px) scale(.75); line-height: 18px; font-size: 1rem; font-weight: 400; color: var(--mud-palette-text-primary); background-color: var(--mud-palette-surface);">@Label</label> *@
-    <MudFileUpload T="IBrowserFile" FilesChanged="OnUploadPreviewImage"
-                   Hidden="@false"
-                   InputStyle="opacity: 0"
-                   InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20"
-                   @ondragenter="@SetDragClass"
-                   @ondragleave="@ClearDragClass"
-                   @ondragend="@ClearDragClass">
-        <ButtonTemplate>
-            <div style="display:flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 16px;">
-                @if (previewImageLoaded)
-                {
-                    <MudImage Src="@previewImageSource" Height="300" Fluid="true" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Center" Class="pa-4" />
-                }
-                else
-                {
-                    <div style="display:flex; align-content: center; justify-content:center; padding: 20px; background-color: var(--mud-palette-success-hover); border-radius: 10px;">
-                        <MudIcon Icon="@Icons.Material.Outlined.PhotoLibrary" Style="color: var(--mud-palette-success);" Size="Size.Large" />
-                    </div>
-                }
-                <MudStack Row="true" AlignItems="AlignItems.Baseline" Style="@(previewImageLoaded ? "transform: scale(0.65)" : "transform: scale(1)")">
-                    <MudText Align="Align.Center" Style="font-size: 1.5rem;">Drop your image here, or</MudText>
-                    <MudButton HtmlTag="label"
-                               Variant="Variant.Text"
-                               Color="Color.Success"
-                               Style="left: -10px;"
-                               for="@context.Id">
-                        <MudText Style="font-size: 1.5rem;">browse</MudText>
-                    </MudButton>
-                </MudStack>
+<MudFileUpload T="IBrowserFile" FilesChanged="OnUploadPreviewImage"
+               Hidden="@false"
+               InputStyle="opacity: 0"
+               InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20"
+               @ondragenter="@SetDragClass"
+               @ondragleave="@ClearDragClass"
+               @ondragend="@ClearDragClass">
+    <ActivatorContent>
+        <div style="display:flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 16px;">
+            @if (previewImageLoaded)
+            {
+                <MudImage Src="@previewImageSource" Height="300" Fluid="true" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Center" Class="pa-4" />
+            }
+            else
+            {
+                <div style="display:flex; align-content: center; justify-content:center; padding: 20px; background-color: var(--mud-palette-success-hover); border-radius: 10px;">
+                    <MudIcon Icon="@Icons.Material.Outlined.PhotoLibrary" Style="color: var(--mud-palette-success);" Size="Size.Large" />
+                </div>
+            }
+            <MudStack Row="true" AlignItems="AlignItems.Baseline" Style="@(previewImageLoaded ? "transform: scale(0.65)" : "transform: scale(1)")">
+                <MudText Align="Align.Center" Style="font-size: 1.5rem;">Drop your image here, or</MudText>
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Success"
+                           Style="left: -10px;">
+                    <MudText Style="font-size: 1.5rem;">browse</MudText>
+                </MudButton>
+            </MudStack>
 
-                @if (!previewImageLoaded)
-                {
-                    <MudText Align="Align.Center" Typo="Typo.h6" Style="color: var(--mud-palette-table-lines)">Supports PNG and JPG up to ... mb</MudText>
-                }
-            </div>
-        </ButtonTemplate>
-    </MudFileUpload>
+            @if (!previewImageLoaded)
+            {
+                <MudText Align="Align.Center" Typo="Typo.h6" Style="color: var(--mud-palette-table-lines)">Supports PNG and JPG up to ... mb</MudText>
+            }
+        </div>
+    </ActivatorContent>
+</MudFileUpload>
 @* </div> *@
 
 @code

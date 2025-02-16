@@ -8,7 +8,7 @@ public class CrudEditDialog<TModel, TEditModel> : MudDialog
 	protected HttpClient HttpClient { get; set; } = default!;
 
 	[CascadingParameter]
-	protected MudDialogInstance Dialog { get; set; } = default!;
+	protected IMudDialogInstance Dialog { get; set; } = default!;
 
 	[Parameter, EditorRequired]
 	public TEditModel Model { get; set; } = default!;

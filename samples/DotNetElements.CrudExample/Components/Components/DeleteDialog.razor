@@ -17,7 +17,7 @@
 @code
 {
     [CascadingParameter]
-    MudDialogInstance DialogInstance { get; set; } = default!;
+    IMudDialogInstance DialogInstance { get; set; } = default!;
 
     [Parameter, EditorRequired]
     public string ItemValue { get; set; } = default!;

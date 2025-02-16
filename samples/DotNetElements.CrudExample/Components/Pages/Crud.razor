@@ -97,7 +97,7 @@ else
 								@foreach (TagModel tag in context.Value.Tags)
 								{
 									<MudTooltip Text="@tag.Id.ToString()">
-										<MudChip Variant="Variant.Outlined" Size="Size.Small">@tag.Label</MudChip>
+										<MudChip Value="tag" Variant="Variant.Outlined" Size="Size.Small">@tag.Label</MudChip>
 									</MudTooltip>
 								}
 							</td>

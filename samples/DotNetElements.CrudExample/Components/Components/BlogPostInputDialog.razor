@@ -20,7 +20,7 @@
 @code
 {
     [CascadingParameter]
-    MudDialogInstance DialogInstance { get; set; } = default!;
+    IMudDialogInstance DialogInstance { get; set; } = default!;
 
     [Parameter, EditorRequired]
     public EditBlogPostModel BlogPost { get; set; } = default!;
@@ -32,7 +32,7 @@
 
     protected override void OnParametersSet()
     {
-        selectedTags = new HashSet<TagModel>(BlogPost.Tags);
+        selectedTags = new HashSet<TagModel>(SelectableTags.Where(tag => BlogPost.Tags.Any(selectedTag => selectedTag.Id == tag.Id)));
     }
 
     private void OnSave()

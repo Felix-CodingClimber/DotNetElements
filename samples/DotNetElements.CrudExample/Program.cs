@@ -13,13 +13,14 @@ builder.Services.AddMudServices();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
-builder.Services.AddScoped<ICurrentUserProvider, CurrentUserProviderWeb>();
+//builder.Services.AddScoped<ICurrentUserProvider, CurrentUserProviderWeb>(); // todo
+builder.Services.AddScoped<ICurrentUserProvider>(provider => new FakeCurrentUserProviderWeb(new Guid("e8d118e0-18c6-4fff-9d86-e91a915d8198"))); // todo debug only
 
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddDatabaseMigrationService<AppDbContext>();
 builder.AddSettings<AppDatabaseSettings>();
 
-builder.Services.RegisterModules(typeof(BlogPostModule).Assembly);
+builder.RegisterModules(typeof(BlogPostModule).Assembly);
 
 WebApplication app = builder.Build();
 

@@ -3,6 +3,18 @@
 @using DotNetElements.Web.Blazor
 @using DotNetElements.CrudExample.Modules.TagModule
 
-@code {
+@{
+    DialogContent =
+    @<EditForm EditContext="@EditContext">
+        <DneDataAnnotationsValidator />
+        <MudTextField @bind-Value="Model.Label" Label="Label" />
+    </EditForm>;
+}
 
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code
+{
 }

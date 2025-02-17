@@ -23,7 +23,7 @@
     <MudPaper Outlined="true" Elevation="0" style="overflow-y: auto; grid-area: image-list">
         @if (Images is not null)
         {
-            <MudList T="TImage" SelectedValueChanged="OnSelectedImageChanged" Clickable="true">
+            <MudList T="TImage" SelectedValueChanged="OnSelectedImageChanged">
                 @foreach (TImage image in Images)
                 {
                     <MudListItem Value="image">

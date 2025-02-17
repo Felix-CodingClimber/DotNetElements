@@ -14,9 +14,9 @@ public class CrudTableOptions<TModel> : CrudOptions<TModel>
 
     public CrudTableOptions(string baseEndpointUri, MaxWidth editDialogMaxWidth) : this(baseEndpointUri)
     {
-        EditDialogOptions = new()
-        {
-            MaxWidth = editDialogMaxWidth
-        };
+        EditDialogOptions = new(); // todo
+        //{
+        //    MaxWidth = editDialogMaxWidth
+        //};
     }
 }

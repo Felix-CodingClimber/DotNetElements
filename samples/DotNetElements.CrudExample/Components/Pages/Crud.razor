@@ -195,17 +195,28 @@ else
 	{
 		EditTagModel editTagModel = new EditTagModel();
 
-		var dialogParameters = new DialogParameters<TagInputDialog>
+		var dialogParameters = new DialogParameters<TagDialog>
 		{
-			{ x => x.Tag, editTagModel }
+			{ x => x.IsEditMode, false },
+			{ x => x.Model, editTagModel },
+			{ x => x.EditContext, new EditContext(editTagModel) },
+			{ x => x.ApiEndpoint, "" }
 		};
 
 		DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
 
-		IDialogReference dialog = await dialogService.ShowAsync<TagInputDialog>("New tag", dialogParameters, dialogOptions);
-		DialogResult result = await dialog.Result;
+		var dialog = await dialogService.ShowAsync<TagDialog>("New tag", dialogParameters, dialogOptions);
 
-		if (result.Canceled)
+		// var dialogParameters = new DialogParameters<TagInputDialog>
+		// {
+		// 	{ x => x.Tag, editTagModel }
+		// };
+
+		// IDialogReference dialog = await dialogService.ShowAsync<TagInputDialog>("New tag", dialogParameters, dialogOptions);
+
+		DialogResult? result = await dialog.Result;
+
+		if (result?.Canceled is not false)
 			return;
 
 		CrudResult<Tag> createdTag = await tagRepository.CreateAsync(editTagModel.MapToEntity());
@@ -233,9 +244,9 @@ else
 		DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
 
 		IDialogReference dialog = await dialogService.ShowAsync<TagInputDialog>($"Edit tag {tag.Label}", dialogParameters, dialogOptions);
-		DialogResult result = await dialog.Result;
+		DialogResult? result = await dialog.Result;
 
-		if (result.Canceled)
+		if (result?.Canceled is not false)
 			return;
 
 		CrudResult<Tag> updatedTag = await tagRepository.UpdateAsync<EditTagModel>(editTagModel.Id, editTagModel);

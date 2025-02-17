@@ -1,7 +1,7 @@
 ﻿<MudThemeProvider @ref="@mudThemeProvider" @bind-IsDarkMode="@DarkModeActive" />
-<MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+<MudPopoverProvider />
 
 @code
 {
@@ -15,11 +15,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            DarkModeActive = await mudThemeProvider.GetSystemPreference();
-            if (DarkModeActiveChanged.HasDelegate)
-                await DarkModeActiveChanged.InvokeAsync(DarkModeActive);
-        }
+        if (!firstRender)
+            return;
+
+        DarkModeActive = await mudThemeProvider.GetSystemPreference();
+
+        if (DarkModeActiveChanged.HasDelegate)
+            await DarkModeActiveChanged.InvokeAsync(DarkModeActive);
     }
 }

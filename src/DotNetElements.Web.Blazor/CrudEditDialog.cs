@@ -22,7 +22,10 @@ public class CrudEditDialog<TModel, TEditModel> : MudDialog
 	[Parameter]
 	public bool IsEditMode { get; set; }
 
-	private RenderFragment DefaultDialogActions => builder =>
+	protected string OkButtonText = "Save";
+	protected string CancelButtonText = "Cancel";
+
+    private RenderFragment DefaultDialogActions => builder =>
 	{
 		builder.OpenElement(0, "div");
 		builder.AddAttribute(1, "class", "mb-2 mr-3");
@@ -36,7 +39,7 @@ public class CrudEditDialog<TModel, TEditModel> : MudDialog
 		builder.AddAttribute(8, "ChildContent",
 			(RenderFragment)(childBuilder =>
 			{
-				childBuilder.AddContent(9, "Save");
+				childBuilder.AddContent(9, OkButtonText);
 			}));
 		builder.CloseComponent();
 		// Cancel button
@@ -47,7 +50,7 @@ public class CrudEditDialog<TModel, TEditModel> : MudDialog
 		builder.AddAttribute(14, "ChildContent",
 			(RenderFragment)(childBuilder =>
 			{
-				childBuilder.AddContent(15, "Cancel");
+				childBuilder.AddContent(15, CancelButtonText);
 			}));
 		builder.CloseComponent();
 		builder.CloseElement();

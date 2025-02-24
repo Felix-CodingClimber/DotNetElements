@@ -17,6 +17,8 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
     protected static readonly RelatedEntitiesAttribute? RelatedEntities = typeof(TEntity).GetCustomAttribute<RelatedEntitiesAttribute>();
     protected static readonly RelatedEntitiesCollectionsAttribute? RelatedEntitiesCollections = typeof(TEntity).GetCustomAttribute<RelatedEntitiesCollectionsAttribute>();
 
+    protected readonly Dictionary<string, Action<TEntity, object?, object?>> propertyChangedActions = [];
+
     public Repository(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider) : base(dbContext)
     {
         CurrentUserProvider = currentUserProvider;
@@ -80,7 +82,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
             if (existingEntity is null)
                 return CrudResult.NotFound(id);
 
-            entity.Update(entity, this);
+            entity.Update(entity);
 
             // Check if entity has changed and set audit properties if needed
             if (DbContext.ChangeTracker.HasChanges())
@@ -109,14 +111,26 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
         if (existingEntity is null)
             return CrudResult.NotFound(id);
 
-        if (existingEntity is not IUpdatable<TFrom> updatableEntity)
-            throw new InvalidOperationException($"UpdateAsync<TFrom> is only supported for entities implementing IUpdatable<{typeof(TFrom)}>.");
-
-        updatableEntity.Update(from, this);
+        if (existingEntity is IUpdatable<TFrom> updatableEntity)
+            updatableEntity.Update(from);
+        else if (existingEntity is IUpdatableEx<TFrom> updatableEntityEx)
+            updatableEntityEx.Update(from, CurrentUserProvider.GetCurrentUserId(), TimeProvider.GetUtcNow(), this);
+        else
+            throw new InvalidOperationException($"UpdateAsync<TFrom> is only supported for entities implementing IUpdatable<{typeof(TFrom)}> or IUpdatableEx<{typeof(TFrom)}>.");
 
         // Check if entity has changed and set audit properties if needed
         if (DbContext.ChangeTracker.HasChanges())
         {
+            // todo move to method
+            if (propertyChangedActions.Count > 0)
+            {
+                foreach (var entryProp in DbContext.Entry(existingEntity).Properties.Where(prop => prop.IsModified))
+                {
+                    if (propertyChangedActions.TryGetValue(entryProp.Metadata.Name, out Action<TEntity, object?, object?>? action))
+                        action(existingEntity, entryProp.OriginalValue, entryProp.CurrentValue);
+                }
+            }
+
             SetModificationAudited(existingEntity);
 
             UpdateEntityVersion(existingEntity, from);
@@ -171,7 +185,7 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 
     public async Task<CrudResult> DeleteByIdAsync(TKey id)
     {
-       TEntity? entityToDelete = await Entities.FirstOrDefaultAsync(WithId(id));
+        TEntity? entityToDelete = await Entities.FirstOrDefaultAsync(WithId(id));
 
         if (entityToDelete is null)
             return CrudResult.NotFound(id);
@@ -182,7 +196,6 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
 
         return CrudResult.Ok();
     }
-
 
     public virtual async Task ClearTable()
     {
@@ -302,12 +315,24 @@ public abstract class Repository<TDbContext, TEntity, TKey> : ReadOnlyRepository
             foreach (string relatedProperty in RelatedEntitiesOnUpdate.ReferenceProperties)
                 query = query.Include(relatedProperty);
         }
+
         return query;
     }
 
     protected Task LoadRelatedEntities(TEntity entity)
     {
         return LoadRelatedEntities(DbContext.Entry(entity));
+    }
+
+    // todo check if we want to compile the expression
+    protected void RegisterPropertyChanged<TValue>(Expression<Func<TEntity, TValue>> propertyExpression, Action<TEntity, TValue?, TValue?> onPropertyChanged)
+    {
+        MemberExpression? member = propertyExpression.Body as MemberExpression ?? (propertyExpression.Body as UnaryExpression)?.Operand as MemberExpression;
+
+        if (member is null || member.Member.DeclaringType != typeof(TEntity))
+            throw new ArgumentNullException($"Expression {nameof(propertyExpression)} must point to a member of {typeof(TEntity)}.");
+
+        propertyChangedActions.Add(member.Member.Name, (entity, oldValue, newValue) => onPropertyChanged(entity, (TValue?)oldValue, (TValue?)newValue));
     }
 
     // todo, review loading related entities. Maybe add parameter returnRelatedEntities?

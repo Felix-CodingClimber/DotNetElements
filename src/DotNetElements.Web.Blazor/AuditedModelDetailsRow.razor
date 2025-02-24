@@ -1,8 +1,9 @@
 @inherits MudComponentBase
 
+@* todo check if TKey and TModel is really needed here *@
 @typeparam TKey where TKey : notnull, IEquatable<TKey>
 @typeparam TModel where TModel : IModel<TKey>
-@typeparam TDetails where TDetails : AuditedModelDetails
+@typeparam TDetails where TDetails : CreationAuditedModelDetails
 
 @if (Context.DetailsShown && Context.Details is not null)
 {
@@ -10,7 +11,7 @@
     {
         <tr>
             <td colspan="100">
-                <MudGrid Spacing="2">
+                <MudGrid Spacing="4">
                     <MudItem xs="11">
                         <MudStack Spacing="1">
                             <MudText Typo="Typo.caption"><b>ID</b></MudText>
@@ -26,12 +27,24 @@
                             <MudText Typo="Typo.caption">@Context.Details.CreationTime.ToFriendlyLocalDateTime()</MudText>
                         </MudStack>
                     </MudItem>
-                    <MudItem xs="4">
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
-                            <MudText Typo="Typo.caption">@Context.Details.LastModificationTime.ToFriendlyLocalDateTime()</MudText>
-                        </MudStack>
-                    </MudItem>
+                    @if (Context.Details is AuditedModelDetails auditedModelDetails)
+                    {
+                        <MudItem xs="4">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+                                <MudText Typo="Typo.caption">@auditedModelDetails.LastModificationTime.ToFriendlyLocalDateTime()</MudText>
+                            </MudStack>
+                        </MudItem>
+                    }
+                    @if (Context.Details is PersistentModelDetails persistentModelDetails)
+                    {
+                        <MudItem xs="4">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption"><b>Deletion Time</b></MudText>
+                                <MudText Typo="Typo.caption">@persistentModelDetails.DeletionTime.ToFriendlyLocalDateTime()</MudText>
+                            </MudStack>
+                        </MudItem>
+                    }
                 </MudGrid>
             </td>
         </tr>
@@ -40,7 +53,7 @@
     {
         <MudTr>
             <MudTd colspan="100" Style="border-bottom: 3px solid var(--mud-palette-table-lines);" DataLabel="Row Details">
-                <MudGrid Spacing="2">
+                <MudGrid Spacing="4">
                     <MudItem xs="11">
                         <MudStack Spacing="1">
                             <MudText Typo="Typo.caption"><b>ID</b></MudText>
@@ -56,12 +69,24 @@
                             <MudText Typo="Typo.caption">@Context.Details.CreationTime.ToFriendlyLocalDateTime()</MudText>
                         </MudStack>
                     </MudItem>
-                    <MudItem xs="4">
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
-                            <MudText Typo="Typo.caption">@Context.Details.LastModificationTime.ToFriendlyLocalDateTime()</MudText>
-                        </MudStack>
-                    </MudItem>
+                    @if (Context.Details is AuditedModelDetails auditedModelDetails)
+                    {
+                        <MudItem xs="4">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+                                <MudText Typo="Typo.caption">@auditedModelDetails.LastModificationTime.ToFriendlyLocalDateTime()</MudText>
+                            </MudStack>
+                        </MudItem>
+                    }
+                    @if (Context.Details is PersistentModelDetails persistentModelDetails)
+                    {
+                        <MudItem xs="4">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption"><b>Deletion Time</b></MudText>
+                                <MudText Typo="Typo.caption">@persistentModelDetails.DeletionTime.ToFriendlyLocalDateTime()</MudText>
+                            </MudStack>
+                        </MudItem>
+                    }
                 </MudGrid>
             </MudTd>
         </MudTr>

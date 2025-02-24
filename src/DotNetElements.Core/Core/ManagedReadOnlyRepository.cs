@@ -105,6 +105,14 @@ public abstract class ManagedReadOnlyRepository<TRepository, TEntity, TKey> : IR
         return repository.Inner.GetAuditedModelDetailsByIdAsync<TAuditedEntity>(id, cancellationToken);
     }
 
+    public Task<CrudResult<PersistentModelDetails>> GetPersistentModelDetailsByIdAsync<TPersistentEntity>(TKey id, CancellationToken cancellationToken = default)
+        where TPersistentEntity : PersistentEntity<TKey>
+    {
+        using var repository = RepositoryFactory.Create();
+
+        return repository.Inner.GetPersistentModelDetailsByIdAsync<TPersistentEntity>(id, cancellationToken);
+    }
+
     public Task<CrudResult<TProjection>> GetFilteredWithProjectionAsync<TProjection>(
         Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
         Expression<Func<TEntity, bool>> filter,

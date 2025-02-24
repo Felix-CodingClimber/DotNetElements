@@ -180,4 +180,31 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 
         return CrudResult.OkIfNotNull(entity, CrudError.NotFound, id.ToString());
     }
+
+    public async Task<CrudResult<PersistentModelDetails>> GetPersistentModelDetailsByIdAsync<TPersistentEntity>(TKey id, CancellationToken cancellationToken = default)
+        where TPersistentEntity : PersistentEntity<TKey>
+    {
+        DbSet<TPersistentEntity> localDbSet = DbContext.Set<TPersistentEntity>();
+
+        PersistentModelDetails? entity = await localDbSet
+            .AsNoTracking()
+            .Where(WithId<TPersistentEntity>(id))
+            .Select(entity =>
+                new PersistentModelDetails()
+                {
+                    CreatorId = entity.CreatorId,
+                    Creator = "Felix", // todo get from user
+                    CreationTime = entity.CreationTime,
+                    LastModifierId = entity.LastModifierId,
+                    LastModifier = "Felix", // todo get from user
+                    LastModificationTime = entity.LastModificationTime,
+                    IsDeleted = entity.IsDeleted,
+                    DeleterId = entity.DeleterId,
+                    Deleter = "Felix", // todo get from user
+                    DeletionTime = entity.DeletionTime
+                }
+        ).FirstOrDefaultAsync(cancellationToken);
+
+        return CrudResult.OkIfNotNull(entity, CrudError.NotFound, id.ToString());
+    }
 }

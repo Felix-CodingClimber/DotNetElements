@@ -20,6 +20,7 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.2" />
+		<PackageReference Include="NCronJob" Version="4.3.3" />
 	</ItemGroup>
 
 </Project>

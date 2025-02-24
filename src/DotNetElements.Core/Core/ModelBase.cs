@@ -82,3 +82,14 @@ public class AuditedModelDetails : CreationAuditedModelDetails
 
     public DateTimeOffset? LastModificationTime { get; init; }
 }
+
+public class PersistentModelDetails : AuditedModelDetails
+{
+    public bool IsDeleted { get; init; }
+
+    public Guid? DeleterId { get; init; }
+
+    public string? Deleter { get; init; }
+
+    public DateTimeOffset? DeletionTime { get; init; }
+}

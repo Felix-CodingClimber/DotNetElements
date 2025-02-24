@@ -1,0 +1,29 @@
+﻿@inherits MudComponentBase
+
+@if (SimpleTable)
+{
+    <td class="@($"py-0 {Class}")" style="@($"width: 0px; {Style}")">
+        @if (IsDeleted)
+        {
+            <MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Class="pa-1" Color="Color.Error" />
+        }
+    </td>
+}
+else
+{
+    <MudTd DataLabel="Deleted" Class="@($"py-0 {Class}")" Style="@($"width: 0px; {Style}")">
+        @if (IsDeleted)
+        {
+            <MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Class="pa-1" Color="Color.Error" />
+        }
+    </MudTd>
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public bool IsDeleted { get; set; }
+
+    [Parameter]
+    public bool SimpleTable { get; set; }
+}

@@ -61,7 +61,7 @@ public class CrudEditDialog<TModel, TEditModel> : MudDialog
 		DialogActions = DefaultDialogActions;
 	}
 
-	private async Task OnSubmit()
+    protected async Task OnSubmit()
 	{
 		OnBeforeValidate();
 
@@ -82,7 +82,7 @@ public class CrudEditDialog<TModel, TEditModel> : MudDialog
 		Dialog?.Close(DialogResult.Ok(result));
 	}
 
-	private void OnCancel()
+	protected void OnCancel()
 	{
 		Dialog?.Cancel();
 	}

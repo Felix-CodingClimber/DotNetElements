@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DotNetElements.Core;
 
@@ -18,6 +19,13 @@ public sealed class OutboxService<TDbContext> : IOutboxService
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly OutboxOptions outboxOptions;
     private readonly ILogger<OutboxService<TDbContext>> logger;
+
+    private readonly JsonSerializerOptions jsonOptions = new()
+    {
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        PropertyNameCaseInsensitive = true
+    };
+
 
     public OutboxService(
         TDbContext dbContext,
@@ -37,12 +45,18 @@ public sealed class OutboxService<TDbContext> : IOutboxService
 
     public async Task RunAsync(CancellationToken cancellation)
     {
-        IReadOnlyList<OutboxMessage> messages = await GetPendingMessages();
+        IReadOnlyList<OutboxMessage> messages = await GetPendingMessages(cancellation);
 
         logger.LogInformation("Started processing {MessageCount} messages", messages.Count);
 
         foreach (var messagesByType in messages.GroupBy(m => m.Type))
         {
+            if (cancellation.IsCancellationRequested)
+            {
+                logger.LogWarning("Processing was cancelled");
+                break;
+            }
+
             logger.LogInformation("Started processing {MessageCount} messages of type {MessageType}", messagesByType.Count(), messagesByType.Key);
 
             Type? messageType = outboxOptions.MessagesAssembly!.GetType(messagesByType.Key);
@@ -66,9 +80,15 @@ public sealed class OutboxService<TDbContext> : IOutboxService
 
             foreach (OutboxMessage message in messagesByType)
             {
+                if (cancellation.IsCancellationRequested)
+                {
+                    logger.LogWarning("Processing was cancelled");
+                    break;
+                }
+
                 try
                 {
-                    object? deserializedMessage = JsonSerializer.Deserialize(message.Content, messageType);
+                    object? deserializedMessage = JsonSerializer.Deserialize(message.Content, messageType, jsonOptions);
 
                     if (deserializedMessage is null)
                     {
@@ -76,7 +96,15 @@ public sealed class OutboxService<TDbContext> : IOutboxService
                         continue;
                     }
 
-                    await messageProcessor.ProcessAsync(deserializedMessage);
+                    Result processMessageResult = await messageProcessor.ProcessAsync(deserializedMessage, cancellation);
+
+                    if (processMessageResult.IsFail)
+                    {
+                        logger.LogError("Failed to process message {MessageId} of type {MessageType}. Error: {Error}", message.Id, message.Type, processMessageResult.ErrorMessage);
+
+                        await HandleFailedMessage(message, processMessageResult.ErrorMessage);
+                        continue;
+                    }
 
                     bool updateSuccess = await UpdateMessageStatus(message, processedOnUtc: timeProvider.GetUtcNow());
 
@@ -102,14 +130,14 @@ public sealed class OutboxService<TDbContext> : IOutboxService
         logger.LogInformation("Finished processing messages");
     }
 
-    private async Task<IReadOnlyList<OutboxMessage>> GetPendingMessages()
+    private async Task<IReadOnlyList<OutboxMessage>> GetPendingMessages(CancellationToken cancellation)
     {
         try
         {
             return await dbContext.OutboxMessages
                 .Where(m => m.ProcessedOnUtc == null)
                 .OrderBy(m => m.OccurredOnUtc)
-                .ToListAsync();
+                .ToListAsync(cancellation);
         }
         catch (Exception ex)
         {
@@ -131,7 +159,7 @@ public sealed class OutboxService<TDbContext> : IOutboxService
         {
             logger.LogError("Failed to process message {MessageId} of type {MessageType}. Error: Max retry count reached", message.Id, message.Type);
 
-            bool updateSuccess = await UpdateMessageStatus(message, processedOnUtc: timeProvider.GetUtcNow(), error: error, retryCount: message.RetryCount + 1);
+            bool updateSuccess = await UpdateMessageStatus(message, processedOnUtc: timeProvider.GetUtcNow(), error: error, retryCount: message.RetryCount);
 
             // todo check what to do if update fails here
         }
@@ -147,8 +175,6 @@ public sealed class OutboxService<TDbContext> : IOutboxService
 
         if (retryCount is not null)
             message.RetryCount = retryCount.Value;
-
-        //dbContext.OutboxMessages.Update(message); // todo remove, should not be needed as EF already tracks the entity
 
         int numRowsUpdated = await dbContext.SaveChangesAsync();
 

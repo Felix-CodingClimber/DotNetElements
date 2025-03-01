@@ -10,11 +10,14 @@ public static class EditContextExtensions
         if (editContext is null)
             return;
 
+        IEnumerable<string> messages = editContext.GetValidationMessages();
+
+        if (!messages.Any())
+            return;
+
         Console.WriteLine($"DEBUG EditContext validation messages. Context: {editContext.Model.GetType()}");
 
-        foreach (string message in editContext.GetValidationMessages())
-        {
+        foreach (string message in messages)
             Console.WriteLine(message);
-        }
     }
 }

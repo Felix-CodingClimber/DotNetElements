@@ -37,4 +37,12 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddOutboxMessageProcessor<TService, TMessage>(this IServiceCollection services)
+        where TService : OutboxMessageProcessor<TMessage>
+    {
+        services.AddScoped<OutboxMessageProcessor<TMessage>, TService>();
+
+        return services;
+    }
 }

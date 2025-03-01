@@ -2,18 +2,18 @@
 
 public interface IOutboxMessageProcessor
 {
-	Task<Result> ProcessAsync(object message);
+	Task<Result> ProcessAsync(object message, CancellationToken cancellation);
 }
 
 public abstract class OutboxMessageProcessor<T> : IOutboxMessageProcessor
 {
-	public Task<Result> ProcessAsync(object message)
+	public Task<Result> ProcessAsync(object message, CancellationToken cancellation)
 	{
 		if (message is not T tMessage)
 			throw new ArgumentException("Invalid message type");
 
-		return ProcessAsync(tMessage);
+		return ProcessAsync(tMessage, cancellation);
 	}
 
-	protected abstract Task<Result> ProcessAsync(T message);
+	protected abstract Task<Result> ProcessAsync(T message, CancellationToken cancellation);
 }

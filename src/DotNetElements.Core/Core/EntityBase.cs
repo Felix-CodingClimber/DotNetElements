@@ -124,8 +124,21 @@ public class PersistentEntity<TKey> : AuditedEntity<TKey>, IDeletionAuditedEntit
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void Delete(DateTimeOffset deletionTime) => throw new NotImplementedException();
+    public void Delete(DateTimeOffset deletionTime)
+    {
+        if (IsDeleted)
+            throw new InvalidOperationException("Can not delete an already deleted entity");
+
+        IsDeleted = true;
+        DeletionTime = deletionTime;
+    }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void Delete() => throw new NotImplementedException();
+    public void Delete()
+    {
+        if (IsDeleted)
+            throw new InvalidOperationException("Can not delete an already deleted entity");
+
+        IsDeleted = true;
+    }
 }

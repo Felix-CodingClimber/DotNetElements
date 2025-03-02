@@ -1,0 +1,20 @@
+﻿@inherits CrudEditDialog<TagModel, EditTagModel>
+
+@using DotNetElements.Web.Blazor
+@using DotNetElements.CrudExample.Modules.TagModule
+
+@{
+    DialogContent =
+    @<EditForm EditContext="@EditContext">
+        <DneDataAnnotationsValidator />
+        <MudTextField @bind-Value="Model.Label" Label="Label" />
+    </EditForm>;
+}
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code
+{
+}

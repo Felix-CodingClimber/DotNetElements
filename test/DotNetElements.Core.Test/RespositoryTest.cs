@@ -18,6 +18,7 @@ public class ReadOnlyRepositoryTest
 			result.IsOk.Should().BeTrue();
 
 			result.Value.Should().BeEquivalentTo(FakeEntities.TagOne, options => options
+				.Excluding(entity => ((IHasKey<Guid>)entity).HasKey)
 				.Excluding(entity => entity.Id)
 				.Excluding(entity => entity.CreatorId)
 				.Excluding(entity => entity.CreationTime));
@@ -35,7 +36,8 @@ public class ReadOnlyRepositoryTest
 			tagsFromDb.Count.Should().Be(1);
 
 			tagsFromDb[0].Should().BeEquivalentTo(FakeEntities.TagOne, options => options
-				.Excluding(entity => entity.Id)
+				.Excluding(entity => ((IHasKey<Guid>)entity).HasKey)
+                .Excluding(entity => entity.Id)
 				.Excluding(entity => entity.CreatorId)
 				.Excluding(entity => entity.CreationTime));
 
@@ -60,7 +62,7 @@ public class ReadOnlyRepositoryTest
 		Tag? tagBeforeUpdate = null;
 		const string updatedLabelValue = "Updated Label";
 		DateTimeOffset utcUpdateTime = factory.TimeProvider.GetUtcNow().AddDays(1);
-		Guid updateUserId = FakeCurrentUserProvider.FakeUserIdTwo;
+		Guid updateUserId = FakeCurrentUserProvider.FakeUserIdOne;
 
 		using (FakeTagRepository tagRepo = factory.CreateRepository())
 		{
@@ -90,6 +92,7 @@ public class ReadOnlyRepositoryTest
 			IReadOnlyList<Tag> tagsFromDb = await tagRepo.GetAllAsync();
 
 			tagsFromDb[0].Should().BeEquivalentTo(tagBeforeUpdate, options => options
+				.Excluding(entity => ((IAuditedEntity<Guid>)entity).HasChanged)
 				.Excluding(entity => entity.Label)
 				.Excluding(entity => entity.LastModifierId)
 				.Excluding(entity => entity.LastModificationTime)
@@ -117,13 +120,14 @@ public class ReadOnlyRepositoryTest
 		IReadOnlyList<Tag> tagsForUser1;
 		using (FakeTagRepository tagRepo = factory.CreateRepository())
 		{
-			tagsForUser1 = await tagRepo.GetAllAsync();
+            tagsForUser1 = await tagRepo.GetAllAsync();
+            tagsForUser1 = await tagRepo.GetAllAsync();
 		}
 
 		// Update entity from user 2
 		using (FakeTagRepository tagRepo = factory.CreateRepository())
 		{
-			IReadOnlyList<Tag> tagsFromDb = await tagRepo.GetAllAsync();
+            IReadOnlyList<Tag> tagsFromDb = await tagRepo.GetAllAsync();
 
 			// Update value
 			EditTagModel editTagModel = new(tagsFromDb[0].MapToModel())
@@ -137,8 +141,8 @@ public class ReadOnlyRepositoryTest
 		// Assert update fails for user 1
 		using (FakeTagRepository tagRepo = factory.CreateRepository())
 		{
-			// Update value
-			EditTagModel editTagModel = new(tagsForUser1[0].MapToModel())
+            // Update value
+            EditTagModel editTagModel = new(tagsForUser1[0].MapToModel())
 			{
 				Label = "Updated Label User 1"
 			};

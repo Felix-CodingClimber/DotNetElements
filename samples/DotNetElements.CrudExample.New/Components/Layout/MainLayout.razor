@@ -1,0 +1,40 @@
+﻿@using DotNetElements.Web.Blazor
+@inherits LayoutComponentBase
+
+<MudProviders @bind-DarkModeActive="@darkModeActive" />
+
+<MudLayout>
+	<MudAppBar Elevation="1">
+		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@OnToggleDrawer" />
+		<MudSpacer />
+		<ThemeToggleButton @bind-DarkModeActive="darkModeActive" />
+		<MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Edge="Edge.End" />
+	</MudAppBar>
+	<MudDrawer @bind-Open="@drawerOpen">
+		<MudDrawerHeader>
+			<MudText Typo="Typo.h5" Class="ml-3">Blazor CRUD</MudText>
+		</MudDrawerHeader>
+		<NavMenu />
+	</MudDrawer>
+	<MudMainContent>
+		<MudContainer MaxWidth="MaxWidth.Medium" Class="py-8">
+			@Body
+		</MudContainer>
+	</MudMainContent>
+</MudLayout>
+
+@code
+{
+	private bool drawerOpen = true;
+	private bool darkModeActive;
+
+	private void OnToggleDrawer()
+	{
+		drawerOpen = !drawerOpen;
+	}
+
+	private void OnToggleDarkMode()
+	{
+		darkModeActive = !darkModeActive;
+	}
+}

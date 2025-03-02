@@ -1,0 +1,74 @@
+﻿namespace DotNetElements.Core.EntityFramework.Shared;
+
+public interface IModel<TKey> : IHasKey<TKey>
+    where TKey : notnull, IEquatable<TKey>;
+
+public interface ICreateModel<TModel, TKey>
+    where TModel : Model<TKey>
+    where TKey : notnull, IEquatable<TKey>;
+
+public interface IEditModel<TModel, TKey> : IHasKey<TKey>
+    where TModel : Model<TKey>
+    where TKey : notnull, IEquatable<TKey>;
+
+public abstract class Model<TKey> : IModel<TKey>
+    where TKey : notnull, IEquatable<TKey>
+{
+    public required TKey Id { get; init; }
+}
+
+public abstract class VersionedModel<TKey> : Model<TKey>, IHasVersion
+    where TKey : notnull, IEquatable<TKey>
+{
+    public required Guid Version { get; init; }
+}
+
+public abstract class CreateModel<TModel, TKey> : ICreateModel<TModel, TKey>
+    where TModel : Model<TKey>
+    where TKey : notnull, IEquatable<TKey>;
+
+public abstract class EditModel<TModel, TKey> : IEditModel<TModel, TKey>
+    where TModel : Model<TKey>
+    where TKey : notnull, IEquatable<TKey>
+{
+    public required TKey Id { get; init; }
+}
+
+public abstract class VersionedEditModel<TModel, TKey> : EditModel<TModel, TKey>, IHasVersion
+    where TModel : VersionedModel<TKey>
+    where TKey : notnull, IEquatable<TKey>
+{
+    public required Guid Version { get; init; }
+}
+
+// todo interface?
+public abstract class ModelDetails;
+
+public class CreationAuditedModelDetails : ModelDetails
+{
+    public required Guid CreatorId { get; init; }
+
+    public required string CreatorDisplayName { get; init; }
+
+    public required DateTimeOffset CreationTime { get; init; }
+}
+
+public class AuditedModelDetails : CreationAuditedModelDetails
+{
+    public Guid? LastModifierId { get; init; }
+
+    public string? LastModifierDisplayName { get; init; }
+
+    public DateTimeOffset? LastModificationTime { get; init; }
+}
+
+public class PersistentModelDetails : AuditedModelDetails
+{
+    public bool IsDeleted { get; init; }
+
+    public Guid? DeleterId { get; init; }
+
+    public string? DeleterDisplayName { get; init; }
+
+    public DateTimeOffset? DeletionTime { get; init; }
+}

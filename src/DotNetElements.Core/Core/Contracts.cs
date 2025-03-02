@@ -5,7 +5,7 @@ public interface IHasKey<TKey>
 {
     TKey Id { get; }
 
-    bool HasKey => !Id.Equals(default(TKey));
+    bool HasKey => !Id.Equals(default);
 }
 
 public interface IHasVersionReadOnly

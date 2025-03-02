@@ -89,12 +89,11 @@ public abstract class ManagedReadOnlyRepository<TRepository, TEntity, TKey> : IR
     public Task<CrudResult<TProjection>> GetByIdWithProjectionAsync<TProjection>(
         TKey id,
         Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
-        Expression<Func<TEntity, bool>>? filter = null,
         CancellationToken cancellationToken = default)
     {
         using var repository = RepositoryFactory.Create();
 
-        return repository.Inner.GetByIdWithProjectionAsync(id, selector, filter, cancellationToken);
+        return repository.Inner.GetByIdWithProjectionAsync(id, selector, cancellationToken);
     }
 
     public Task<CrudResult<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(TKey id, CancellationToken cancellationToken = default)

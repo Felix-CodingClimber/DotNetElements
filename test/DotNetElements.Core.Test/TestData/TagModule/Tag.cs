@@ -34,7 +34,7 @@ public class Tag : AuditedEntity<Guid>, IUpdatable<EditTagModel>, IRelatedEntity
 	private Tag() { }
 #nullable enable
 
-	public void Update(EditTagModel from, IAttachRelatedEntity _)
+	public void Update(EditTagModel from)
 	{
 		ArgumentNullException.ThrowIfNull(from);
 

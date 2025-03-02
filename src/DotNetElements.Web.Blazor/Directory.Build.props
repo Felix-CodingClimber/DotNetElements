@@ -4,4 +4,8 @@
 		<EnableSourceControlManagerQueries>true</EnableSourceControlManagerQueries>
 		<UseArtifactsOutput>true</UseArtifactsOutput>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>IDE0290</NoWarn>
+	</PropertyGroup>
 </Project>

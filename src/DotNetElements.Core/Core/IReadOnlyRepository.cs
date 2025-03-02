@@ -55,7 +55,6 @@ public interface IReadOnlyRepository<TEntity, TKey>
     Task<CrudResult<TProjection>> GetByIdWithProjectionAsync<TProjection>(
 		TKey id,
 		Expression<Func<IQueryable<TEntity>, IQueryable<TProjection>>> selector,
-		Expression<Func<TEntity, bool>>? filter = null,
 		CancellationToken cancellationToken = default);
 
 	Task<CrudResult<AuditedModelDetails>> GetAuditedModelDetailsByIdAsync<TAuditedEntity>(

@@ -45,7 +45,7 @@ public abstract class EditModel<TModel, TKey> : IEditModel<TModel, TKey>
     }
 }
 
-public abstract class VersionedEditModel<TModel, TKey> : EditModel<TModel, TKey>
+public abstract class VersionedEditModel<TModel, TKey> : EditModel<TModel, TKey>, IHasVersionReadOnly
     where TModel : VersionedModel<TKey>
     where TKey : notnull, IEquatable<TKey>
 {

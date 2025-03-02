@@ -1,0 +1,62 @@
+﻿@* @inherits CrudTable<Guid, TagModel, AuditedModelDetails, EditTagModel, TagDialog>
+
+@using DotNetElements.Web.MudBlazor
+@using DotNetElements.CrudExample.Modules.TagModule
+
+<MudSimpleTable Style="overflow-x: auto;">
+    <thead>
+        <tr>
+            <th>Label</th>
+            <th style="width: 140px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (ModelWithDetails<TagModel, AuditedModelDetails> context in TableEntries)
+        {
+            <tr>
+                <td>@context.Value.Label</td>
+                <td class="py-0 pl-2" style="width: 140px;">
+                    <MudIconButton OnClick="() => OnEditEntry(context)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+                    <MudIconButton OnClick="() => OnDeleteEntry(context, context.Value.Label)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+                    <MudIconButton OnClick="() => OnShowEntryDetails(context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+                </td>
+            </tr>
+
+            @if (context.DetailsShown && context.Details is not null)
+            {
+                <tr>
+                    <td colspan="100">
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.caption"><b>ID</b></MudText>
+                                    <MudText Typo="Typo.caption">@context.Value.Id</MudText>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.caption"><b>Creation Time</b></MudText>
+                                    <MudText Typo="Typo.caption">@context.Details.CreationTime</MudText>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+                                    <MudText Typo="Typo.caption">@context.Details.LastModificationTime</MudText>
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</MudSimpleTable>
+
+@code
+{
+    protected override CrudTableOptions OnConfiguring()
+    {
+        return new CrudTableOptions("api/tags");
+    }
+} *@

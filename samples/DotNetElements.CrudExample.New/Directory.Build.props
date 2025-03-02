@@ -1,0 +1,7 @@
+<Project>
+	<PropertyGroup>
+		<!-- ToDo remove if issue https://github.com/dotnet/sdk/issues/36666 is resolved in newer SDK release -->
+		<EnableSourceControlManagerQueries>true</EnableSourceControlManagerQueries>
+		<UseArtifactsOutput>true</UseArtifactsOutput>
+	</PropertyGroup>
+</Project>

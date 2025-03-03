@@ -62,8 +62,8 @@ public interface IReadOnlyRepository<TEntity, TKey>
         CancellationToken cancellationToken = default)
         where TAuditedEntity : AuditedEntity<TKey>;
 
-    Task<CrudResult<PersistentModelDetails>> GetPersistentModelDetailsByIdAsync<TPersistentEntity>(
+    Task<CrudResult<DeletionAuditedModelDetails>> GetPersistentModelDetailsByIdAsync<TPersistentEntity>(
         TKey id,
         CancellationToken cancellationToken = default)
-        where TPersistentEntity : PersistentEntity<TKey>;
+        where TPersistentEntity : DeletionAuditedEntity<TKey>;
 }

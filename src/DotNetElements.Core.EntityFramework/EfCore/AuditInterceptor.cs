@@ -20,26 +20,39 @@ public sealed class AuditInterceptor : SaveChangesInterceptor
         if (eventData.Context is null)
             return base.SavingChangesAsync(eventData, result, cancellationToken);
 
-        IEnumerable<EntityEntry<ICreationAuditedEntity>> entities = eventData
+        IEnumerable<EntityEntry<ICreationAuditedEntity>> addedOrModifiedEntities = eventData
             .Context
             .ChangeTracker
             .Entries<ICreationAuditedEntity>()
             .Where(e => e.State is EntityState.Added or EntityState.Modified);
 
-        foreach (EntityEntry<ICreationAuditedEntity> entity in entities)
+        foreach (EntityEntry<ICreationAuditedEntity> auditedEntity in addedOrModifiedEntities)
         {
-            if (entity.State is EntityState.Added)
+            if (auditedEntity.State is EntityState.Added)
             {
-                entity.Property(nameof(ICreationAuditedEntity.CreationTime)).CurrentValue = timeProvider.GetUtcNow();
-                entity.Property(nameof(ICreationAuditedEntity.CreatorId)).CurrentValue = currentUserProvider.GetCurrentUserId();
+                auditedEntity.Property(nameof(ICreationAuditedEntity.CreationTime)).CurrentValue = timeProvider.GetUtcNow();
+                auditedEntity.Property(nameof(ICreationAuditedEntity.CreatorId)).CurrentValue = currentUserProvider.GetCurrentUserId();
             }
-            else if (entity.State is EntityState.Modified && entity.Entity is IAuditedEntity)
+            else if (auditedEntity.State is EntityState.Modified && auditedEntity.Entity is IAuditedEntity)
             {
-                entity.Property(nameof(IAuditedEntity.LastModificationTime)).CurrentValue = timeProvider.GetUtcNow();
-                entity.Property(nameof(IAuditedEntity.LastModifierId)).CurrentValue = currentUserProvider.GetCurrentUserId();
+				auditedEntity.Property(nameof(IAuditedEntity.LastModificationTime)).CurrentValue = timeProvider.GetUtcNow();
+                auditedEntity.Property(nameof(IAuditedEntity.LastModifierId)).CurrentValue = currentUserProvider.GetCurrentUserId();
             }
         }
 
-        return base.SavingChangesAsync(eventData, result, cancellationToken);
+		IEnumerable<EntityEntry<IDeletionAuditedEntity>> deletedEntities =
+	        eventData
+	        .Context
+	        .ChangeTracker
+	        .Entries<IDeletionAuditedEntity>()
+	        .Where(e => e.State is EntityState.Deleted);
+
+		foreach (EntityEntry<IDeletionAuditedEntity> deletionAuditedEntity in deletedEntities)
+		{
+			deletionAuditedEntity.State = EntityState.Modified;
+			deletionAuditedEntity.Entity.SetIsDeletedWithAudit(currentUserProvider.GetCurrentUserId(), timeProvider.GetUtcNow());
+		}
+
+		return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 }

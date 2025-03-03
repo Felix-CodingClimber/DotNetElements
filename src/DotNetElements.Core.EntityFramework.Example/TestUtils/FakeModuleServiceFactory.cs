@@ -5,10 +5,10 @@ using Microsoft.Extensions.Time.Testing;
 namespace DotNetElements.Core.EntityFramework.Example;
 
 internal sealed class FakeModuleServiceFactory<TDbContext> : IDisposable
-    where TDbContext : DbContext
+    where TDbContext : DbContext, IFakeDbContext
 {
     public readonly FakeCurrentUserProvider UserProvider = new();
-    public readonly FakeTimeProvider TimeProvider = new();
+    public readonly TimeProvider TimeProvider = TimeProvider.System;
 
     private DbConnection? connection;
 
@@ -19,12 +19,11 @@ internal sealed class FakeModuleServiceFactory<TDbContext> : IDisposable
         return new DbContextOptionsBuilder()
             .UseSqlite(connection)
             .AddInterceptors(
-                new SoftDeleteInterceptor(TimeProvider, UserProvider),
                 new AuditInterceptor(TimeProvider, UserProvider))
             .Options;
     }
 
-    public FakeModuleService<TDbContext, TModuleService> CreateModule<TModuleService>()
+    public FakeModuleService<TDbContext, TModuleService> CreateModule<TModuleService>(string? logContext = null)
         where TModuleService : ModuleService<TDbContext>
     {
         if (connection is null)
@@ -39,7 +38,7 @@ internal sealed class FakeModuleServiceFactory<TDbContext> : IDisposable
 
         TDbContext dbContext = (TDbContext)Activator.CreateInstance(typeof(TDbContext), CreateOptions())!;
 
-        return FakeModuleService<TDbContext, TModuleService>.Create(dbContext, UserProvider, TimeProvider);
+        return FakeModuleService<TDbContext, TModuleService>.Create(dbContext, logContext);
     }
 
     public void Dispose()
@@ -49,5 +48,7 @@ internal sealed class FakeModuleServiceFactory<TDbContext> : IDisposable
             connection.Dispose();
             connection = null;
         }
+
+        Console.ForegroundColor = ConsoleColor.White;
     }
 }

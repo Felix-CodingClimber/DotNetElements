@@ -1,6 +1,7 @@
 ﻿namespace DotNetElements.Core.EntityFramework;
 
-public static partial class CrudResultHelper
+// todo move to .Result package
+public static partial class CrudResultHelperExtensions
 {
     /// <summary>
     ///     Creates a result whose success/failure reflects the supplied condition.

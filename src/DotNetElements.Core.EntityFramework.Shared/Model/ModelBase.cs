@@ -55,20 +55,20 @@ public class CreationAuditedModelDetails : ModelDetails
 
 public class AuditedModelDetails : CreationAuditedModelDetails
 {
-    public Guid? LastModifierId { get; init; }
+    public required Guid? LastModifierId { get; init; }
 
-    public string? LastModifierDisplayName { get; init; }
+	public required string? LastModifierDisplayName { get; init; }
 
-    public DateTimeOffset? LastModificationTime { get; init; }
+	public required DateTimeOffset? LastModificationTime { get; init; }
 }
 
-public class PersistentModelDetails : AuditedModelDetails
+public class DeletionAuditedModelDetails : AuditedModelDetails
 {
-    public bool IsDeleted { get; init; }
+	public required bool IsDeleted { get; init; }
 
-    public Guid? DeleterId { get; init; }
+    public required Guid? DeleterId { get; init; }
 
-    public string? DeleterDisplayName { get; init; }
+    public required string? DeleterDisplayName { get; init; }
 
-    public DateTimeOffset? DeletionTime { get; init; }
+    public required DateTimeOffset? DeletionTime { get; init; }
 }

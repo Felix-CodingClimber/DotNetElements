@@ -39,7 +39,7 @@ public class AuditedEntity<TKey> : CreationAuditedEntity<TKey>, IAuditedEntity
     }
 }
 
-public class PersistentEntity<TKey> : AuditedEntity<TKey>, IDeletionAuditedEntity
+public class DeletionAuditedEntity<TKey> : AuditedEntity<TKey>, IDeletionAuditedEntity
     where TKey : notnull, IEquatable<TKey>
 {
     public bool IsDeleted { get; private set; }

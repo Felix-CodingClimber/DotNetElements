@@ -7,8 +7,3 @@ public interface IHasKey<TKey>
 
     bool HasKey => !Id.Equals(default);
 }
-
-public interface IMapToModel<TModel>
-{
-    TModel ToModel();
-}

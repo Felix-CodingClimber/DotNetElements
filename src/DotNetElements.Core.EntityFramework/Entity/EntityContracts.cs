@@ -21,7 +21,7 @@ public interface IAuditedEntity : ICreationAuditedEntity
     void SetModificationAudited(Guid lastModifierId, DateTimeOffset lastModificationTime);
 }
 
-public interface IDeletionAuditedEntity
+public interface IDeletionAuditedEntity : IAuditedEntity
 {
     bool IsDeleted { get; }
     Guid? DeleterId { get; }

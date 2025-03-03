@@ -29,7 +29,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
     {
         TEntity? entity = await Entities.AsNoTracking().FirstOrDefaultAsync(WithId(id), cancellationToken);
 
-        return CrudResult.OkIfNotNull(entity, CrudError.NotFound);
+        return CrudResultHelperExtensions.OkIfNotNull(entity, CrudError.NotFound);
     }
 
     public async Task<CrudResult<TEntity>> GetByIdFilteredAsync(
@@ -44,7 +44,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
 
         TEntity? entity = await entityQuery.FirstOrDefaultAsync(WithId(id), cancellationToken);
 
-        return CrudResult.OkIfNotNull(entity, CrudError.NotFound);
+        return CrudResultHelperExtensions.OkIfNotNull(entity, CrudError.NotFound);
     }
 
     public async Task<CrudResult<TProjection>> GetFilteredWithProjectionAsync<TProjection>(
@@ -60,7 +60,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
         // todo check if where produces the best query for only one item
         TProjection? projectedEntity = await selector.Compile().Invoke(entityQuery.Where(filter)).FirstOrDefaultAsync(cancellationToken);
 
-        return CrudResult.OkIfNotNull(projectedEntity, CrudError.NotFound);
+        return CrudResultHelperExtensions.OkIfNotNull(projectedEntity, CrudError.NotFound);
     }
 
     public async Task<CrudResult<TProjection>> GetByIdWithProjectionAsync<TProjection>(
@@ -75,7 +75,7 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
         // todo check if where produces the best query for only one item
         TProjection? projectedEntity = await selector.Compile().Invoke(entityQuery.Where(WithId(id))).FirstOrDefaultAsync(cancellationToken);
 
-        return CrudResult.OkIfNotNull(projectedEntity, CrudError.NotFound);
+        return CrudResultHelperExtensions.OkIfNotNull(projectedEntity, CrudError.NotFound);
     }
 
     public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -173,19 +173,19 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
                 }
         ).FirstOrDefaultAsync(cancellationToken);
 
-        return CrudResult.OkIfNotNull(entity, CrudError.NotFound);
+        return CrudResultHelperExtensions.OkIfNotNull(entity, CrudError.NotFound);
     }
 
-    public async Task<CrudResult<PersistentModelDetails>> GetPersistentModelDetailsByIdAsync<TPersistentEntity>(TKey id, CancellationToken cancellationToken = default)
-        where TPersistentEntity : PersistentEntity<TKey>
+    public async Task<CrudResult<DeletionAuditedModelDetails>> GetPersistentModelDetailsByIdAsync<TPersistentEntity>(TKey id, CancellationToken cancellationToken = default)
+        where TPersistentEntity : DeletionAuditedEntity<TKey>
     {
         DbSet<TPersistentEntity> localDbSet = DbContext.Set<TPersistentEntity>();
 
-        PersistentModelDetails? entity = await localDbSet
+        DeletionAuditedModelDetails? entity = await localDbSet
             .AsNoTracking()
             .Where(WithId<TPersistentEntity>(id))
             .Select(entity =>
-                new PersistentModelDetails()
+                new DeletionAuditedModelDetails()
                 {
                     CreatorId = entity.CreatorId,
                     CreatorDisplayName = "Felix", // todo get from user
@@ -200,6 +200,6 @@ public abstract class ReadOnlyRepository<TDbContext, TEntity, TKey> : IReadOnlyR
                 }
         ).FirstOrDefaultAsync(cancellationToken);
 
-        return CrudResult.OkIfNotNull(entity, CrudError.NotFound);
+        return CrudResultHelperExtensions.OkIfNotNull(entity, CrudError.NotFound);
     }
 }

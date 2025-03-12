@@ -1,0 +1,26 @@
+﻿<MudThemeProvider @ref="@mudThemeProvider" @bind-IsDarkMode="@DarkModeActive" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+@code
+{
+    [Parameter, EditorRequired]
+    public bool DarkModeActive { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> DarkModeActiveChanged { get; set; }
+
+    private MudThemeProvider mudThemeProvider = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        DarkModeActive = await mudThemeProvider.GetSystemPreference();
+
+        if (DarkModeActiveChanged.HasDelegate)
+            await DarkModeActiveChanged.InvokeAsync(DarkModeActive);
+    }
+}

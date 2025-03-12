@@ -1,0 +1,313 @@
+﻿@page "/crud"
+@using DotNetElements.Samples.AppFramework.Blazor.Modules.Categories
+@using DotNetElements.Samples.AppFramework.Blazor.Modules.ToDoItems
+@using System.Runtime.InteropServices
+
+<PageTitle>Tags</PageTitle>
+
+@if (categories is null || toDoItems is null)
+{
+    <MudText>Loading...</MudText>
+    <MudProgressLinear />
+}
+else
+{
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Categories</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" OnClick="OnCreateNewCategory" />
+        </MudCardHeader>
+
+        <MudCardContent>
+            <MudSimpleTable Style="overflow-x: auto;">
+                <thead>
+                    <tr>
+                        <th>Label</th>
+                        <th style="width: 140px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ModelWithDetails<CategoryModel, AuditedModelDetails> context in categories)
+                    {
+                        <tr>
+                            <td>@context.Value.Name</td>
+                            <td class="py-0 pl-2" style="width: 140px;">
+                                <MudIconButton OnClick="() => OnEditCategory(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+                                <MudIconButton OnClick="() => OnDeleteCategory(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+                                <MudIconButton OnClick="() => OnShowCategoryDetails(context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+                            </td>
+                        </tr>
+
+                        @if (context.DetailsShown && context.Details is not null)
+                        {
+                            <tr>
+                                <td colspan="100">
+                                    <MudGrid Spacing="2">
+                                        <MudItem xs="12">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.caption"><b>ID</b></MudText>
+                                                <MudText Typo="Typo.caption">@context.Value.Id</MudText>
+                                            </MudStack>
+                                        </MudItem>
+                                        <MudItem xs="4">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.caption"><b>Creation Time</b></MudText>
+                                                <MudText Typo="Typo.caption">@context.Details.CreationTime</MudText>
+                                            </MudStack>
+                                        </MudItem>
+                                        <MudItem xs="4">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+                                                <MudText Typo="Typo.caption">@context.Details.LastModificationTime</MudText>
+                                            </MudStack>
+                                        </MudItem>
+                                    </MudGrid>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudCardContent>
+    </MudCard>
+
+    <MudCard Class="mt-8">
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">ToDo Items</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" OnClick="OnCreateNewToDoItem" />
+        </MudCardHeader>
+
+        <MudCardContent>
+            <MudSimpleTable Style="overflow-x: auto;">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th style="width: 140px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ModelWithDetails<ToDoItemModel, AuditedModelDetails> context in toDoItems)
+                    {
+                        <tr>
+                            <td>@context.Value.Title</td>
+                            <td>@context.Value.Description</td>
+                            <td>@context.Value.CategoryName</td>
+                            <td class="py-0 pl-2" style="width: 140px;">
+                                <MudIconButton OnClick="() => OnEditToDoItem(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" />
+                                <MudIconButton OnClick="() => OnDeleteToDoItem(context.Value)" Class="pa-1" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" />
+                                <MudIconButton OnClick="() => OnShowToDoItemDetails(context)" Class="pa-1" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" />
+                            </td>
+                        </tr>
+
+
+                        @if (context.DetailsShown && context.Details is not null)
+                        {
+                            <tr>
+                                <td colspan="100">
+                                    <MudGrid Spacing="2">
+                                        <MudItem xs="12">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.caption"><b>ID</b></MudText>
+                                                <MudText Typo="Typo.caption">@context.Value.Id</MudText>
+                                            </MudStack>
+                                        </MudItem>
+                                        <MudItem xs="4">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.caption"><b>Creation Time</b></MudText>
+                                                <MudText Typo="Typo.caption">@context.Details.CreationTime</MudText>
+                                            </MudStack>
+                                        </MudItem>
+                                        <MudItem xs="4">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.caption"><b>Last Modification Time</b></MudText>
+                                                <MudText Typo="Typo.caption">@context.Details.LastModificationTime</MudText>
+                                            </MudStack>
+                                        </MudItem>
+                                    </MudGrid>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudCardContent>
+    </MudCard>
+}
+
+<MudCard Class="mt-8">
+    <MudToolBar>
+        <MudButton Color="Color.Error" OnClick="OnResetDatabase">Reset Database</MudButton>
+    </MudToolBar>
+</MudCard>
+
+@code
+{
+    private readonly HttpClient httpClient;
+    private readonly IDialogService dialogService;
+    private readonly ISnackbar snackbar;
+
+    private IReadOnlyList<ModelWithDetails<CategoryModel, AuditedModelDetails>>? categories;
+    private IReadOnlyList<ModelWithDetails<ToDoItemModel, AuditedModelDetails>>? toDoItems;
+
+    public Crud(HttpClient httpClient, IDialogService dialogService, ISnackbar snackbar)
+    {
+        this.httpClient = httpClient;
+        this.dialogService = dialogService;
+        this.snackbar = snackbar;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateCategories();
+
+        await UpdateToDoItems();
+    }
+
+    private async Task OnResetDatabase()
+    {
+        // todo
+    }
+
+    private async Task OnCreateNewCategory()
+    {
+        CreateCategoryModel createModel = new CreateCategoryModel();
+
+        var dialogParameters = new DialogParameters<CreateCategoryDialog>
+        {
+            { x => x.CreateModel, createModel },
+        };
+
+        DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = await dialogService.ShowAsync<CreateCategoryDialog>("New Category", dialogParameters, dialogOptions);
+
+        DialogResult? result = await dialog.Result;
+
+        if (result?.Canceled is not false)
+            return;
+
+        HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/categories", createModel);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            snackbar.Add($"Failed to create category. Status {response.StatusCode}", Severity.Error);
+            return;
+        }
+
+        snackbar.Add("Category created", Severity.Success);
+
+        await UpdateCategories();
+    }
+
+    private async Task OnEditCategory(CategoryModel category)
+    {
+        EditCategoryModel editModel = EditCategoryModel.MapFromModel(category);
+
+        var dialogParameters = new DialogParameters<EditCategoryDialog>
+        {
+            { x => x.EditModel, editModel },
+        };
+
+        DialogOptions dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = await dialogService.ShowAsync<EditCategoryDialog>($"Edit Category {category.Name}", dialogParameters, dialogOptions);
+
+        DialogResult? result = await dialog.Result;
+
+        if (result?.Canceled is not false)
+            return;
+
+        HttpResponseMessage response = await httpClient.PutAsJsonAsync("api/categories", editModel);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            snackbar.Add($"Failed to update category. Status {response.StatusCode}", Severity.Error);
+            return;
+        }
+
+        snackbar.Add("Category updated", Severity.Success);
+
+        await UpdateCategories();
+    }
+
+    private async Task OnDeleteCategory(CategoryModel category)
+    {
+        bool confirmResult = await dialogService.ShowDeleteDialog("Delete category?", category.Name, "Category");
+
+        if (!confirmResult)
+            return;
+
+        // todo
+    }
+
+    private async Task OnShowCategoryDetails(ModelWithDetails<CategoryModel, AuditedModelDetails> context)
+    {
+        if (context.DetailsShown)
+        {
+            context.DetailsShown = false;
+            return;
+        }
+
+        // todo
+
+        context.DetailsShown = true;
+    }
+
+    private async Task OnCreateNewToDoItem()
+    {
+        // todo
+    }
+
+    private async Task OnEditToDoItem(ToDoItemModel toDoItem)
+    {
+        // todo
+    }
+
+    private async Task OnDeleteToDoItem(ToDoItemModel toDoItem)
+    {
+        // todo
+    }
+
+    private async Task OnShowToDoItemDetails(ModelWithDetails<ToDoItemModel, AuditedModelDetails> context)
+    {
+        if (context.DetailsShown)
+        {
+            context.DetailsShown = false;
+            return;
+        }
+
+        // todo
+
+        context.DetailsShown = true;
+    }
+
+    private async Task UpdateCategories()
+    {
+        IReadOnlyList<CategoryModel>? entities = await httpClient.GetFromJsonAsync<IReadOnlyList<CategoryModel>>("api/categories");
+
+        if (entities is null)
+        {
+            snackbar.Add("Failed to fetch categories", Severity.Error);
+            return;
+        }
+
+        categories = entities.Select(entity => new ModelWithDetails<CategoryModel, AuditedModelDetails>(entity)).ToList();
+    }
+
+    private async Task UpdateToDoItems()
+    {
+        IReadOnlyList<ToDoItemModel>? entities = await httpClient.GetFromJsonAsync<IReadOnlyList<ToDoItemModel>>("api/todoItems");
+
+        if (entities is null)
+        {
+            snackbar.Add("Failed to fetch todo items", Severity.Error);
+            return;
+        }
+
+        toDoItems = entities.Select(entity => new ModelWithDetails<ToDoItemModel, AuditedModelDetails>(entity)).ToList();
+    }
+}

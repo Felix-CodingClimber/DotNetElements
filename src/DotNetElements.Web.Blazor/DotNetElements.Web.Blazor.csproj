@@ -31,7 +31,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\DotNetElements.Core\DotNetElements.Core.csproj" />
+		<ProjectReference Include="..\DotNetElements.Core\DotNetElements.Core.Old.csproj" />
 	</ItemGroup>
 
 </Project>

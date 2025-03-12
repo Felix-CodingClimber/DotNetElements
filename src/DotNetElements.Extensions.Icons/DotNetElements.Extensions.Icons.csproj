@@ -16,6 +16,8 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
+
+		<!-- Check if we can only include this references in the development build -->
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Net.Http.Json" Version="9.0.2" />
 	</ItemGroup>

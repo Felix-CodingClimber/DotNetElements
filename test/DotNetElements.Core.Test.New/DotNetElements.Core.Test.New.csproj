@@ -30,7 +30,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\DotNetElements.Core\DotNetElements.Core.csproj" />
+		<ProjectReference Include="..\..\src\DotNetElements.Core\DotNetElements.Core.Old.csproj" />
 	</ItemGroup>
 
 </Project>

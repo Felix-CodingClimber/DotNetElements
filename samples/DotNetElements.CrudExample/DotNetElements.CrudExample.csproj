@@ -28,7 +28,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\DotNetElements.Core\DotNetElements.Core.csproj" />
+		<ProjectReference Include="..\..\src\DotNetElements.Core\DotNetElements.Core.Old.csproj" />
 		<ProjectReference Include="..\..\src\DotNetElements.Web.AspNetCore\DotNetElements.Web.AspNetCore.csproj" />
 		<ProjectReference Include="..\..\src\DotNetElements.Web.Blazor\DotNetElements.Web.Blazor.csproj" />
 	</ItemGroup>

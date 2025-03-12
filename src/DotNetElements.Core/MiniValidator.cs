@@ -22,4 +22,19 @@ public static class MiniValidator
 
         return Validator.TryValidateObject(instance, context, validationsResults, true);
     }
+
+    /// <summary>
+    /// Throws an <see cref="ArgumentException"/> if the specified instance is not valid.
+    /// </summary>
+    /// <typeparam name="T">The type of the instance to validate.</typeparam>
+    /// <param name="instance">The instance to validate.</param>
+    /// <exception cref="ArgumentException"></exception>
+    public static void ThrowIfNotValid<T>(T instance)
+    {
+        if (!TryValidate(instance, out List<ValidationResult> validationResults))
+        {
+            string errorMessage = string.Join(", ", validationResults.Select(result => $"{result.MemberNames.First()}: {result.ErrorMessage}"));
+            throw new ArgumentException($"Invalid {typeof(T).Name} Error: {errorMessage}");
+        }
+    }
 }

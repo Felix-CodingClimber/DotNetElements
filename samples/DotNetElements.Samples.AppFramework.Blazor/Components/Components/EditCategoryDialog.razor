@@ -1,0 +1,30 @@
+﻿@using DotNetElements.Samples.AppFramework.Blazor.Modules.Categories
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="EditModel.Name" Label="Name" For="() => EditModel.Name" Required="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnCancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OnSave">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    IMudDialogInstance DialogInstance { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EditCategoryModel EditModel { get; set; } = default!;
+
+    private void OnSave()
+    {
+        DialogInstance.Close(DialogResult.Ok(true));
+    }
+
+    private void OnCancel()
+    {
+        DialogInstance.Cancel();
+    }
+}

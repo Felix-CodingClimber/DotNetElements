@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Violations of EditorRequired (RZ2012) are turned into errors -->
+		<!-- https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/errors-warnings -->
+		<WarningsAsErrors>RZ2012</WarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\DotNetElements.AppFramework.Abstractions\DotNetElements.AppFramework.Abstractions.csproj" />
+		<ProjectReference Include="..\..\src\DotNetElements.AppFramework.MudBlazor\DotNetElements.AppFramework.MudBlazor.csproj" />
+	</ItemGroup>
+
+</Project>

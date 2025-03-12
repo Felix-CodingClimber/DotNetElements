@@ -1,0 +1,41 @@
+﻿@using DotNetElements.Samples.AppFramework.Blazor.Modules.Categories
+@using DotNetElements.Samples.AppFramework.Blazor.Modules.ToDoItems
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="CreateModel.Title" Label="Title" For="() => CreateModel.Title" Required="true" />
+        <MudTextField @bind-Value="CreateModel.Description" Label="Title" For="() => CreateModel.Title" />
+        <MudSelect Label="Category" MultiSelection="false" @bind-SelectedValue="CreateModel.CategoryId" For="() => CreateModel.Title" Required="true">
+            @foreach (CategoryModel category in SelectableCategories)
+            {
+                <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnCancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OnSave">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    IMudDialogInstance DialogInstance { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public CreateToDoItemModel CreateModel { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<CategoryModel> SelectableCategories { get; set; } = default!;
+
+    private void OnSave()
+    {
+        DialogInstance.Close(DialogResult.Ok(true));
+    }
+
+    private void OnCancel()
+    {
+        DialogInstance.Cancel();
+    }
+}

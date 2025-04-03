@@ -2,6 +2,6 @@
 global using System.ComponentModel.DataAnnotations;
 
 global using DotNetElements.Core.ResultObject;
-global using DotNetElements.AppFramework.MudBlazor;
+global using DotNetElements.AppFramework.MudBlazorExtensions;
 
 global using static DotNetElements.Core.ResultObject.ResultHelper;

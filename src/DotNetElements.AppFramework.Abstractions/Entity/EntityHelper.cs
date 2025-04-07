@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace DotNetElements.AppFramework;
+namespace DotNetElements.AppFramework.Abstractions.Entity;
 
 public static class EntityHelper
 {

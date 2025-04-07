@@ -1,4 +1,6 @@
-﻿namespace DotNetElements.AppFramework;
+﻿using DotNetElements.AppFramework.Abstractions.Entity;
+
+namespace DotNetElements.AppFramework;
 
 public static class IQueryableExtensions
 {

@@ -1,0 +1,9 @@
+﻿@inherits MudComponentBase
+
+<MudText Typo="Typo.h5" Class="@Class" Style="@Style">@Title</MudText>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = default!;
+}

@@ -1,4 +1,5 @@
-﻿using DotNetElements.Samples.AppFramework.WebApi.Modules.Categories;
+﻿using DotNetElements.AppFramework.Abstractions.Entity;
+using DotNetElements.Samples.AppFramework.WebApi.Modules.Categories;
 
 namespace DotNetElements.Samples.AppFramework.WebApi.Modules.ToDoItems;
 

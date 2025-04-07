@@ -1,0 +1,73 @@
+@inherits MudInput<string>
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code
+{
+    [Parameter]
+    public string? SearchString { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SearchStringChanged { get; set; }
+
+    [Parameter]
+    public Guid? SearchId { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid?> SearchIdChanged { get; set; }
+
+    public TableSearchField()
+    {
+        Placeholder = "Search";
+        Clearable = true;
+        Adornment = Adornment.Start;
+        AdornmentIcon = Icons.Material.Filled.Search;
+        IconSize = Size.Medium;
+        Style = "width: 40%";
+
+        ValueChanged = EventCallback.Factory.Create<string>(this, OnValueChanged);
+    }
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        string? oldSearchString = SearchString;
+        Guid? oldSearchId = SearchId;
+
+        await base.SetParametersAsync(parameters);
+
+        if (SearchString == oldSearchString && SearchId == oldSearchId)
+            return;
+
+        if (SearchId is not null)
+            SearchString = SearchId.ToString();
+
+        await SetTextAsync(SearchString ?? "");
+    }
+
+    private void OnValueChanged(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            SearchString = null;
+            SearchId = null;
+        }
+        else
+        {
+            if (Guid.TryParse(value, out Guid guid))
+            {
+                SearchId = guid;
+            }
+            else
+            {
+                SearchString = value;
+                SearchId = null;
+            }
+        }
+
+        // todo check if this needs to be awaited
+        SearchStringChanged.InvokeAsync(SearchString);
+        SearchIdChanged.InvokeAsync(SearchId);
+    }
+}

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
 
 using IHttpResult = Microsoft.AspNetCore.Http.IResult;
 
@@ -18,6 +19,14 @@ public static class CrudResultExtensions
     {
         if (crudResult.TryGetValue(out TEntity? value, out CrudError? error))
             return Results.Ok(value);
+
+        return MapToFailedHttpResult(error.Value);
+    }
+
+    public static IHttpResult MapToHttpResultWithProjection<TEntity, TResult>(this CrudResult<TEntity> crudResult, Expression<Func<TEntity, TResult>> projection)
+    {
+        if (crudResult.TryGetValue(out TEntity? value, out CrudError? error))
+            return Results.Ok(projection.Compile().Invoke(value));
 
         return MapToFailedHttpResult(error.Value);
     }

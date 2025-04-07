@@ -1,5 +1,6 @@
 ﻿using DotNetElements.AppFramework;
 using DotNetElements.AppFramework.Abstractions.Auth;
+using DotNetElements.AppFramework.Abstractions.Entity;
 using DotNetElements.AppFramework.Abstractions.Model;
 using DotNetElements.AppFramework.DebugEfCore;
 using Microsoft.Extensions.Logging;

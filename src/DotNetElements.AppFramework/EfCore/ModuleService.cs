@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using DotNetElements.AppFramework.Abstractions.Auth;
+using DotNetElements.AppFramework.Abstractions.Entity;
 using DotNetElements.AppFramework.Abstractions.Model;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;

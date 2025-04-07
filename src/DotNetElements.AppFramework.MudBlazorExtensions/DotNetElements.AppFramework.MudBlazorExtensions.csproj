@@ -15,4 +15,12 @@
 		<PackageReference Include="MudBlazor" Version="8.5.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\DotNetElements.AppFramework.Abstractions\DotNetElements.AppFramework.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Util\" />
+	</ItemGroup>
+
 </Project>

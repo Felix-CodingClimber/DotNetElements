@@ -2,7 +2,7 @@
 
 namespace DotNetElements.AppFramework.Development;
 
-public class FakeCurrentUserProvider : ICurrentUserProvider
+public sealed class FakeCurrentUserProvider : ICurrentUserProvider
 {
     private readonly Guid fakeUserId;
 

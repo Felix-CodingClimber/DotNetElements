@@ -1,4 +1,5 @@
 ﻿using DotNetElements.AppFramework.Abstractions.Auth;
+using DotNetElements.AppFramework.Abstractions.Entity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 

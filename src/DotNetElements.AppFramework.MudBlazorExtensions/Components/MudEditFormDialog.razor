@@ -1,0 +1,85 @@
+﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Util
+
+@typeparam TValue
+@typeparam TReturnValue
+
+<MudDialog>
+    <DialogContent>
+        @if (Value is not null && editContext is not null)
+        {
+            <EditForm EditContext="@editContext">
+                <DataAnnotationsValidator />
+                @FormContent(Value)
+            </EditForm>
+        }
+        else
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnCancelAsync_Internal">@CancelButtonText</MudButton>
+        @if (Value is not null && editContext is not null)
+        {
+            <MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal">@SubmitButtonText</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    IMudDialogInstance DialogInstance { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public TValue? Value { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment<TValue> FormContent { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<EditFormDialogArgs<TValue, TReturnValue>> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public string SubmitButtonText { get; set; } = "Submit";
+
+    [Parameter]
+    public string CancelButtonText { get; set; } = "Cancel";
+
+    private EditContext? editContext;
+
+    protected override void OnParametersSet()
+    {
+        if (Value is null)
+            return;
+
+        editContext = new EditContext(Value);
+    }
+
+    private async Task OnSubmitAsync_Internal()
+    {
+        ArgumentNullException.ThrowIfNull(Value);
+        ArgumentNullException.ThrowIfNull(editContext);
+
+        EditFormDialogArgs<TValue, TReturnValue> args = new(Value, editContext);
+
+        if (OnSubmit.HasDelegate)
+            await OnSubmit.InvokeAsync(args);
+
+        if (args.Cancel)
+            return;
+
+        DialogInstance.Close(DialogResult.Ok(args.ReturnValue));
+    }
+
+    private async Task OnCancelAsync_Internal()
+    {
+        if (OnCancel.HasDelegate)
+            await OnCancel.InvokeAsync();
+
+        DialogInstance.Cancel();
+    }
+}

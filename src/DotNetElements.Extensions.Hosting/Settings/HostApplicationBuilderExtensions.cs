@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace DotNetElements.Extensions.Hosting.Settings;
 
-public static class WebApplicationBuilderExtensions
+public static class HostApplicationBuilderExtensions
 {
     public static IHostApplicationBuilder AddSettings<T>(this IHostApplicationBuilder builder)
         where T : class, ISettings

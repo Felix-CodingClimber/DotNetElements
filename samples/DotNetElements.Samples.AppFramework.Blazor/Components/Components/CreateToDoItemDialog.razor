@@ -5,7 +5,7 @@
     <DialogContent>
         <MudTextField @bind-Value="CreateModel.Title" Label="Title" For="() => CreateModel.Title" Required="true" />
         <MudTextField @bind-Value="CreateModel.Description" Label="Title" For="() => CreateModel.Title" />
-        <MudSelect Label="Category" MultiSelection="false" @bind-SelectedValue="CreateModel.CategoryId" For="() => CreateModel.Title" Required="true">
+        <MudSelect T="Guid" Label="Category" MultiSelection="false" @bind-Value="CreateModel.CategoryId" For="() => CreateModel.CategoryId" Required="true">
             @foreach (CategoryModel category in SelectableCategories)
             {
                 <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>

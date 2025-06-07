@@ -27,11 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.Samples.AppF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.Samples.AppFramework.Blazor", "samples\DotNetElements.Samples.AppFramework.Blazor\DotNetElements.Samples.AppFramework.Blazor.csproj", "{D1B19E0C-04A6-4265-956F-F96F58237763}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.CrudExample", "samples\DotNetElements.CrudExample\DotNetElements.CrudExample.csproj", "{431F2EAC-9EAD-4621-98B9-3E1862C0F087}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.AppFramework.MudBlazorExtensions", "src\DotNetElements.AppFramework.MudBlazorExtensions\DotNetElements.AppFramework.MudBlazorExtensions.csproj", "{75923B91-446F-4B35-932A-A9F1922F76CC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.Web.Blazor", "src\DotNetElements.Web.Blazor\DotNetElements.Web.Blazor.csproj", "{70BE9015-F6C2-4FD2-AC0D-15AD4F7BDF98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,18 +83,10 @@ Global
 		{D1B19E0C-04A6-4265-956F-F96F58237763}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1B19E0C-04A6-4265-956F-F96F58237763}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1B19E0C-04A6-4265-956F-F96F58237763}.Release|Any CPU.Build.0 = Release|Any CPU
-		{431F2EAC-9EAD-4621-98B9-3E1862C0F087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{431F2EAC-9EAD-4621-98B9-3E1862C0F087}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{431F2EAC-9EAD-4621-98B9-3E1862C0F087}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{431F2EAC-9EAD-4621-98B9-3E1862C0F087}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75923B91-446F-4B35-932A-A9F1922F76CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{75923B91-446F-4B35-932A-A9F1922F76CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75923B91-446F-4B35-932A-A9F1922F76CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75923B91-446F-4B35-932A-A9F1922F76CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{70BE9015-F6C2-4FD2-AC0D-15AD4F7BDF98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70BE9015-F6C2-4FD2-AC0D-15AD4F7BDF98}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{70BE9015-F6C2-4FD2-AC0D-15AD4F7BDF98}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70BE9015-F6C2-4FD2-AC0D-15AD4F7BDF98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

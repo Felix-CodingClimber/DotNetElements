@@ -14,7 +14,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\DotNetElements.AppFramework.Abstractions\DotNetElements.AppFramework.Abstractions.csproj" />
-		<ProjectReference Include="..\..\src\DotNetElements.AppFramework.MudBlazor\DotNetElements.AppFramework.MudBlazorExtensions.csproj" />
+		<ProjectReference Include="..\..\src\DotNetElements.AppFramework.MudBlazorExtensions\DotNetElements.AppFramework.MudBlazorExtensions.csproj" />
 	</ItemGroup>
 
 </Project>

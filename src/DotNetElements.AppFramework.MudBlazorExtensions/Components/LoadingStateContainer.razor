@@ -1,0 +1,27 @@
+﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Util
+
+@* todo implement option to show retry button and action to execute on retry *@
+
+@if (LoadingState is LoadingState.Loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="my-2" />
+}
+else if (LoadingState is LoadingState.Error)
+{
+    <MudAlert Severity="Severity.Error" Class="my-2">
+        An error occurred while loading the content.
+    </MudAlert>
+}
+else if (LoadingState is LoadingState.Success)
+{
+    @ChildContent
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public LoadingState LoadingState { get; set; }
+}

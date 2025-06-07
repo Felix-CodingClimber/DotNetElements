@@ -55,4 +55,10 @@ public static class DialogServiceExtensions
 
         return result?.Data is true;
     }
+
+    // todo add overload with list of error messages
+    public static Task ShowValidationErrorMessage(this IDialogService dialogService)
+    {
+        return dialogService.ShowMessageBox("Validation Error", "Please fix all validation errors.");
+    }
 }

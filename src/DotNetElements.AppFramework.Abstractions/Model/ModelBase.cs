@@ -1,4 +1,7 @@
-﻿namespace DotNetElements.AppFramework.Abstractions.Model;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
+
+namespace DotNetElements.AppFramework.Abstractions.Model;
 
 public interface IModel<TKey> : IHasKey<TKey>
     where TKey : notnull, IEquatable<TKey>;
@@ -32,6 +35,12 @@ public abstract class EditModel<TModel, TKey> : IEditModel<TModel, TKey>
     where TKey : notnull, IEquatable<TKey>
 {
     public required TKey Id { get; init; }
+
+    protected static TSelf CreateNew<TSelf>()
+        where TSelf : EditModel<TModel, TKey>
+    {
+        return Activator.CreateInstance<TSelf>();
+    }
 }
 
 public abstract class VersionedEditModel<TModel, TKey> : EditModel<TModel, TKey>, IHasVersion

@@ -9,6 +9,8 @@ public abstract class Entity<TKey> : Entity, IEntity<TKey>
 {
     public TKey Id { get; protected set; } = default!;
 
+    public bool WithId(TKey id) => Id.Equals(id);
+
     internal void SetId(TKey id)
     {
         // todo check if this is needed

@@ -22,12 +22,12 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
     }
 
     // this should be high level method
-    protected async Task<int> AttachAndSaveChangesAsync<TEntity>(TEntity entity)
+    protected async Task AttachAndSaveChangesAsync<TEntity>(TEntity entity)
         where TEntity : class
     {
         DbContext.Set<TEntity>().Attach(entity);
 
-        return await DbContext.SaveChangesAsync();
+        await DbContext.SaveChangesAsync();
     }
 
     // this should be high level method

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using DotNetElements.AppFramework.Abstractions.Model;
 
 namespace DotNetElements.AppFramework.Abstractions.Entity;
 
@@ -61,7 +62,8 @@ public static class EntityHelper
         where TKey : notnull, IEquatable<TKey>
     {
         oldCollection.RemoveAll(existingEntity => !newIdsCollection.Any(newId => newId.Equals(existingEntity.Id)));
-        var addedIds = newIdsCollection.Where(newId => !oldCollection.Any(existingEntity => existingEntity.Id.Equals(newId)));
+
+        IEnumerable<TKey> addedIds = newIdsCollection.Where(newId => !oldCollection.Any(existingEntity => existingEntity.Id.Equals(newId)));
 
         foreach (TKey newId in addedIds)
             oldCollection.Add(entityUpdateHelper.AttachById<TEntity, TKey>(newId));

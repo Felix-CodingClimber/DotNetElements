@@ -30,6 +30,11 @@ public static class SnackbarExtensions
         snackbar.NotifyFailure(DefaultMessageFailureFetch);
     }
 
+    public static void NotifyMissingQueryParameter(this ISnackbar snackbar, params Span<string?> parameterNames)
+    {
+        snackbar.NotifyFailure($"Missing query parameters: {string.Join(", ", parameterNames)}");
+    }
+
     public static void NotifySuccessCreateEntry(this ISnackbar snackbar)
     {
         snackbar.NotifySuccess(DefaultMessageSuccessCreate);

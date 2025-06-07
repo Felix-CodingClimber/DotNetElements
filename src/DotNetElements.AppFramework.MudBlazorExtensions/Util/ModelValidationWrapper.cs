@@ -27,8 +27,15 @@ public sealed class ModelValidationWrapper<TModel>
         return IsValid;
     }
 
-    public bool UpdateIsModified()
+    public bool UpdateIsModified(bool isExternalModified = false)
     {
+        if (isExternalModified)
+        {
+            IsModified = true;
+
+            return IsModified;
+        }
+
         IsModified = EditContext.IsModified();
 
         return IsModified;

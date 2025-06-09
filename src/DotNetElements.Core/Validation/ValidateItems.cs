@@ -4,7 +4,7 @@
 public sealed class ValidateItemsAttribute : ValidationAttribute
 {
     public ValidateItemsAttribute()
-    : base("One or more items are not valid.")
+        : base("One or more items are not valid.")
     {
     }
 
@@ -18,7 +18,7 @@ public sealed class ValidateItemsAttribute : ValidationAttribute
 
         foreach (object item in enumerable)
         {
-            ValidationContext context = new(item, validationContext, validationContext.Items);
+            ValidationContext context = new(item, validationContext, null);
             List<ValidationResult> results = [];
 
             if (!Validator.TryValidateObject(item, context, results, validateAllProperties: true))

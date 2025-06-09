@@ -1,7 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
-
-namespace DotNetElements.AppFramework.Abstractions.Model;
+﻿namespace DotNetElements.AppFramework.Abstractions.Model;
 
 public interface IModel<TKey> : IHasKey<TKey>
     where TKey : notnull, IEquatable<TKey>;

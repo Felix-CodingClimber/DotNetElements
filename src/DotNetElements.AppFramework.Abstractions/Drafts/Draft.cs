@@ -8,15 +8,15 @@ public sealed class Draft<T> : AuditedEntity<Guid>, IUpdateFrom<DraftModel<T>>
     public Guid OwnerId { get; private init; }
     public int Version { get; private set; }
     public string Content { get; private set; }
-    public string? Name { get; private init; }
+    public string? CommitMessage { get; private init; }
 
-    public Draft(Guid ownerId, T content, string? name)
+    public Draft(Guid ownerId, int version, T content, string? commitMessage)
     {
         OwnerId = ownerId;
-        Name = name;
+        Version = version;
+        CommitMessage = commitMessage;
 
         Content = JsonSerializer.Serialize(content);
-        Version = 1;
     }
 
 #nullable disable
@@ -31,7 +31,12 @@ public sealed class Draft<T> : AuditedEntity<Guid>, IUpdateFrom<DraftModel<T>>
             return;
 
         Content = updatedContent;
-        Version++;
+        Version = from.Version;
+    }
+
+    public T GetTypedContent()
+    {
+        return JsonSerializer.Deserialize<T>(Content)!;
     }
 }
 
@@ -39,7 +44,7 @@ public static class DraftMapper
 {
     public static Draft<T> MapToEntity<T>(this DraftModel<T> model)
     {
-        return new Draft<T>(model.OwnerId, model.Content, model.Name);
+        return new Draft<T>(model.OwnerId, model.Version, model.Content, model.CommitMessage);
     }
 
     public static DraftModel<T> MapToModel<T>(this Draft<T> entity)
@@ -50,7 +55,7 @@ public static class DraftMapper
             OwnerId = entity.OwnerId,
             Version = entity.Version,
             Content = JsonSerializer.Deserialize<T>(entity.Content)!,
-            Name = entity.Name
+            CommitMessage = entity.CommitMessage
         };
     }
 }

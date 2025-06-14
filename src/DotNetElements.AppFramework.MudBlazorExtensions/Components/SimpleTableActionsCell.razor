@@ -1,0 +1,47 @@
+@inherits MudComponentBase
+
+@typeparam TModel
+
+@if (SimpleTable)
+{
+    <td class="py-0 pl-2 @Class" style="@($"width: {Width}px;") @Style">
+        <TableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        <TableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        @ChildContent
+    </td>
+}
+else
+{
+    <MudTd Class="@($"py-0 pl-2 {@Class}")" Style="@($"width: {Width}px; {@Style}")" DataLabel="Actions">
+        <TableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        <TableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        @ChildContent
+    </MudTd>
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public TModel Context { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EventCallback<TModel> OnEditEntry { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<TModel> OnDeleteEntry { get; set; }
+
+    [Parameter]
+    public bool SimpleTable { get; set; }
+
+    [Parameter]
+    public bool EditButtonShown { get; set; } = true;
+
+    [Parameter]
+    public bool DeleteButtonShown { get; set; } = true;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public int Width { get; set; } = 140;
+}

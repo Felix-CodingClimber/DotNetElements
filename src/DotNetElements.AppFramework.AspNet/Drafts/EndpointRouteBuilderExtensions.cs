@@ -2,17 +2,18 @@
 using DotNetElements.AppFramework.Abstractions.Model;
 using DotNetElements.AppFramework.AspNet.ResultExtensions;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 
 namespace DotNetElements.AppFramework.AspNet.Drafts;
 
-public static class WebApplicationExtensions
+public static class EndpointRouteBuilderExtensions
 {
-    public static WebApplication UseDrafts<TContent, TDbContext>(WebApplication app, string draftsEndpoint)
+    public static IEndpointRouteBuilder MapDrafts<TContent, TDbContext>(this IEndpointRouteBuilder endpoints, string draftsEndpoint)
         where TContent : class
         where TDbContext : DbContext, IDbSetDraft<TContent>
     {
         // Create or update
-        app.MapPut(DraftsRoutes.CreateOrUpdate(draftsEndpoint), async (DraftModel<TContent> model, DraftsService<TContent, TDbContext> draftsService) =>
+        endpoints.MapPut(DraftsRoutes.CreateOrUpdate(draftsEndpoint), async (DraftModel<TContent> model, DraftsService<TContent, TDbContext> draftsService) =>
         {
             CrudResult<DraftModel<TContent>> updateResult = await draftsService.CreateOrUpdateDraftAsync(model);
 
@@ -20,7 +21,7 @@ public static class WebApplicationExtensions
         });
 
         // Delete
-        app.MapDelete(DraftsRoutes.Delete(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
+        endpoints.MapDelete(DraftsRoutes.Delete(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
         {
             CrudResult deleteResult = await draftsService.DeleteDraftByIdAsync(id);
 
@@ -28,7 +29,7 @@ public static class WebApplicationExtensions
         });
 
         // Get by ID
-        app.MapGet(DraftsRoutes.GetById(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
+        endpoints.MapGet(DraftsRoutes.GetById(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
         {
             CrudResult<DraftModel<TContent>> result = await draftsService.GetDraftById(id);
 
@@ -36,13 +37,13 @@ public static class WebApplicationExtensions
         });
 
         // Get Audit Details
-        app.MapGet(DraftsRoutes.GetDetails(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
+        endpoints.MapGet(DraftsRoutes.GetDetails(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
         {
             CrudResult<AuditedModelDetails> auditResult = await draftsService.GetDraftAuditDetailsById(id);
 
             return auditResult.MapToHttpResult();
         });
 
-        return app;
+        return endpoints;
     }
 }

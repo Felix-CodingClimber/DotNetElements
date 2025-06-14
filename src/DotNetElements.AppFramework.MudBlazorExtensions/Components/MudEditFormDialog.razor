@@ -12,6 +12,10 @@
                 @FormContent(Value)
             </EditForm>
         }
+        else if (hasError)
+        {
+            <MudAlert Severity="Severity.Error">@(errorMessage ?? "Unknown error")</MudAlert>
+        }
         else
         {
             <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
@@ -19,7 +23,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="OnCancelAsync_Internal">@CancelButtonText</MudButton>
-        @if (Value is not null && editContext is not null)
+        @if (Value is not null && editContext is not null && SubmitButtonShown)
         {
             <MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal">@SubmitButtonText</MudButton>
         }
@@ -44,6 +48,9 @@
     public EventCallback OnCancel { get; set; }
 
     [Parameter]
+    public bool SubmitButtonShown { get; set; } = true;
+
+    [Parameter]
     public string SubmitButtonText { get; set; } = "Submit";
 
     [Parameter]
@@ -51,6 +58,29 @@
 
     private EditContext? editContext;
 
+    private bool hasError;
+    private string? errorMessage;
+
+    public void ShowError(string message)
+    {
+        hasError = true;
+        errorMessage = message;
+    }
+
+    public void ClearError()
+    {
+        hasError = false;
+        errorMessage = null;
+    }
+
+    public bool Validate()
+    {
+        ArgumentNullException.ThrowIfNull(editContext);
+
+        return editContext.Validate();
+    }
+
+    // todo check how this behaves when a parameter is updated!!!
     protected override void OnParametersSet()
     {
         if (Value is null)

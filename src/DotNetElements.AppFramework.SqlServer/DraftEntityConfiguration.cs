@@ -9,7 +9,7 @@ public sealed class DraftEntityConfiguration<T> : IEntityTypeConfiguration<Draft
     public void Configure(EntityTypeBuilder<Draft<T>> builder)
     {
         builder
-            .Property(entity => entity.Name)
+            .Property(entity => entity.CommitMessage)
             .HasMaxLength(255);
     }
 }

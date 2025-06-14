@@ -235,6 +235,25 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
     }
 
     // this should be low level method
+    protected async Task<CrudResult> SaveChangesWithResultAsync()
+    {
+        try
+        {
+            await DbContext.SaveChangesAsync();
+
+            return CrudResult.Ok(); // todo remove CrudResult. when Result package is updated
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Fail(CrudError.ConcurrencyConflict);
+        }
+        catch (DbUpdateException)
+        {
+            return Fail(CrudError.Unknown);
+        }
+    }
+
+    // this should be low level method
     protected TRelatedEntity AttachById<TRelatedEntity, TKey>(TKey id, bool checkAlreadyTracked)
         where TRelatedEntity : Entity<TKey>
         where TKey : notnull, IEquatable<TKey>

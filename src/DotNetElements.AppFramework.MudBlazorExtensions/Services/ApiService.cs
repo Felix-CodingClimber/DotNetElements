@@ -37,6 +37,16 @@ public class ApiService
             cancellationToken);
     }
 
+    public Task<Result> UpdateAsync<TEditModel>(string url, TEditModel editModel, CancellationToken cancellationToken = default)
+    {
+        return PutAsync<TEditModel>(
+            url,
+            editModel,
+            SnackbarExtensions.DefaultMessageSuccessUpdate,
+            SnackbarExtensions.DefaultMessageFailureUpdate,
+            cancellationToken);
+    }
+
     public async Task<Result<List<ModelWithDetails<TModel, TDetails>>>> GetModelsWithDetailsAsync<TModel, TDetails>(string url, CancellationToken cancellationToken = default)
         where TDetails : ModelDetails
     {

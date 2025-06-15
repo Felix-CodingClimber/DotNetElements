@@ -1,0 +1,59 @@
+﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Util
+
+@if (Item.Children is not null or [])
+{
+    <MudTreeViewItem T="StatusListItem" Icon="@Item.GetIcon()" IconColor="@Item.GetColor()" Class="@(Indent ? "ml-4" : "")">
+        <BodyContent Context="childContext">
+            <MudStack Row="true" AlignItems="AlignItems.Center">
+                <MudStack Spacing="0" Class="ml-1">
+                    <MudText>@Item.Label</MudText>
+                    @if (Item.Message is not null)
+                    {
+                        <MudText Typo="Typo.caption" Color="@Item.GetColor()">@Item.Message</MudText>
+                    }
+                </MudStack>
+                <MudSpacer />
+                @if (Item.ShouldShowExternalLink())
+                {
+                    <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Color="Color.Info" Size="Size.Small" Href="@Item.ExternalLink" Target="_blank" />
+                }
+            </MudStack>
+        </BodyContent>
+        <ChildContent>
+            @foreach (StatusListItem item in Item.Children ?? [])
+            {
+                <StatusListItemPresenter Item="item" Indent="true" />
+            }
+        </ChildContent>
+    </MudTreeViewItem>
+}
+else
+{
+    <MudTreeViewItem T="StatusListItem" Icon="@Item.GetIcon()" IconColor="@Item.GetColor()" Class="@(Indent ? "ml-4" : "")">
+        <BodyContent Context="childContext">
+            <MudStack Row="true" AlignItems="AlignItems.Center">
+                <MudStack Spacing="0" Class="ml-1">
+                    <MudText>@Item.Label</MudText>
+                    @if (Item.Message is not null)
+                    {
+                        <MudText Typo="Typo.caption" Color="@Item.GetColor()">@Item.Message</MudText>
+                    }
+                </MudStack>
+                <MudSpacer />
+                @if (Item.ShouldShowExternalLink())
+                {
+                    <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Color="Color.Info" Size="Size.Small" Href="@Item.ExternalLink" Target="_blank" />
+                }
+            </MudStack>
+        </BodyContent>
+    </MudTreeViewItem>
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public StatusListItem Item { get; set; } = default!;
+
+    [Parameter]
+    public bool Indent { get; set; }
+}

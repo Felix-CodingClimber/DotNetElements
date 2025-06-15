@@ -1,0 +1,106 @@
+﻿@using System.Linq.Expressions
+@using DotNetElements.AppFramework.MudBlazorExtensions.Util
+
+@* todo check if we want to move this to css file *@
+<style>
+    .mud-input-inline-edit {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+        .mud-input-inline-edit .mud-input-outlined-border {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+</style>
+
+<div class="mud-input-inline-edit">
+    <MudTextField Value="@Value" ValueChanged="@ValueChanged" ReadOnly="@(!isEditMode)" Label="@Label" For="@For" Required="@Required" />
+    @if (isEditMode)
+    {
+        <MudIconButton Icon="@Icons.Material.Outlined.Save"
+                       Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       OnClick="OnSaveAsync"
+                       Class="mt-2 mb-1"
+                       Style="border-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0;" />
+        <MudIconButton Icon="@Icons.Material.Outlined.Cancel"
+                       Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       OnClick="OnCancelAsync"
+                       Class="mt-2 mb-1"
+                       Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0;" />
+    }
+    else
+    {
+        <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                       Variant="Variant.Outlined"
+                       Color="Color.Warning"
+                       OnClick="OnEnterEditMode"
+                       Class="mt-2 mb-1"
+                       Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0;" />
+    }
+</div>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public string? Value { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<string?>>? For { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    [Parameter]
+    public EventCallback<CallbackResultArgs> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private bool isEditMode;
+    private string? initialValue;
+
+    private void OnEnterEditMode()
+    {
+        initialValue = Value;
+        isEditMode = true;
+    }
+
+    private async Task OnSaveAsync()
+    {
+        if (!OnSave.HasDelegate)
+        {
+            isEditMode = false;
+        }
+
+        CallbackResultArgs resultArgs = new();
+
+        await OnSave.InvokeAsync(resultArgs);
+
+        if (resultArgs.Cancelled)
+            return;
+
+        initialValue = Value;
+        isEditMode = false;
+    }
+
+    private async Task OnCancelAsync()
+    {
+        isEditMode = false;
+        Value = initialValue;
+
+        if (!OnCancel.HasDelegate)
+            return;
+
+        await OnCancel.InvokeAsync();
+    }
+}

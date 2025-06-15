@@ -8,12 +8,14 @@ public class ApiService
 {
     private readonly HttpClient httpClient;
     private readonly ISnackbar snackbar;
+    private readonly IDialogService dialogService;
     private readonly ILogger<ApiService> logger;
 
-    public ApiService(HttpClient httpClient, ISnackbar snackbar, ILogger<ApiService> logger)
+    public ApiService(HttpClient httpClient, ISnackbar snackbar, IDialogService dialogService, ILogger<ApiService> logger)
     {
         this.httpClient = httpClient;
         this.snackbar = snackbar;
+        this.dialogService = dialogService;
         this.logger = logger;
     }
 
@@ -289,6 +291,22 @@ public class ApiService
             snackbar.NotifySuccess(messageOnSuccess);
 
         return returnContent;
+    }
+
+    public async Task<Result> DeleteAsync(
+        string url,
+        string confirmItemLabel,
+        string confirmItemValue,
+        string confirmTitle = "Confirm Deletion",
+        bool needToConfirmValue = false,
+        CancellationToken cancellationToken = default)
+    {
+        bool confirmed = await dialogService.ShowConfirmDeleteDialogAsync(confirmTitle, confirmItemLabel, confirmItemValue, needToConfirmValue);
+
+        if (!confirmed)
+            return Fail();
+
+        return await DeleteAsync(url, cancellationToken);
     }
 
     public async Task<Result> DeleteAsync(string url, CancellationToken cancellationToken = default)

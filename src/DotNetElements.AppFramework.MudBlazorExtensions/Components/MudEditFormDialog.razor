@@ -3,7 +3,7 @@
 @typeparam TValue
 @typeparam TReturnValue
 
-<MudDialog>
+<MudDialogEx>
     <DialogContent>
         @if (Value is not null && editContext is not null)
         {
@@ -22,13 +22,13 @@
         }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="OnCancelAsync_Internal">@CancelButtonText</MudButton>
+        <MudButton OnClick="OnCancelAsync_Internal" Variant="Variant.Outlined">@CancelButtonText</MudButton>
         @if (Value is not null && editContext is not null && SubmitButtonShown)
         {
-            <MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal">@SubmitButtonText</MudButton>
+            <MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal" Variant="Variant.Filled" Class="ml-4">@SubmitButtonText</MudButton>
         }
     </DialogActions>
-</MudDialog>
+</MudDialogEx>
 
 @code
 {
@@ -42,7 +42,10 @@
     public RenderFragment<TValue> FormContent { get; set; } = default!;
 
     [Parameter]
-    public EventCallback<EditFormDialogArgs<TValue, TReturnValue>> OnSubmit { get; set; }
+    public EventCallback<EditFormLoadArgs> OnLoad { get; set; }
+
+    [Parameter]
+    public EventCallback<EditFormSubmitArgs<TValue, TReturnValue>> OnSubmit { get; set; }
 
     [Parameter]
     public EventCallback OnCancel { get; set; }
@@ -61,23 +64,26 @@
     private bool hasError;
     private string? errorMessage;
 
-    public void ShowError(string message)
-    {
-        hasError = true;
-        errorMessage = message;
-    }
-
-    public void ClearError()
-    {
-        hasError = false;
-        errorMessage = null;
-    }
-
     public bool Validate()
     {
         ArgumentNullException.ThrowIfNull(editContext);
 
         return editContext.Validate();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!OnLoad.HasDelegate)
+            return;
+
+        EditFormLoadArgs args = new();
+        await OnLoad.InvokeAsync(args);
+
+        if (!args.HasError)
+            return;
+
+        hasError = true;
+        errorMessage = args.ErrorMessage;
     }
 
     // todo check how this behaves when a parameter is updated!!!
@@ -94,7 +100,7 @@
         ArgumentNullException.ThrowIfNull(Value);
         ArgumentNullException.ThrowIfNull(editContext);
 
-        EditFormDialogArgs<TValue, TReturnValue> args = new(Value, editContext);
+        EditFormSubmitArgs<TValue, TReturnValue> args = new(Value, editContext);
 
         if (OnSubmit.HasDelegate)
             await OnSubmit.InvokeAsync(args);

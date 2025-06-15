@@ -1,18 +1,25 @@
-﻿<MudDialog OnKeyUp="OnKeyUp">
+﻿<MudDialogEx OnKeyUp="OnKeyUp">
     <TitleContent>
         <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3 mb-n1" />
+            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" Class="mr-3 mb-n1" />
             @DialogInstance.Title
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField Value="@ItemValue" Label="@ItemLabel" ReadOnly="true" />
+        <MudText>Delete the @ItemLabel <strong>@ItemValue</strong>?</MudText>
+        @if (NeedToConfirmValue)
+        {
+            <div class="mt-4">
+                <MudText Typo="Typo.caption">Enter <strong>@ItemValue</strong> to confirm</MudText>
+                <MudTextField @bind-Value="confirmedItemValue" Required="true" FullWidth="true" Error="hasError" ErrorText="Value does not match" />
+            </div>
+        }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="OnCancel">Cancel</MudButton>
-        <MudButton Color="Color.Error" OnClick="OnConfirm">Delete</MudButton>
+        <MudButton OnClick="OnCancel" Variant="Variant.Outlined" Class="mr-4">Cancel</MudButton>
+        <MudButton Color="Color.Error" OnClick="OnConfirm" Variant="Variant.Filled">Delete</MudButton>
     </DialogActions>
-</MudDialog>
+</MudDialogEx>
 
 @code
 {
@@ -25,19 +32,45 @@
     [Parameter, EditorRequired]
     public string ItemLabel { get; set; } = default!;
 
+    [Parameter]
+    public bool NeedToConfirmValue { get; set; }
+
+    private bool hasError;
+    private string? confirmedItemValue;
+
     private void OnKeyUp(KeyboardEventArgs args)
     {
-        if (args.Key == "Enter")
-            OnConfirm();
+        if (args.Key != "Enter")
+            return;
+
+        if (!Validate())
+            return;
+
+        OnConfirm();
     }
 
     private void OnConfirm()
     {
+        if (!Validate())
+            return;
+
         DialogInstance.Close(DialogResult.Ok(true));
     }
 
     private void OnCancel()
     {
         DialogInstance.Cancel();
+    }
+
+    private bool Validate()
+    {
+        if (NeedToConfirmValue && confirmedItemValue != ItemValue)
+        {
+            hasError = true;
+            return false;
+        }
+
+        hasError = false;
+        return true;
     }
 }

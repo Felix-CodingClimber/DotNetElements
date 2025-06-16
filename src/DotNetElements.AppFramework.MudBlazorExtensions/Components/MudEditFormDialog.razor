@@ -4,118 +4,125 @@
 @typeparam TReturnValue
 
 <MudDialogEx>
-    <DialogContent>
-        @if (Value is not null && editContext is not null)
-        {
-            <EditForm EditContext="@editContext">
-                <DataAnnotationsValidator />
-                @FormContent(Value)
-            </EditForm>
-        }
-        else if (hasError)
-        {
-            <MudAlert Severity="Severity.Error">@(errorMessage ?? "Unknown error")</MudAlert>
-        }
-        else
-        {
-            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-        }
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="OnCancelAsync_Internal" Variant="Variant.Outlined">@CancelButtonText</MudButton>
-        @if (Value is not null && editContext is not null && SubmitButtonShown)
-        {
-            <MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal" Variant="Variant.Filled" Class="ml-4">@SubmitButtonText</MudButton>
-        }
-    </DialogActions>
+	<DialogContent>
+		@if (Value is not null && editContext is not null)
+		{
+			<EditForm EditContext="@editContext">
+				<DataAnnotationsValidator />
+				@FormContent(Value)
+			</EditForm>
+		}
+		else if (hasError)
+		{
+			<MudAlert Severity="Severity.Error">@(errorMessage ?? "Unknown error")</MudAlert>
+		}
+		else
+		{
+			<MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+		}
+	</DialogContent>
+	<DialogActions>
+		@if (CustomDialogActions is not null)
+		{
+			@CustomDialogActions
+		}
+		<MudButton OnClick="OnCancelAsync_Internal" Variant="Variant.Outlined" Class="ml-4">@CancelButtonText</MudButton>
+		@if (Value is not null && editContext is not null)
+		{
+			<MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal" Variant="Variant.Filled" Disabled="@SubmitButtonDisabled" Class="ml-4">@SubmitButtonText</MudButton>
+		}
+	</DialogActions>
 </MudDialogEx>
 
 @code
 {
-    [CascadingParameter]
-    IMudDialogInstance DialogInstance { get; set; } = default!;
+	[CascadingParameter]
+	IMudDialogInstance DialogInstance { get; set; } = default!;
 
-    [Parameter, EditorRequired]
-    public TValue? Value { get; set; }
+	[Parameter, EditorRequired]
+	public TValue? Value { get; set; }
 
-    [Parameter, EditorRequired]
-    public RenderFragment<TValue> FormContent { get; set; } = default!;
+	[Parameter, EditorRequired]
+	public RenderFragment<TValue> FormContent { get; set; } = default!;
 
-    [Parameter]
-    public EventCallback<EditFormLoadArgs> OnLoad { get; set; }
+	[Parameter]
+	public RenderFragment? CustomDialogActions { get; set; }
 
-    [Parameter]
-    public EventCallback<EditFormSubmitArgs<TValue, TReturnValue>> OnSubmit { get; set; }
+	[Parameter]
+	public EventCallback<EditFormLoadArgs> OnLoad { get; set; }
 
-    [Parameter]
-    public EventCallback OnCancel { get; set; }
+	[Parameter]
+	public EventCallback<EditFormSubmitArgs<TValue, TReturnValue>> OnSubmit { get; set; }
 
-    [Parameter]
-    public bool SubmitButtonShown { get; set; } = true;
+	[Parameter]
+	public EventCallback OnCancel { get; set; }
 
-    [Parameter]
-    public string SubmitButtonText { get; set; } = "Submit";
+	[Parameter]
+	public bool SubmitButtonDisabled { get; set; }
 
-    [Parameter]
-    public string CancelButtonText { get; set; } = "Cancel";
+	[Parameter]
+	public string SubmitButtonText { get; set; } = "Submit";
 
-    private EditContext? editContext;
+	[Parameter]
+	public string CancelButtonText { get; set; } = "Cancel";
 
-    private bool hasError;
-    private string? errorMessage;
+	private EditContext? editContext;
 
-    public bool Validate()
-    {
-        ArgumentNullException.ThrowIfNull(editContext);
+	private bool hasError;
+	private string? errorMessage;
 
-        return editContext.Validate();
-    }
+	public bool Validate()
+	{
+		ArgumentNullException.ThrowIfNull(editContext);
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (!OnLoad.HasDelegate)
-            return;
+		return editContext.Validate();
+	}
 
-        EditFormLoadArgs args = new();
-        await OnLoad.InvokeAsync(args);
+	protected override async Task OnInitializedAsync()
+	{
+		if (!OnLoad.HasDelegate)
+			return;
 
-        if (!args.HasError)
-            return;
+		EditFormLoadArgs args = new();
+		await OnLoad.InvokeAsync(args);
 
-        hasError = true;
-        errorMessage = args.ErrorMessage;
-    }
+		if (!args.HasError)
+			return;
 
-    // todo check how this behaves when a parameter is updated!!!
-    protected override void OnParametersSet()
-    {
-        if (Value is null)
-            return;
+		hasError = true;
+		errorMessage = args.ErrorMessage;
+	}
 
-        editContext = new EditContext(Value);
-    }
+	// todo check how this behaves when a parameter is updated!!!
+	protected override void OnParametersSet()
+	{
+		if (Value is null)
+			return;
 
-    private async Task OnSubmitAsync_Internal()
-    {
-        ArgumentNullException.ThrowIfNull(Value);
-        ArgumentNullException.ThrowIfNull(editContext);
+		editContext = new EditContext(Value);
+	}
 
-        EditFormSubmitArgs<TValue, TReturnValue> args = new(Value, editContext);
+	private async Task OnSubmitAsync_Internal()
+	{
+		ArgumentNullException.ThrowIfNull(Value);
+		ArgumentNullException.ThrowIfNull(editContext);
 
-        if (OnSubmit.HasDelegate)
-            await OnSubmit.InvokeAsync(args);
+		EditFormSubmitArgs<TValue, TReturnValue> args = new(Value, editContext);
 
-        if (args.Cancel)
-            return;
+		if (OnSubmit.HasDelegate)
+			await OnSubmit.InvokeAsync(args);
 
-        DialogInstance.Close(DialogResult.Ok(args.ReturnValue));
-    }
+		if (args.Cancel)
+			return;
 
-    private async Task OnCancelAsync_Internal()
-    {
-        if (OnCancel.HasDelegate)
-            await OnCancel.InvokeAsync();
+		DialogInstance.Close(DialogResult.Ok(args.ReturnValue));
+	}
 
-        DialogInstance.Cancel();
-    }
+	private async Task OnCancelAsync_Internal()
+	{
+		if (OnCancel.HasDelegate)
+			await OnCancel.InvokeAsync();
+
+		DialogInstance.Cancel();
+	}
 }

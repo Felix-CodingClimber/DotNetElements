@@ -1,0 +1,35 @@
+﻿@inherits MudComponentBase
+
+@if (ShowError)
+{
+	<div class="@GetClass()" style="@($"color: var(--mud-palette-error); {Style}")" @attributes="UserAttributes">
+		<span>@ErrorMessage</span>
+	</div>
+}
+
+@code
+{
+	[Parameter]
+	public string? ErrorMessage { get; set; }
+
+	[Parameter]
+	public bool ShowError { get; set; }
+
+	[Parameter]
+	public Size Size { get; set; }
+
+	private string GetClass()
+	{
+		string classNames = Size switch
+		{
+			Size.Small => "mud-input-helper-text ",
+			Size.Medium => "mud-typography-body2 ",
+			Size.Large => "mud-typography-body1 ",
+			_ => throw new NotImplementedException(nameof(Size))
+		};
+
+		classNames += Class;
+
+		return classNames;
+	}
+}

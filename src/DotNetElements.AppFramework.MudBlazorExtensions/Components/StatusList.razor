@@ -1,28 +1,39 @@
 ﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Util
 
-<MudTreeView T="StatusListItem" ReadOnly="true">
-    @foreach (StatusListItem item in Items)
-    {
-        <StatusListItemPresenter Item="item" />
-    }
-</MudTreeView>
+@inherits MudComponentBase
+
+<MudPaper Outlined="true" Class="@Class" Style="@Style" UserAttributes="@UserAttributes">
+	<MudText Class="px-4 py-2" Style="border-bottom: 1px solid var(--mud-palette-lines-inputs);">@Title</MudText>
+
+	@if (ShowItems && Items is not null)
+	{
+		<MudTreeView T="StatusListItem" ReadOnly="true" Class="py-4" Style="@($"overflow-y: auto; max-height: {ContentMaxHeight};")">
+			@foreach (StatusListItem item in Items)
+			{
+				<StatusListItemPresenter Item="item" />
+			}
+		</MudTreeView>
+	}
+	else
+	{
+		<MudText Class="pa-4">@ItemsHiddenLabel</MudText>
+	}
+</MudPaper>
 
 @code
 {
-    public List<StatusListItem> Items { get; set; } =
-    [
-        new StatusListItem("Item 1", StatusListStatus.Pending),
-        new StatusListItem("Item 2", StatusListStatus.Success),
-        new StatusListItem("Item 3", StatusListStatus.Warning, externalLink: "/staticForms/formDetails?formDraftId=92b6e86e-1920-48fd-4b04-08ddabf9e157"),
-        new StatusListItem("Item 4",
-                           StatusListStatus.Error,
-                           "One of the items is invalid",
-                           externalLink: "/staticForms/formDetails?formDraftId=92b6e86e-1920-48fd-4b04-08ddabf9e157",
-                           children:
-                           [
-                               new StatusListItem("Child Item 1", StatusListStatus.Success),
-                               new StatusListItem("Child Item 2", StatusListStatus.Success),
-                               new StatusListItem("Child Item 3", StatusListStatus.Error, "Items is invalid")
-                           ])
-    ];
+	[Parameter]
+	public string? Title { get; set; } = "Status";
+
+	[Parameter]
+	public string? ItemsHiddenLabel { get; set; } = "No Records found";
+
+	[Parameter]
+	public bool ShowItems { get; set; }
+
+	[Parameter]
+	public string? ContentMaxHeight { get; set; } = "60vh";
+
+	[Parameter]
+	public List<StatusListItem>? Items { get; set; }
 }

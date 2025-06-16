@@ -4,7 +4,7 @@
 {
     <MudTreeViewItem T="StatusListItem" Icon="@Item.GetIcon()" IconColor="@Item.GetColor()" Class="@(Indent ? "ml-4" : "")">
         <BodyContent Context="childContext">
-            <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Style="width: 100%; border-bottom: 1px solid var(--mud-palette-lines-inputs); margin-right: 12px;">
                 <MudStack Spacing="0" Class="ml-1">
                     <MudText>@Item.Label</MudText>
                     @if (Item.Message is not null)
@@ -15,7 +15,7 @@
                 <MudSpacer />
                 @if (Item.ShouldShowExternalLink())
                 {
-                    <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Color="Color.Info" Size="Size.Small" Href="@Item.ExternalLink" Target="_blank" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Color="Color.Info" Size="Size.Small" Href="@Item.ExternalLink" Target="_blank" Class="align-self-end" />
                 }
             </MudStack>
         </BodyContent>
@@ -31,7 +31,7 @@ else
 {
     <MudTreeViewItem T="StatusListItem" Icon="@Item.GetIcon()" IconColor="@Item.GetColor()" Class="@(Indent ? "ml-4" : "")">
         <BodyContent Context="childContext">
-            <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Style="width: 100%; border-bottom: 1px solid var(--mud-palette-lines-inputs); margin-right: 12px;">
                 <MudStack Spacing="0" Class="ml-1">
                     <MudText>@Item.Label</MudText>
                     @if (Item.Message is not null)
@@ -42,7 +42,7 @@ else
                 <MudSpacer />
                 @if (Item.ShouldShowExternalLink())
                 {
-                    <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Color="Color.Info" Size="Size.Small" Href="@Item.ExternalLink" Target="_blank" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Color="Color.Info" Size="Size.Small" Href="@Item.ExternalLink" Target="_blank" Class="align-self-end" />
                 }
             </MudStack>
         </BodyContent>

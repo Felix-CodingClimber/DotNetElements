@@ -2,13 +2,13 @@
 
 @if (SimpleTable)
 {
-    <th class="@Class" style="@($"width: {Width}px;") @Style">
+    <th class="@Class" style="@($"white-space: nowrap; width: 0px; text-align: right; {Style}")">
         Actions
     </th>
 }
 else
 {
-    <MudTh Class="@Class" Style="@($"width: {Width}px; {@Style}")">
+    <MudTh Class="@Class" Style="@($"white-space: nowrap; width: 0px; text-align: right; {Style}")">
         Actions
     </MudTh>
 }
@@ -17,7 +17,4 @@ else
 {
     [Parameter]
     public bool SimpleTable { get; set; }
-
-    [Parameter]
-    public int Width { get; set; } = 140;
 }

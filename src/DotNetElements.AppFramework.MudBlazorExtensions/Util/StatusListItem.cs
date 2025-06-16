@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-
-namespace DotNetElements.AppFramework.MudBlazorExtensions.Util;
+﻿namespace DotNetElements.AppFramework.MudBlazorExtensions.Util;
 
 public sealed class StatusListItem
 {

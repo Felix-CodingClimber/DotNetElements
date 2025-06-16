@@ -5,7 +5,7 @@
 
 @if (SimpleTable)
 {
-    <td class="py-0 pl-2 @Class" style="@($"width: {Width}px;") @Style">
+    <td class="py-0 pl-2 @Class" style="@($"white-space: nowrap; width: 0px; text-align: right; {Style}")">
         <TableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
         <TableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
         <TableActionsButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" Style="@(DetailsButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
@@ -14,7 +14,7 @@
 }
 else
 {
-    <MudTd Class="@($"py-0 pl-2 {@Class}")" Style="@($"width: {Width}px; {@Style}")" DataLabel="Actions">
+    <MudTd Class="@($"py-0 pl-2 {@Class}")" Style="@($"white-space: nowrap; width: 0px; text-align: right; {Style}")" DataLabel="Actions">
         <TableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
         <TableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
         <TableActionsButton OnClick="() => OnShowEntryDetails.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Info" Color="Color.Default" Style="@(DetailsButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
@@ -50,7 +50,4 @@ else
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-
-    [Parameter]
-    public int Width { get; set; } = 140;
 }

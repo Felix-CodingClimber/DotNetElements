@@ -15,6 +15,15 @@ public static class WebApplicationExtensions
         return app;
     }
 
+    // todo better error handling
+    public static async Task InitModulesAsync(this WebApplication app)
+    {
+        ArgumentNullException.ThrowIfNull(WebApplicationBuilderExtensions.RegisteredModules);
+
+        foreach (IStartupModule module in WebApplicationBuilderExtensions.RegisteredModules.OfType<IStartupModule>())
+            await module.InitAsync(app);
+    }
+
     public static WebApplication MigrateDatabase<TDbContext>(this WebApplication app)
         where TDbContext : DbContext
     {

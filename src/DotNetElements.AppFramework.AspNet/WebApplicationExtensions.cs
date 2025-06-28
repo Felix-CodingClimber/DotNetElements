@@ -6,12 +6,12 @@ namespace DotNetElements.AppFramework.AspNet;
 
 public static class WebApplicationExtensions
 {
-    public static WebApplication UseAppFramework(this WebApplication app)
+    public static async Task UseAppFrameworkAsync(this WebApplication app)
     {
         app.UseSerilogRequestLogging();
 
         app.MapModuleEndpoints();
 
-        return app;
+        await app.InitModulesAsync();
     }
 }

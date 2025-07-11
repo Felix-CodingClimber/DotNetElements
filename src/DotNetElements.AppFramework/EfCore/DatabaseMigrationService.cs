@@ -1,5 +1,10 @@
 ﻿namespace DotNetElements.AppFramework;
 
+
+// todo improvements
+// Provide version that is registered as transient
+// - Takes IServiceScopeFactory to create a scope to resolve the TDbContext from
+// - Used for scenarios where the migration is not run within a service scope 
 public interface IDatabaseMigrationService<TDbContext>
     where TDbContext : DbContext
 {

@@ -3,4 +3,5 @@
 public interface ICurrentUserProvider
 {
     Guid GetCurrentUserId();
+    void SetTemporaryUserId(Guid userId);
 }

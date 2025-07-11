@@ -1,11 +1,14 @@
 ﻿using System.Security.Claims;
 using DotNetElements.AppFramework.Abstractions.Auth;
+using DotNetElements.Core.Extensions;
 using Microsoft.AspNetCore.Http;
 
 namespace DotNetElements.AppFramework.AspNet;
 
 public class CurrentUserProvider : ICurrentUserProvider
 {
+    private Guid? temporaryUserId;
+
     private readonly IHttpContextAccessor contextAccessor;
 
     public CurrentUserProvider(IHttpContextAccessor contextAccessor)
@@ -15,12 +18,16 @@ public class CurrentUserProvider : ICurrentUserProvider
 
     public Guid GetCurrentUserId()
     {
-        string? userId = contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (temporaryUserId is not null)
+            return temporaryUserId.Value;
 
-        // todo better error handling
-        if (userId is null)
-            throw new ArgumentNullException(nameof(userId));
+        ArgumentNullException.ThrowIfNull(contextAccessor.HttpContext);
 
-        return new Guid(userId);
+        return contextAccessor.HttpContext.User.GetRequiredValue<Guid>(ClaimTypes.NameIdentifier);
+    }
+
+    public void SetTemporaryUserId(Guid userId)
+    {
+        temporaryUserId = userId;
     }
 }

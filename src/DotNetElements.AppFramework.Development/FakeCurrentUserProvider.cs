@@ -4,6 +4,8 @@ namespace DotNetElements.AppFramework.Development;
 
 public sealed class FakeCurrentUserProvider : ICurrentUserProvider
 {
+    private Guid? temporaryUserId;
+
     private readonly Guid fakeUserId;
 
     public FakeCurrentUserProvider(Guid fakeUserId)
@@ -13,6 +15,14 @@ public sealed class FakeCurrentUserProvider : ICurrentUserProvider
 
     public Guid GetCurrentUserId()
     {
+        if (temporaryUserId is not null)
+            return temporaryUserId.Value;
+
         return fakeUserId;
+    }
+
+    public void SetTemporaryUserId(Guid userId)
+    {
+        temporaryUserId = userId;
     }
 }

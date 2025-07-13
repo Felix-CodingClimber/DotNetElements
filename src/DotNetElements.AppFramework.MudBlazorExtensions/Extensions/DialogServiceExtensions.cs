@@ -84,8 +84,9 @@ public static class DialogServiceExtensions
     }
 
     // todo add overload with list of error messages
-    public static Task ShowValidationErrorMessage(this IDialogService dialogService)
+    // todo improve visualization of error messages
+    public static Task ShowValidationErrorMessage(this IDialogService dialogService, string? errorDetails = null)
     {
-        return dialogService.ShowMessageBox("Validation Error", "Please fix all validation errors.");
+        return dialogService.ShowMessageBox("Validation Error", $"Please fix all validation errors.\n\n{errorDetails}");
     }
 }

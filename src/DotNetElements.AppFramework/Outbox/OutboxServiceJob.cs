@@ -1,6 +1,6 @@
 ﻿using NCronJob;
 
-namespace DotNetElements.AppFramework;
+namespace DotNetElements.AppFramework.Outbox;
 
 public sealed class OutboxServiceJob : IJob
 {

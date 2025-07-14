@@ -1,7 +1,7 @@
-﻿namespace DotNetElements.AppFramework;
+﻿namespace DotNetElements.AppFramework.Outbox;
 
 public interface IOutbox<TDbContext>
-    where TDbContext : DbContext, IDbSetOutbox
+	where TDbContext : DbContext, IDbSetOutbox
 {
-    void AddMessage<T>(T message);
+	Task AddMessageAsync<T>(T message);
 }

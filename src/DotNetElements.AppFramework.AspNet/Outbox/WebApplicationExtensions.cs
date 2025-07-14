@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using DotNetElements.AppFramework.Outbox;
+using Microsoft.AspNetCore.Builder;
 
 namespace DotNetElements.AppFramework.AspNet.Outbox;
 

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using DotNetElements.AppFramework.Abstractions.Outbox;
 
-namespace DotNetElements.AppFramework;
+namespace DotNetElements.AppFramework.Outbox;
 
 public static class IDbSetOutboxExtensions
 {

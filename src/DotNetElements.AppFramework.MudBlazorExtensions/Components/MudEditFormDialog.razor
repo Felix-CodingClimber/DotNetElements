@@ -5,9 +5,9 @@
 
 <MudDialogEx>
 	<DialogContent>
-		@if (Value is not null && editContext is not null)
+		@if (Value is not null)
 		{
-			<EditForm EditContext="@editContext">
+			<EditForm @ref="editFormRef" Model="@Value">
 				<DataAnnotationsValidator />
 				@FormContent(Value)
 			</EditForm>
@@ -27,7 +27,7 @@
 			@CustomDialogActions
 		}
 		<MudButton OnClick="OnCancelAsync_Internal" Variant="Variant.Outlined" Class="ml-4">@CancelButtonText</MudButton>
-		@if (Value is not null && editContext is not null)
+		@if (Value is not null)
 		{
 			<MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal" Variant="Variant.Filled" Disabled="@SubmitButtonDisabled" Class="ml-4">@SubmitButtonText</MudButton>
 		}
@@ -66,16 +66,17 @@
 	[Parameter]
 	public string CancelButtonText { get; set; } = "Cancel";
 
-	private EditContext? editContext;
+	private EditForm? editFormRef;
 
 	private bool hasError;
 	private string? errorMessage;
 
 	public bool Validate()
 	{
-		ArgumentNullException.ThrowIfNull(editContext);
+		ArgumentNullException.ThrowIfNull(editFormRef);
+		ArgumentNullException.ThrowIfNull(editFormRef.EditContext);
 
-		return editContext.Validate();
+		return editFormRef.EditContext.Validate();
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -93,21 +94,13 @@
 		errorMessage = args.ErrorMessage;
 	}
 
-	// todo check how this behaves when a parameter is updated!!!
-	protected override void OnParametersSet()
-	{
-		if (Value is null)
-			return;
-
-		editContext = new EditContext(Value);
-	}
-
 	private async Task OnSubmitAsync_Internal()
 	{
 		ArgumentNullException.ThrowIfNull(Value);
-		ArgumentNullException.ThrowIfNull(editContext);
+		ArgumentNullException.ThrowIfNull(editFormRef);
+		ArgumentNullException.ThrowIfNull(editFormRef.EditContext);
 
-		EditFormSubmitArgs<TValue, TReturnValue> args = new(Value, editContext);
+		EditFormSubmitArgs<TValue, TReturnValue> args = new(Value, editFormRef.EditContext);
 
 		if (OnSubmit.HasDelegate)
 			await OnSubmit.InvokeAsync(args);

@@ -1,0 +1,53 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@implements IDisposable
+
+<CascadingValue Value="EditContext" IsFixed="true">
+    <DataAnnotationsValidator />
+    @ChildContent
+</CascadingValue>
+
+@code
+{
+    [CascadingParameter]
+    public required EditContext ParentEditContext { get; set; }
+
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public required object Model { get; set; }
+
+    [Parameter] public bool Validate { get; set; } = true;
+
+    private EditContext? _editContext;
+    private ValidationMessageStore? _messageStore;
+    private ValidationMessageStore? _parentMessageStore;
+    public EditContext EditContext => _editContext ??= new EditContext(Model);
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ParentEditContext.OnValidationRequested += ParentEditContextOnOnValidationRequested;
+        _messageStore = new ValidationMessageStore(EditContext);
+        _parentMessageStore = new ValidationMessageStore(ParentEditContext);
+    }
+
+    private void ParentEditContextOnOnValidationRequested(object? sender, ValidationRequestedEventArgs e)
+    {
+        _messageStore?.Clear();
+        _parentMessageStore?.Clear();
+        if (!Validate)
+        {
+            return;
+        }
+        if (!EditContext.Validate())
+        {
+            _parentMessageStore?.Add(() => Model, "Invalid");
+        }
+    }
+
+    public void Dispose()
+    {
+        ParentEditContext.OnValidationRequested -= ParentEditContextOnOnValidationRequested;
+    }
+}

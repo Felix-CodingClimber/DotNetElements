@@ -3,22 +3,23 @@
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
 public sealed class ValidateObjectAttribute : ValidationAttribute
 {
-	public ValidateObjectAttribute()
-		: base("Nested item is not valid.")
-	{
-	}
+    public bool ValidateAllProperties { get; set; } = true;
 
-	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-	{
-		if (value is null)
-			return ValidationResult.Success;
+    public ValidateObjectAttribute() : base("Nested item is not valid.")
+    {
+    }
 
-		ValidationContext context = new(value, validationContext, null);
-		List<ValidationResult> results = [];
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        if (value is null)
+            return ValidationResult.Success;
 
-		if (!Validator.TryValidateObject(value, context, results, validateAllProperties: true))
-			return new ValidationResult(ErrorMessage, validationContext.MemberName is not null ? [validationContext.MemberName] : null);
+        ValidationContext context = new(value, validationContext, null);
+        List<ValidationResult> results = [];
 
-		return ValidationResult.Success;
-	}
+        if (Validator.TryValidateObject(value, context, results, validateAllProperties: ValidateAllProperties))
+            return ValidationResult.Success;
+
+        return new ValidationResult(ErrorMessage, validationContext.MemberName is not null ? [validationContext.MemberName] : null);
+    }
 }

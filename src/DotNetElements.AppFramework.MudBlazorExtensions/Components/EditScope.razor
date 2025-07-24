@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
+
 @implements IDisposable
 
 <CascadingValue Value="EditContext" IsFixed="true">
@@ -11,39 +12,42 @@
     [CascadingParameter]
     public required EditContext ParentEditContext { get; set; }
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public required RenderFragment ChildContent { get; set; }
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public required object Model { get; set; }
 
-    [Parameter] public bool Validate { get; set; } = true;
+    [Parameter]
+    public bool Validate { get; set; } = true;
 
-    private EditContext? _editContext;
-    private ValidationMessageStore? _messageStore;
-    private ValidationMessageStore? _parentMessageStore;
-    public EditContext EditContext => _editContext ??= new EditContext(Model);
+    [Parameter]
+    public bool InvalidateParent { get; set; } = false;
+
+    public EditContext EditContext => editContext ??= new EditContext(Model);
+
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+    private ValidationMessageStore? parentMessageStore;
 
     protected override void OnInitialized()
     {
-        base.OnInitialized();
+        messageStore = new ValidationMessageStore(EditContext);
+        parentMessageStore = new ValidationMessageStore(ParentEditContext);
+
         ParentEditContext.OnValidationRequested += ParentEditContextOnOnValidationRequested;
-        _messageStore = new ValidationMessageStore(EditContext);
-        _parentMessageStore = new ValidationMessageStore(ParentEditContext);
     }
 
     private void ParentEditContextOnOnValidationRequested(object? sender, ValidationRequestedEventArgs e)
     {
-        _messageStore?.Clear();
-        _parentMessageStore?.Clear();
+        messageStore?.Clear();
+        parentMessageStore?.Clear();
+
         if (!Validate)
-        {
             return;
-        }
-        if (!EditContext.Validate())
-        {
-            _parentMessageStore?.Add(() => Model, "Invalid");
-        }
+
+        if (!EditContext.Validate() && InvalidateParent)
+            parentMessageStore?.Add(() => Model, "Invalid");
     }
 
     public void Dispose()

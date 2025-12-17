@@ -21,7 +21,7 @@ static IHostBuilder CreateHostBuilder()
             services.AddLogging(builder => builder.AddConsole());
             services.AddHttpClient<FontAwesomeSvgGenerator>(options =>
             {
-                options.BaseAddress = new Uri("https://raw.githubusercontent.com/FortAwesome/Font-Awesome/d3a7818c253fcbafff9ebd1d4abb2866c192e1d7/");
+                options.BaseAddress = new Uri("https://raw.githubusercontent.com/FortAwesome/Font-Awesome/refs/heads/7.x/");
             });
             services.AddHttpClient<MaterialIconsSvgGenerator>(options =>
             {

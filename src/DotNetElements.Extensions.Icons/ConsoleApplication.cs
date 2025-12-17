@@ -49,9 +49,9 @@ internal sealed class ConsoleApplication : IHostedService
     {
         logger.LogInformation("Application started.");
 
-        await codiconsFontGenerator.Run();
+        //await codiconsFontGenerator.Run();
         //await materialIconsFontGenerator.Run();
-        //await fontAwesomeSvgGenerator.Run();
+        await fontAwesomeSvgGenerator.Run();
         //await materialIconsSvgGenerator.Run();
     }
 

@@ -8,101 +8,104 @@ namespace DotNetElements.Extensions.Icons;
 
 internal class FontAwesomeSvgGenerator
 {
-	private readonly HttpClient httpClient;
-	private readonly ILogger<FontAwesomeSvgGenerator> logger;
+    private readonly HttpClient httpClient;
+    private readonly ILogger<FontAwesomeSvgGenerator> logger;
 
-	public FontAwesomeSvgGenerator(HttpClient httpClient, ILogger<FontAwesomeSvgGenerator> logger)
-	{
-		this.httpClient = httpClient;
-		this.logger = logger;
-	}
+    public FontAwesomeSvgGenerator(HttpClient httpClient, ILogger<FontAwesomeSvgGenerator> logger)
+    {
+        this.httpClient = httpClient;
+        this.logger = logger;
+    }
 
-	public async Task Run()
-	{
-		IReadOnlyList<FontAwesomeIcon>? iconInfo = await GetIconInfoAsync();
+    public async Task Run()
+    {
+        IReadOnlyList<FontAwesomeIcon>? iconInfo = await GetIconInfoAsync();
 
-		if (iconInfo is null)
-			return;
+        if (iconInfo is null)
+            return;
 
-		await WriteToFileAsync(iconInfo);
+        await WriteToFileAsync(iconInfo);
 
-		logger.LogInformation("Generated FontAwesome icons");
-	}
+        logger.LogInformation("Generated FontAwesome icons");
+    }
 
-	private async Task<IReadOnlyList<FontAwesomeIcon>?> GetIconInfoAsync()
-	{
-		Dictionary<string, FontAwesomeIcon>? iconInfo = await httpClient.GetFromJsonAsync<Dictionary<string, FontAwesomeIcon>>("metadata/icons.json");
+    private async Task<IReadOnlyList<FontAwesomeIcon>?> GetIconInfoAsync()
+    {
+        Dictionary<string, FontAwesomeIcon>? iconInfo = await httpClient.GetFromJsonAsync<Dictionary<string, FontAwesomeIcon>>("metadata/icons.json");
 
-		if (iconInfo is null)
-		{
-			logger.LogError("Failed to get icon info from Github!");
-			return null;
-		}
+        if (iconInfo is null)
+        {
+            logger.LogError("Failed to get icon info from Github!");
+            return null;
+        }
 
-		return iconInfo.Select(kvp =>
-		{
-			kvp.Value.Id = kvp.Key;
+        return iconInfo.Select(kvp =>
+        {
+            kvp.Value.Id = kvp.Key;
 
-			return kvp.Value;
-		}).ToList();
-	}
+            return kvp.Value;
+        }).ToList();
+    }
 
-	private async Task WriteToFileAsync(IReadOnlyList<FontAwesomeIcon> iconInfo)
-	{
-		StringBuilder resultBuilder = new();
-		resultBuilder.AppendLine(fileHeader);
+    private async Task WriteToFileAsync(IReadOnlyList<FontAwesomeIcon> iconInfo)
+    {
+        StringBuilder resultBuilder = new();
+        resultBuilder.AppendLine(fileHeader);
 
-		StringBuilder iconRegularBuilder = new StringBuilder();
-		StringBuilder iconSolidBuilder = new StringBuilder();
-		StringBuilder iconBrandsBuilder = new StringBuilder();
+        StringBuilder iconRegularBuilder = new StringBuilder();
+        StringBuilder iconSolidBuilder = new StringBuilder();
+        StringBuilder iconBrandsBuilder = new StringBuilder();
 
-		foreach (FontAwesomeIcon icon in iconInfo)
-		{
-			if (icon.Id is null)
-			{
-				logger.LogWarning($"Skipped icon {icon.Label}, no icon id was found");
-				continue;
-			}
+        foreach (FontAwesomeIcon icon in iconInfo)
+        {
+            if (icon.Id is null)
+            {
+                logger.LogWarning($"Skipped icon {icon.Label}, no icon id was found");
+                continue;
+            }
 
-			ISvgDescription? svgDescription = icon.Svg.GetDescription();
+            ISvgDescription? svgDescription = icon.Svg.GetDescription();
 
-			if (svgDescription is null)
-			{
-				logger.LogWarning($"Skipped icon {icon.Id}, no svg description was found");
-				continue;
-			}
+            if (svgDescription is null)
+            {
+                logger.LogWarning($"Skipped icon {icon.Id}, no svg description was found");
+                continue;
+            }
 
-			if (icon.Svg.Regular is not null)
-				AppendIconValue(ref iconRegularBuilder, icon, svgDescription);
-			else if (icon.Svg.Solid is not null)
-				AppendIconValue(ref iconSolidBuilder, icon, svgDescription);
-			else
-				AppendIconValue(ref iconBrandsBuilder, icon, svgDescription);
-		}
+            if (icon.Label == "House")
+                Console.WriteLine("HOUSE!");
 
-		resultBuilder.Append(iconRegularBuilder);
-		resultBuilder.AppendLine(
-		"""
+            if (icon.Svg.Regular is not null)
+                AppendIconValue(ref iconRegularBuilder, icon, icon.Svg.Regular);
+            if (icon.Svg.Solid is not null)
+                AppendIconValue(ref iconSolidBuilder, icon, icon.Svg.Solid);
+            if (icon.Svg.Brands is not null)
+                AppendIconValue(ref iconBrandsBuilder, icon, icon.Svg.Brands);
+        }
+
+        resultBuilder.Append(iconRegularBuilder);
+        resultBuilder.AppendLine(
+        """
 				}
 
 				public static class Solid
 				{
 		""");
-		resultBuilder.Append(iconSolidBuilder);
-		resultBuilder.AppendLine(
-		"""
+        resultBuilder.Append(iconSolidBuilder);
+        resultBuilder.AppendLine(
+        """
 				}
 
 				public static class Brands
 				{
 		""");
-		resultBuilder.Append(iconBrandsBuilder);
-		resultBuilder.Append(fileFooter);
+        resultBuilder.Append(iconBrandsBuilder);
+        resultBuilder.Append(fileFooter);
 
-		await File.WriteAllTextAsync("FontAwesomeIcons.cs", resultBuilder.ToString());
-	}
+        await File.WriteAllTextAsync("FontAwesomeIcons.cs", resultBuilder.ToString());
+    }
 
-	private const string fileHeader =
+    private const string fileHeader =
     """
 	//----------------------
 	// <auto-generated>
@@ -121,10 +124,10 @@ internal class FontAwesomeSvgGenerator
 			{
 	""";
 
-	private static void AppendIconValue(ref StringBuilder stringBuilder, FontAwesomeIcon icon, ISvgDescription svgDescription)
-	{
-		stringBuilder.AppendLine(
-		$"""
+    private static void AppendIconValue(ref StringBuilder stringBuilder, FontAwesomeIcon icon, ISvgDescription svgDescription)
+    {
+        stringBuilder.AppendLine(
+        $"""
 					/// <summary>
 					/// <para>
 					/// <b>FontAwesomeIcon</b>
@@ -136,43 +139,43 @@ internal class FontAwesomeSvgGenerator
 					/// </summary>
 		""");
 
-		string varName = icon.Id!.ConvertDashToPascalCase();
-		if (varName == "FontAwesome")
-			varName = $"_{varName}";
+        string varName = icon.Id!.ConvertDashToPascalCase();
+        if (varName == "FontAwesome")
+            varName = $"_{varName}";
 
-		stringBuilder.AppendLine($"            public const string {varName} = \"{svgDescription.Width},{svgDescription.Height},{svgDescription.Path}\";");
-		stringBuilder.AppendLine();
-	}
+        stringBuilder.AppendLine($"            public const string {varName} = \"{svgDescription.Width},{svgDescription.Height},{svgDescription.Path}\";");
+        stringBuilder.AppendLine();
+    }
 
-	private const string fileFooter =
-	"""
+    private const string fileFooter =
+    """
 			}
 		}
 	}
 
 	""";
 
-	private record FontAwesomeIcon(string[] Styles, string Label, Svg Svg)
-	{
-		public string? Id { get; set; }
-	}
-	private record Svg(Regular? Regular, Solid? Solid, Brands? Brands)
-	{
-		public ISvgDescription? GetDescription() =>
-			Regular is not null ? Regular
-			: Solid is not null ? Solid
-			: Brands is not null ? Brands
-			: null;
-	}
+    private record FontAwesomeIcon(string[] Styles, string Label, Svg Svg)
+    {
+        public string? Id { get; set; }
+    }
+    private record Svg(Regular? Regular, Solid? Solid, Brands? Brands)
+    {
+        public ISvgDescription? GetDescription() =>
+            Regular is not null ? Regular
+            : Solid is not null ? Solid
+            : Brands is not null ? Brands
+            : null;
+    }
 
-	private record Regular(int Width, int Height, string Path) : ISvgDescription;
-	private record Solid(int Width, int Height, string Path) : ISvgDescription;
-	private record Brands(int Width, int Height, string Path) : ISvgDescription;
+    private record Regular(int Width, int Height, string Path) : ISvgDescription;
+    private record Solid(int Width, int Height, string Path) : ISvgDescription;
+    private record Brands(int Width, int Height, string Path) : ISvgDescription;
 
-	private interface ISvgDescription
-	{
-		int Height { get; init; }
-		string Path { get; init; }
-		int Width { get; init; }
-	}
+    private interface ISvgDescription
+    {
+        int Height { get; init; }
+        string Path { get; init; }
+        int Width { get; init; }
+    }
 }

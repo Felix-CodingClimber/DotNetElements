@@ -1,0 +1,41 @@
+﻿@using System.Linq.Expressions
+@using DotNetElements.AppFramework.MudBlazorExtensions.Util
+
+@* todo check if we want to move this to css file *@
+<style>
+	.mud-input-inline-copy {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+	}
+
+		.mud-input-inline-copy .mud-input-outlined-border {
+			border-top-right-radius: 0 !important;
+			border-bottom-right-radius: 0 !important;
+		}
+
+		.mud-input-inline-copy input {
+			cursor: default;
+		}
+</style>
+
+<div class="mud-input-inline-copy">
+	<MudTextField Value="@Value" ReadOnly="@true" Label="@Label" />
+	<CopyButton ContentToCopy="@Value"
+				Variant="Variant.Outlined"
+				Color="@IconColor"
+				Class="mt-2 mb-1"
+				Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
+</div>
+
+@code
+{
+	[Parameter, EditorRequired]
+	public string? Value { get; set; }
+
+	[Parameter]
+	public string? Label { get; set; }
+
+	[Parameter]
+	public Color IconColor { get; set; } = Color.Default;
+}

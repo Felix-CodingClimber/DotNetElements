@@ -1,0 +1,75 @@
+﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Services
+
+@inherits MudComponentBase
+
+<MudIconButton OnClick="OnCopyButtonClick" Icon="@copyButtonIcon" Variant="@Variant" Size="@Size" Color="@Color" Style="@Style" UserAttributes="@UserAttributes" Class="@(Dense ? $"pa-0 {Class}" : Class)" />
+@* @if (Compatibility)
+{
+	<input id="@hiddenInputId" name="@hiddenInputId" type="hidden" value="@ContentToCopy">
+} *@
+
+@code
+{
+	[Parameter, EditorRequired]
+	public string? ContentToCopy { get; set; }
+
+	[Parameter]
+	public EventCallback OnCopy { get; set; }
+
+	[Parameter]
+	public string CopyIcon { get; set; } = Icons.Material.Outlined.ContentCopy;
+
+	[Parameter]
+	public bool Dense { get; set; }
+
+	[Parameter]
+	public Size Size { get; set; }
+
+	[Parameter]
+	public Variant Variant { get; set; }
+
+	[Parameter]
+	public Color Color { get; set; }
+
+	// [Parameter]
+	// public bool Compatibility { get; set; } = true;
+
+	private string? copyButtonIcon;
+
+	private string hiddenInputId = $"copyButtonInput_{Guid.NewGuid():N}";
+
+	private readonly IClipboardService clipboardService;
+
+	public CopyButton(IClipboardService clipboardService)
+	{
+		this.clipboardService = clipboardService;
+	}
+
+	protected override void OnInitialized()
+	{
+		copyButtonIcon = CopyIcon;
+	}
+
+	private async Task OnCopyButtonClick()
+	{
+		if (clipboardService is null || ContentToCopy is null)
+			return;
+
+		// if (Compatibility)
+		// 	await clipboardService.CopyToClipboardCompatibilityAsync(hiddenInputId);
+		// else
+		await clipboardService.CopyToClipboardAsync(ContentToCopy);
+
+		copyButtonIcon = Icons.Material.Outlined.Check;
+		StateHasChanged();
+
+		int delay = OnCopy.HasDelegate ? 1000 : 3000;
+		await Task.Delay(delay);
+
+		if (OnCopy.HasDelegate)
+			await OnCopy.InvokeAsync();
+
+		copyButtonIcon = CopyIcon;
+		StateHasChanged();
+	}
+}

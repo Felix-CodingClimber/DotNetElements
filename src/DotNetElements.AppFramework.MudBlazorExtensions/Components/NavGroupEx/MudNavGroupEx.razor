@@ -1,0 +1,90 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using System.Timers
+
+@implements IMudNavGroup
+
+@if (DrawerOpen)
+{
+    <MudNavGroup Icon="@Icon" Title="@Title" HideExpandIcon="false">
+        @ChildContent
+    </MudNavGroup>
+}
+else
+{
+    <div>
+        <MudNavLink Icon="@Icon" OnClick="OnToggleMenu">
+            @Title
+        </MudNavLink>
+
+        <MudPopover AnchorOrigin="Origin.TopRight"
+                    TransformOrigin="Origin.TopLeft"
+                    @bind-Open="isMenuShown"
+                    @onmouseenter="OnPopoverMouseEnter"
+                    @onmouseleave="OnPopoverMouseLeave">
+            <MudText Typo="Typo.subtitle2" Class="pa-2">@Title</MudText>
+            <MudNavMenu @onmouseup="OnChildItemClick">
+                @ChildContent
+            </MudNavMenu>
+        </MudPopover>
+    </div>
+}
+
+@code
+{
+    [CascadingParameter]
+    public MudNavGroupService? NavGroupService { get; set; }
+
+    [Parameter, EditorRequired]
+    public bool DrawerOpen { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Icon { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool isMenuShown;
+
+    public void Open()
+    {
+        InvokeAsync(() =>
+        {
+            isMenuShown = true;
+            StateHasChanged();
+        });
+    }
+
+    public void Close()
+    {
+        InvokeAsync(() =>
+        {
+            isMenuShown = false;
+            StateHasChanged();
+        });
+    }
+
+    private async Task OnChildItemClick()
+    {
+        // Small delay to allow navigation to start
+        await Task.Delay(100);
+        NavGroupService?.Close();
+    }
+
+    private void OnToggleMenu()
+    {
+        NavGroupService?.ToggleOpen(this);
+    }
+
+    private void OnPopoverMouseEnter()
+    {
+        NavGroupService?.PauseAutoClose();
+    }
+
+    private void OnPopoverMouseLeave()
+    {
+        NavGroupService?.ResumeAutoClose();
+    }
+}

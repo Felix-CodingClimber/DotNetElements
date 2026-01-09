@@ -7,27 +7,28 @@ namespace DotNetElements.AppFramework.AspNet;
 
 public class CurrentUserProvider : ICurrentUserProvider
 {
-    private Guid? temporaryUserId;
+	private Guid? temporaryUserId;
 
-    private readonly IHttpContextAccessor contextAccessor;
+	private readonly IHttpContextAccessor contextAccessor;
 
-    public CurrentUserProvider(IHttpContextAccessor contextAccessor)
-    {
-        this.contextAccessor = contextAccessor;
-    }
+	public CurrentUserProvider(IHttpContextAccessor contextAccessor)
+	{
+		this.contextAccessor = contextAccessor;
+	}
 
-    public Guid GetCurrentUserId()
-    {
-        if (temporaryUserId is not null)
-            return temporaryUserId.Value;
+	// todo consider caching the user id as CurrentUserProvider is scoped per request
+	public Guid GetCurrentUserId()
+	{
+		if (temporaryUserId is not null)
+			return temporaryUserId.Value;
 
-        ArgumentNullException.ThrowIfNull(contextAccessor.HttpContext);
+		ArgumentNullException.ThrowIfNull(contextAccessor.HttpContext);
 
-        return contextAccessor.HttpContext.User.GetRequiredValue<Guid>(ClaimTypes.NameIdentifier);
-    }
+		return contextAccessor.HttpContext.User.GetRequiredValue<Guid>(ClaimTypes.NameIdentifier);
+	}
 
-    public void SetTemporaryUserId(Guid userId)
-    {
-        temporaryUserId = userId;
-    }
+	public void SetTemporaryUserId(Guid userId)
+	{
+		temporaryUserId = userId;
+	}
 }

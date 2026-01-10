@@ -3,5 +3,6 @@
 public interface ICurrentUserProvider
 {
     Guid GetCurrentUserId();
+    string GetCurrentUserEmail();
     void SetTemporaryUserId(Guid userId);
 }

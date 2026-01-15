@@ -1,16 +1,12 @@
 ﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Util
 
-@typeparam TValue
 @typeparam TReturnValue
 
 <MudDialogEx>
     <DialogContent>
-        @if (Value is not null && (!OnLoad.HasDelegate || isLoaded))
+        @if (!OnLoad.HasDelegate || isLoaded)
         {
-            <EditForm @ref="editFormRef" Model="@Value">
-                <DataAnnotationsValidator />
-                @FormContent(Value)
-            </EditForm>
+            @Content
         }
         else if (hasError)
         {
@@ -27,10 +23,7 @@
             @CustomDialogActions
         }
         <MudButton OnClick="OnCancelAsync_Internal" Variant="Variant.Outlined" Class="ml-4">@CancelButtonText</MudButton>
-        @if (Value is not null)
-        {
-            <MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal" Variant="Variant.Filled" Disabled="@SubmitButtonDisabled" Class="ml-4">@SubmitButtonText</MudButton>
-        }
+        <MudButton Color="Color.Primary" OnClick="OnSubmitAsync_Internal" Variant="Variant.Filled" Disabled="@SubmitButtonDisabled" Class="ml-4">@SubmitButtonText</MudButton>
     </DialogActions>
 </MudDialogEx>
 
@@ -40,19 +33,16 @@
     IMudDialogInstance DialogInstance { get; set; } = default!;
 
     [Parameter, EditorRequired]
-    public TValue? Value { get; set; }
-
-    [Parameter, EditorRequired]
-    public RenderFragment<TValue> FormContent { get; set; } = default!;
+    public RenderFragment Content { get; set; } = default!;
 
     [Parameter]
     public RenderFragment? CustomDialogActions { get; set; }
 
     [Parameter]
-    public EventCallback<EditFormLoadArgs> OnLoad { get; set; }
+    public EventCallback<DialogLoadArgs> OnLoad { get; set; }
 
     [Parameter]
-    public EventCallback<EditFormSubmitArgs<TValue, TReturnValue>> OnSubmit { get; set; }
+    public EventCallback<DialogSubmitArgs<TReturnValue>> OnSubmit { get; set; }
 
     [Parameter]
     public EventCallback OnCancel { get; set; }
@@ -66,26 +56,16 @@
     [Parameter]
     public string CancelButtonText { get; set; } = "Cancel";
 
-    private EditForm? editFormRef;
-
     private bool isLoaded;
     private bool hasError;
     private string? errorMessage;
-
-    public bool Validate()
-    {
-        ArgumentNullException.ThrowIfNull(editFormRef);
-        ArgumentNullException.ThrowIfNull(editFormRef.EditContext);
-
-        return editFormRef.EditContext.Validate();
-    }
 
     protected override async Task OnInitializedAsync()
     {
         if (!OnLoad.HasDelegate)
             return;
 
-        EditFormLoadArgs args = new();
+        DialogLoadArgs args = new();
         await OnLoad.InvokeAsync(args);
 
         if (!args.HasError)
@@ -98,11 +78,7 @@
 
     private async Task OnSubmitAsync_Internal()
     {
-        ArgumentNullException.ThrowIfNull(Value);
-        ArgumentNullException.ThrowIfNull(editFormRef);
-        ArgumentNullException.ThrowIfNull(editFormRef.EditContext);
-
-        EditFormSubmitArgs<TValue, TReturnValue> args = new(Value, editFormRef.EditContext);
+        DialogSubmitArgs<TReturnValue> args = new();
 
         if (OnSubmit.HasDelegate)
             await OnSubmit.InvokeAsync(args);

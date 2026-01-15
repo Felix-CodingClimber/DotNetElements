@@ -68,16 +68,31 @@ public static class DialogServiceExtensions
         return returnValue;
     }
 
-    public static async Task<bool> ShowConfirmDeleteDialogAsync(this IDialogService dialogService, string title, string itemLabel, string itemValue, bool needToConfirmValue = false)
+    public static async Task<bool> ShowConfirmDeleteDialogAsync(this IDialogService dialogService, string title, string itemLabel, string itemValue, string? additionalMessage = null, bool needToConfirmValue = false)
     {
         DialogParameters<DeleteDialog> dialogParameters = new()
         {
             { x => x.ItemLabel, itemLabel },
             { x => x.ItemValue, itemValue },
+            { x => x.AdditionalMessage, additionalMessage },
             { x => x.NeedToConfirmValue, needToConfirmValue }
         };
 
         IDialogReference dialog = await dialogService.ShowAsync<DeleteDialog>(title, dialogParameters, DialogDefaults.Small);
+        DialogResult? result = await dialog.Result;
+
+        return result?.Data is true;
+    }
+
+    public static async Task<bool> ShowConfirmDialogAsync(this IDialogService dialogService, string title, string message, string? additionalMessage = null)
+    {
+        DialogParameters<ConfirmDialog> dialogParameters = new()
+        {
+            { x => x.Message, message },
+            { x => x.AdditionalMessage, additionalMessage },
+        };
+
+        IDialogReference dialog = await dialogService.ShowAsync<ConfirmDialog>(title, dialogParameters, DialogDefaults.Small);
         DialogResult? result = await dialog.Result;
 
         return result?.Data is true;

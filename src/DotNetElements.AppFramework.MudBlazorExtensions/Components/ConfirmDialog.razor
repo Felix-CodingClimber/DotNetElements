@@ -1,0 +1,41 @@
+﻿<MudDialogEx>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Outlined.HelpOutline" Color="Color.Info" Class="mr-3 mb-n1" />
+            @DialogInstance.Title
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>@Message</MudText>
+        @if (AdditionalMessage is not null)
+        {
+            <MudText Typo="Typo.subtitle1">@AdditionalMessage</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnCancel" Variant="Variant.Outlined" Class="mr-4">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OnConfirm" Variant="Variant.Filled">Confirm</MudButton>
+    </DialogActions>
+</MudDialogEx>
+
+@code
+{
+    [CascadingParameter]
+    IMudDialogInstance DialogInstance { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Message { get; set; } = default!;
+
+    [Parameter]
+    public string? AdditionalMessage { get; set; }
+
+    private void OnConfirm()
+    {
+        DialogInstance.Close(DialogResult.Ok(true));
+    }
+
+    private void OnCancel()
+    {
+        DialogInstance.Cancel();
+    }
+}

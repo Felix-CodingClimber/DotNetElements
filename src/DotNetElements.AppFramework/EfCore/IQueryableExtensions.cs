@@ -4,7 +4,7 @@ namespace DotNetElements.AppFramework;
 
 public static class IQueryableExtensions
 {
-    public static async Task<TEntity?> FindAsync<TEntity, TKey>(this IQueryable<TEntity> query, TKey id)
+    public static async Task<TEntity?> FindIdAsync<TEntity, TKey>(this IQueryable<TEntity> query, TKey id)
         where TEntity : class, IHasKey<TKey>
         where TKey : notnull, IEquatable<TKey>
     {

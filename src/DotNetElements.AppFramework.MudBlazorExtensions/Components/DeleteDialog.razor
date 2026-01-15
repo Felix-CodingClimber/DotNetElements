@@ -7,6 +7,10 @@
     </TitleContent>
     <DialogContent>
         <MudText>Delete the @ItemLabel <strong>@ItemValue</strong>?</MudText>
+        @if (AdditionalMessage is not null)
+        {
+            <MudText Typo="Typo.subtitle1">@AdditionalMessage</MudText>
+        }
         @if (NeedToConfirmValue)
         {
             <div class="mt-4">
@@ -31,6 +35,9 @@
 
     [Parameter, EditorRequired]
     public string ItemLabel { get; set; } = default!;
+
+    [Parameter]
+    public string? AdditionalMessage { get; set; }
 
     [Parameter]
     public bool NeedToConfirmValue { get; set; }

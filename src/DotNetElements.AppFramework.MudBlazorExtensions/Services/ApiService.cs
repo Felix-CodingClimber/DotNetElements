@@ -298,10 +298,11 @@ public class ApiService
         string confirmItemLabel,
         string confirmItemValue,
         string confirmTitle = "Confirm Deletion",
+        string? additionalMessage = null,
         bool needToConfirmValue = false,
         CancellationToken cancellationToken = default)
     {
-        bool confirmed = await dialogService.ShowConfirmDeleteDialogAsync(confirmTitle, confirmItemLabel, confirmItemValue, needToConfirmValue);
+        bool confirmed = await dialogService.ShowConfirmDeleteDialogAsync(confirmTitle, confirmItemLabel, confirmItemValue, additionalMessage, needToConfirmValue);
 
         if (!confirmed)
             return Fail();

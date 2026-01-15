@@ -89,7 +89,10 @@
         await OnLoad.InvokeAsync(args);
 
         if (!args.HasError)
+        {
+            isLoaded = true;
             return;
+        }
 
         hasError = true;
         errorMessage = args.ErrorMessage;

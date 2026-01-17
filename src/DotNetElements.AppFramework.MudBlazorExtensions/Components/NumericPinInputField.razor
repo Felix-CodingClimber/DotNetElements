@@ -1,0 +1,94 @@
+﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Util
+
+<style>
+    .numeric-pin-input {
+    }
+
+        .numeric-pin-input .mud-input {
+            justify-content: center;
+        }
+
+        .numeric-pin-input input::placeholder {
+            font-size: 2.5rem !important;
+            letter-spacing: 2.5rem !important;
+            font-family: monospace !important;
+        }
+
+        .numeric-pin-input input {
+            font-size: 2.5rem !important;
+            letter-spacing: 2.5rem !important;
+            font-family: monospace !important;
+            width: auto !important;
+            padding-left: 5rem !important;
+            padding-right: 0px !important;
+        }
+</style>
+
+<MudTextField T="string"
+              Value="value"
+              ValueChanged="OnValueChanged"
+              Mask="@mask"
+              Class="numeric-pin-input"
+              Placeholder="@placeholder"
+              Label="@Label"
+              Margin="Margin.Normal"
+              MaxLength="@Length"
+              FullWidth="@FullWidth"
+              InputMode="InputMode.numeric"
+              Required="@Required"
+              ErrorText="@ErrorText"
+              Error="@Error"
+              autocomplete="one-time-code" />
+
+
+@code
+{
+    [Parameter, EditorRequired]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public int Length { get; set; } = 6;
+
+    [Parameter]
+    public string Label { get; set; } = "Code";
+
+    [Parameter]
+    public bool Required { get; set; } = true;
+
+    [Parameter]
+    public bool FullWidth { get; set; } = true;
+
+    [Parameter]
+    public string ErrorText { get; set; } = "Invalid verification code";
+
+    [Parameter]
+    public bool Error { get; set; }
+
+    private string? value;
+
+    private PatternMask? mask;
+    private string? placeholder;
+
+    protected override void OnInitialized()
+    {
+        if (Length < 4 || Length > 10)
+            throw new ArgumentOutOfRangeException(nameof(Length), "Length must be between 4 and 10");
+
+        mask = new PatternMask(new string('0', Length))
+        {
+            Placeholder = '_'
+        };
+
+        placeholder = new string('_', Length);
+    }
+
+    private async Task OnValueChanged(string? newValue)
+    {
+        value = newValue;
+
+        await ValueChanged.InvokeAsync(newValue);
+    }
+}

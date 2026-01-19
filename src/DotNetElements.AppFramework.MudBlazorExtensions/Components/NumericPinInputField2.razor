@@ -1,0 +1,233 @@
+﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Util
+
+<style>
+    .numeric-pin-input {
+        width: 13%;
+        aspect-ratio: 1 / 1;
+        font-size: 1.5rem;
+        text-align: center;
+        color: var(--mud-palette-text-primary);
+        background-color: transparent;
+        border-radius: var(--mud-default-borderradius);
+        border-color: var(--mud-palette-lines-inputs);
+        border-width: 1px;
+        border-style: solid;
+        transition: border-width, border-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        outline-color: var( --mud-palette-primary);
+        outline-width: 2px;
+        outline-style: none;
+    }
+
+        .numeric-pin-input:focus {
+            outline-style: solid;
+            border-width: 0px;
+        }
+</style>
+
+<div style="display: flex; flex-direction: row; justify-content: space-between;">
+    @for (int i = 0; i < Length; i++)
+    {
+        int index = i;
+
+        <input type="text"
+               inputmode="numeric"
+               pattern="\d{1}"
+               maxlength="1"
+               required
+               value="@GetDigitValue(index)"
+               @key="index"
+               @ref="inputRefs[index]"
+               @onkeydown="@((e) => OnInputKeyDownAsync(e, index))"
+               @onkeydown:preventDefault=@preventDefault
+               @ontextpaste="@((e) => OnPasteAsync(e, index))"
+               @ontextpaste:preventDefault
+               class="numeric-pin-input"
+               aria-label="@($"One time code digit {i}")"
+               autocomplete="@(index == 0 ? "one-time-code" : "off")" />
+    }
+</div>
+
+
+@code
+{
+    [Parameter, EditorRequired]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public int Length { get; set; } = 6;
+
+    [Parameter]
+    public bool AutoFocus { get; set; }
+
+    private bool preventDefault;
+    private ElementReference[] inputRefs = [];
+    private string[] digits = [];
+
+    protected override void OnInitialized()
+    {
+        if (Length < 4 || Length > 10)
+            throw new ArgumentOutOfRangeException(nameof(Length), "Length must be between 4 and 10");
+
+        inputRefs = new ElementReference[Length];
+        digits = new string[Length];
+
+        UpdateDigitsFromValue();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!AutoFocus || !firstRender)
+            return;
+
+        await inputRefs[0].FocusAsync();
+    }
+
+    private void UpdateDigitsFromValue()
+    {
+        digits = new string[Length];
+
+        if (string.IsNullOrEmpty(Value))
+            return;
+
+        if (Value.Length != Length)
+            throw new ArgumentOutOfRangeException(nameof(Value), $"Value must be exactly {Length} digits long.");
+
+        if (!Value.All(char.IsDigit))
+            throw new ArgumentException("Value must contain only numeric digits.", nameof(Value));
+
+        for (int i = 0; i < Length; i++)
+            digits[i] = Value[i].ToString();
+    }
+
+    private string? GetDigitValue(int index)
+    {
+        return digits[index];
+    }
+
+    private async Task OnInputKeyDownAsync(KeyboardEventArgs e, int index)
+    {
+        preventDefault = false;
+
+        if (e.Key == "Backspace")
+        {
+            if (string.IsNullOrEmpty(digits[index]))
+            {
+                // Clear and move to previous input if current is empty
+                if (index > 0)
+                {
+                    digits[index - 1] = "";
+                    await FocusInputAsync(index - 1);
+                }
+            }
+            else
+            {
+                // Clear current input
+                digits[index] = "";
+                await UpdateValueAsync();
+            }
+        }
+        else if (e.Key == "Delete")
+        {
+            digits[index] = "";
+            await UpdateValueAsync();
+        }
+        else if (e.Key == "ArrowLeft" && index > 0)
+        {
+            await FocusInputAsync(index - 1);
+        }
+        else if (e.Key == "ArrowRight" && index < Length - 1)
+        {
+            await FocusInputAsync(index + 1);
+        }
+        else if (e.Key == "v" && (e.CtrlKey || e.MetaKey))
+        {
+            // Paste event is handled by OnPasteAsync
+            return;
+        }
+        else
+        {
+            preventDefault = true;
+            await OnInputChangedAsync(e.Key, index);
+        }
+    }
+
+    private async Task OnPasteAsync(TextPasteEventArgs e, int index)
+    {
+        string? data = e.PastedData;
+
+        if (string.IsNullOrEmpty(data))
+            return;
+
+        bool validDigitsOnly = data.All(char.IsDigit);
+
+        if (data.Length != Length || !validDigitsOnly)
+            return;
+
+        for (int i = 0; i < data.Length; i++)
+            digits[i] = data[i].ToString();
+
+        // Focus on the last input
+        await FocusInputAsync(Length - 1);
+
+        await UpdateValueAsync();
+    }
+
+    private async Task OnInputChangedAsync(string? inputValue, int index)
+    {
+        // Empty input
+        if (string.IsNullOrEmpty(inputValue))
+        {
+            digits[index] = "";
+            await UpdateValueAsync();
+            return;
+        }
+
+        // Extract only digits
+        string digitsOnly = new string(inputValue.Where(char.IsDigit).ToArray());
+
+        // If any non-digit input, clear
+        if (string.IsNullOrEmpty(digitsOnly))
+        {
+            digits[index] = "";
+            await UpdateValueAsync();
+            return;
+        }
+
+        // Single digit input
+        digits[index] = digitsOnly[0].ToString();
+        await UpdateValueAsync();
+
+        // Auto-advance to next input
+        if (index < Length - 1)
+            await FocusInputAsync(index + 1);
+    }
+
+    private async Task UpdateValueAsync()
+    {
+        string newValue = string.Join("", digits.Where(d => !string.IsNullOrEmpty(d)));
+
+        if (newValue == Value)
+            return;
+
+        Value = string.IsNullOrEmpty(newValue) ? null : newValue;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task FocusInputAsync(int index)
+    {
+        if (index < 0 || index >= inputRefs.Length)
+            return;
+
+        try
+        {
+            await inputRefs[index].FocusAsync();
+        }
+        catch
+        {
+            // Ignore focus errors
+        }
+    }
+}

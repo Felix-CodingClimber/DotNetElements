@@ -7,4 +7,13 @@ export function afterStarted(blazor) {
             };
         }
     });
+
+    blazor.registerCustomEventType('beforeinput', {
+        browserEventName: 'beforeinput',
+        createEventArgs: event => {
+            return {
+                data: event.data,
+            };
+        }
+    });
 }

@@ -32,7 +32,7 @@ public static partial class IAppFrameworkBuilderExtensions
 			string cronExpression = userOptions.JobInterval.Unit is IntervalUnit.Seconds
 				? $"*/{userOptions.JobInterval.Value} * * * * *"
 				: $"*/{userOptions.JobInterval.Value} * * * *";
-			options.AddJob<OutboxServiceJob>(job => job.WithCronExpression(cronExpression));
+			options.AddJob<OutboxServiceJob>(job => job.WithCronExpression(cronExpression).WithName(typeof(TDbContext).Name));
 		});
 
 		return services;

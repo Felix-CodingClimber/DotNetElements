@@ -3,7 +3,7 @@
 @typeparam TValue
 @typeparam TReturnValue
 
-<MudDialogEx>
+<MudDialogEx DefaultFocus="@DefaultFocus">
     <DialogContent>
         @if (Value is not null && (!OnLoad.HasDelegate || isLoaded))
         {
@@ -68,6 +68,16 @@
 
     [Parameter]
     public bool SubmitOnEnter { get; set; } = true;
+
+    /// <summary>
+    /// Specifies which element should receive focus when the dialog is shown.
+    /// Defaults to <see cref="DefaultFocus.FirstChild"/>.
+    /// </summary>
+    /// <remarks>
+    /// Make sure to use <see cref="DefaultFocus.None"/> if you want to use AutoFocus="true" on a form field.
+    /// </remarks>
+    [Parameter]
+    public DefaultFocus DefaultFocus { get; set; } = DefaultFocus.FirstChild;
 
     private EditForm? editFormRef;
 

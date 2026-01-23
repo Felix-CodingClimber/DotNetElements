@@ -7,7 +7,7 @@
     <DialogContent>
         @if (Value is not null && (!OnLoad.HasDelegate || isLoaded))
         {
-            <EditForm @ref="editFormRef" Model="@Value">
+            <EditForm @ref="editFormRef" Model="@Value" @onkeydown="OnKeyDownAsync">
                 <DataAnnotationsValidator />
                 @FormContent(Value)
             </EditForm>
@@ -66,6 +66,9 @@
     [Parameter]
     public string CancelButtonText { get; set; } = "Cancel";
 
+    [Parameter]
+    public bool SubmitOnEnter { get; set; } = true;
+
     private EditForm? editFormRef;
 
     private bool isLoaded;
@@ -97,6 +100,20 @@
         hasError = true;
         errorMessage = args.ErrorMessage;
         isLoaded = true;
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (!SubmitOnEnter)
+            return;
+
+        if (e.Key != "Enter")
+            return;
+
+        if (SubmitButtonDisabled)
+            return;
+
+        await OnSubmitAsync_Internal();
     }
 
     private async Task OnSubmitAsync_Internal()

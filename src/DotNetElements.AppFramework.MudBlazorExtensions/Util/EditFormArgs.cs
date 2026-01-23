@@ -20,4 +20,13 @@ public sealed record EditFormSubmitArgs<T, TReturnValue>(T Value, EditContext Ed
     public TReturnValue? ReturnValue { get; set; }
 
     public bool IsValid => EditContext.Validate();
+
+    public bool EnsureIsValid()
+    {
+        if (IsValid)
+            return true;
+
+        Cancel = true;
+        return false;
+    }
 }

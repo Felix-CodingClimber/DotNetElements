@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DotNetElements.AppFramework;
 
+// todo why not use SaveChangesWithResultAsync in all methods that save changes?
+// todo make sure BeginTransactionAsync is used in all inheriting services instead of the raw DbContext.Database.BeginTransactionAsync
+// todo make sure GetCurrentUserId and GetUtcNow are used in all inheriting services instead of directly using CurrentUserProvider and TimeProvider
 public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
     where TDbContext : DbContext
 {

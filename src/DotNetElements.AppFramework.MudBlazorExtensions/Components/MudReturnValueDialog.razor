@@ -1,5 +1,7 @@
 ﻿@using DotNetElements.AppFramework.MudBlazorExtensions.Util
 
+@typeparam TReturnValue
+
 <MudDialogEx>
     <DialogContent>
         @if (!OnLoad.HasDelegate || isLoaded)
@@ -43,7 +45,7 @@
     public EventCallback<DialogLoadArgs> OnLoad { get; set; }
 
     [Parameter]
-    public EventCallback<DialogSubmitArgs> OnOk { get; set; }
+    public EventCallback<DialogSubmitArgs<TReturnValue>> OnOk { get; set; }
 
     [Parameter]
     public EventCallback OnCancel { get; set; }
@@ -64,6 +66,11 @@
     private bool hasError;
     private string? errorMessage;
 
+    public void Close(TReturnValue returnValue)
+    {
+        DialogInstance.Close(DialogResult.Ok(returnValue));
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (!OnLoad.HasDelegate)
@@ -82,7 +89,7 @@
 
     private async Task OnOkAsync_Internal()
     {
-        DialogSubmitArgs args = new();
+        DialogSubmitArgs<TReturnValue> args = new();
 
         if (OnOk.HasDelegate)
             await OnOk.InvokeAsync(args);
@@ -90,7 +97,7 @@
         if (args.Cancel)
             return;
 
-        DialogInstance.Close();
+        DialogInstance.Close(DialogResult.Ok(args.ReturnValue));
     }
 
     private async Task OnCancelAsync_Internal()

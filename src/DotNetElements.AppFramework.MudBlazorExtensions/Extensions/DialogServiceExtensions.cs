@@ -104,4 +104,17 @@ public static class DialogServiceExtensions
     {
         return dialogService.ShowMessageBox("Validation Error", $"Please fix all validation errors.\n\n{errorDetails}");
     }
+
+    public static async Task<Result> ShowSimpleAsync<TDialog>(this IDialogService dialogService, string? title, DialogParameters parameters, DialogOptions? dialogOptions = null)
+        where TDialog : IComponent
+    {
+        IDialogReference dialogRef = await dialogService.ShowAsync<TDialog>(title, parameters, dialogOptions ?? DialogDefaults.Small);
+
+        DialogResult? dialogResult = await dialogRef.Result;
+
+        if (dialogResult?.Canceled is not false)
+            return Fail();
+
+        return Ok();
+    }
 }

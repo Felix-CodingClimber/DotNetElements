@@ -12,6 +12,11 @@ public sealed class DialogLoadArgs()
     }
 }
 
+public sealed record DialogSubmitArgs()
+{
+    public bool Cancel { get; set; }
+}
+
 public sealed record DialogSubmitArgs<TReturnValue>()
 {
     public TReturnValue? ReturnValue { get; set; }

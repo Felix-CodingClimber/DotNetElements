@@ -19,32 +19,35 @@
 	}
 </style>
 
-<div class="mud-input-inline-edit">
-	<MudTextField Value="@Value" ValueChanged="@ValueChanged" ReadOnly="@(!isEditMode)" Label="@Label" For="@For" Required="@Required" Class="@(!isEditMode ? "mud-input-inline-edit-read-only" : "")" />
-	@if (isEditMode)
-	{
-		<MudIconButton Icon="@Icons.Material.Outlined.Save"
-					   Variant="Variant.Outlined"
-					   Color="Color.Primary"
-					   OnClick="OnSaveAsync"
-					   Class="mt-2 mb-1"
-					   Style="border-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
-		<MudIconButton Icon="@Icons.Material.Outlined.Cancel"
-					   Variant="Variant.Outlined"
-					   Color="Color.Default"
-					   OnClick="OnCancelAsync"
-					   Class="mt-2 mb-1"
-					   Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
-	}
-	else
-	{
-		<MudIconButton Icon="@Icons.Material.Outlined.Edit"
-					   Variant="Variant.Outlined"
-					   Color="Color.Warning"
-					   OnClick="OnEnterEditMode"
-					   Class="mt-2 mb-1"
-					   Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
-	}
+<div>
+	<div class="mud-input-inline-edit">
+		<MudTextField Value="@Value" ValueChanged="@ValueChanged" ReadOnly="@(!isEditMode)" Label="@Label" Required="@Required" Class="@(!isEditMode ? "mud-input-inline-edit-read-only" : "")" />
+		@if (isEditMode)
+		{
+			<MudIconButton Icon="@Icons.Material.Outlined.Save"
+						   Variant="Variant.Outlined"
+						   Color="Color.Primary"
+						   OnClick="OnSaveAsync"
+						   Class="mt-2 mb-1"
+						   Style="border-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
+			<MudIconButton Icon="@Icons.Material.Outlined.Cancel"
+						   Variant="Variant.Outlined"
+						   Color="Color.Default"
+						   OnClick="OnCancelAsync"
+						   Class="mt-2 mb-1"
+						   Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
+		}
+		else
+		{
+			<MudIconButton Icon="@Icons.Material.Outlined.Edit"
+						   Variant="Variant.Outlined"
+						   Color="Color.Warning"
+						   OnClick="OnEnterEditMode"
+						   Class="mt-2 mb-1"
+						   Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
+		}
+	</div>
+	<MudValidationMessage For="@For" />
 </div>
 
 @code
@@ -101,6 +104,8 @@
 	{
 		isEditMode = false;
 		Value = initialValue;
+
+		await ValueChanged.InvokeAsync(Value);
 
 		if (!OnCancel.HasDelegate)
 			return;

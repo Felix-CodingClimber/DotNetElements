@@ -14,6 +14,16 @@ public static class DateTimeOffsetExtensions
         return dateTimeOffset.LocalDateTime.ToFriendlyDateTime();
     }
 
+    public static string ToFriendlyShortMonthDay(this DateTimeOffset dateTimeOffset)
+    {
+        return dateTimeOffset.ToString("MMM dd");
+    }
+
+    public static string ToFriendlyLocalShortMonthDay(this DateTimeOffset dateTimeOffset)
+    {
+        return dateTimeOffset.LocalDateTime.ToFriendlyShortMonthDay();
+    }
+
     public static string ToFriendlyDateTime(this DateTimeOffset? dateTimeOffset)
     {
         return dateTimeOffset?.DateTime.ToFriendlyDateTime() ?? Placeholder;
@@ -22,6 +32,16 @@ public static class DateTimeOffsetExtensions
     public static string ToFriendlyLocalDateTime(this DateTimeOffset? dateTimeOffset)
     {
         return dateTimeOffset?.LocalDateTime.ToFriendlyDateTime() ?? Placeholder;
+    }
+
+    public static string ToFriendlyShortMonthDay(this DateTimeOffset? dateTimeOffset)
+    {
+        return dateTimeOffset?.ToString("MMM dd") ?? Placeholder;
+    }
+
+    public static string ToFriendlyLocalShortMonthDay(this DateTimeOffset? dateTimeOffset)
+    {
+        return dateTimeOffset?.LocalDateTime.ToFriendlyShortMonthDay() ?? Placeholder;
     }
 
     public static string ToFriendlyDateDiff(this DateTimeOffset dateTimeOffset, DateTime now)

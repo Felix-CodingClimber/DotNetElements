@@ -1,0 +1,26 @@
+﻿@using System.Linq.Expressions
+
+@typeparam TValue
+
+<ValidationMessage For="@For" class="@($"mud-input-helper-text mud-input-error pl-2 {Class}")" style="@Style" />
+
+@code
+{
+	/// <summary>
+	/// Specifies the field for which validation messages should be displayed.
+	/// </summary>
+	[Parameter, EditorRequired]
+	public Expression<Func<TValue>>? For { get; set; }
+
+	/// <summary>
+	/// The CSS classes applied to this component.
+	/// </summary>
+	[Parameter]
+	public string? Class { get; set; }
+
+	/// <summary>
+	/// The CSS styles applied to this component.
+	/// </summary>
+	[Parameter]
+	public string? Style { get; set; }
+}

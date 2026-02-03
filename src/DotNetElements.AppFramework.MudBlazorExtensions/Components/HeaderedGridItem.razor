@@ -1,0 +1,67 @@
+﻿<MudItem xs="@xs" sm="@sm" md="@md" lg="@lg" xl="@xl" Style="@Style" Class="@Class">
+	<MudStack Spacing="1">
+		<MudText Typo="Typo.caption"><b>@Header</b></MudText>
+		@if (TextContent is not null)
+		{
+			@TextContent
+		}
+		else
+		{
+			<MudText Typo="Typo.caption">@Text</MudText>
+		}
+	</MudStack>
+</MudItem>
+
+@code
+{
+	[Parameter, EditorRequired]
+	public string Header { get; set; } = default!;
+
+	[Parameter]
+	public string? Text { get; set; }
+
+	[Parameter]
+	public RenderFragment? TextContent { get; set; }
+
+	/// <summary>
+	/// Sets the number of columns to occupy at the 'extra small' breakpoint.
+	/// </summary>
+	[Parameter]
+	public int xs { get; set; }
+
+	/// <summary>
+	///Sets the number of columns to occupy at the 'small' breakpoint.
+	/// </summary>
+	[Parameter]
+	public int sm { get; set; }
+
+	/// <summary>
+	/// Sets the number of columns to occupy at the 'medium' breakpoint.
+	/// </summary>
+	[Parameter]
+	public int md { get; set; }
+
+	/// <summary>
+	/// Sets the number of columns to occupy at the 'large' breakpoint.
+	/// </summary>
+	[Parameter]
+	public int lg { get; set; }
+
+	/// <summary>
+	/// Sets the number of columns to occupy at the 'extra large' breakpoint.
+	/// </summary>
+	[Parameter]
+	public int xl { get; set; }
+
+	/// <summary>
+	/// The CSS classes applied to this component.
+	/// </summary>
+	[Parameter]
+	public string? Class { get; set; }
+
+	/// <summary>
+	/// The CSS styles applied to this component.
+	/// </summary>
+	[Parameter]
+	public string? Style { get; set; }
+}

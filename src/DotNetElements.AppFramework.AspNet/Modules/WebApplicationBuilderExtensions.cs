@@ -5,20 +5,18 @@ namespace DotNetElements.AppFramework.AspNet.Modules;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static IReadOnlyList<IModule>? RegisteredModules { get; private set; }
+    public static IReadOnlyList<IModule> RegisteredModules => registeredModules;
+    private static readonly List<IModule> registeredModules = [];
 
     public static WebApplicationBuilder RegisterModules(this WebApplicationBuilder builder, Assembly moduleAssembly)
     {
         IEnumerable<IModule> modules = DiscoverModules(moduleAssembly);
-        List<IModule> registeredModules = [];
 
         foreach (IModule module in modules)
         {
             module.RegisterModules(builder);
             registeredModules.Add(module);
         }
-
-        RegisteredModules = registeredModules;
 
         return builder;
     }

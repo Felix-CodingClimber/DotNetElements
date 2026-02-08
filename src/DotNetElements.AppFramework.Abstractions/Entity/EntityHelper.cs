@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using DotNetElements.AppFramework.Abstractions.Model;
 
 namespace DotNetElements.AppFramework.Abstractions.Entity;
 

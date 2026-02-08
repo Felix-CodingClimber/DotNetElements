@@ -47,7 +47,12 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
         return CrudResult.Ok(); // todo remove CrudResult. when Result package is updated
     }
 
-    // this should be high level method
+    // todo fix xml docs
+    // todo this should be high level method
+    /// <returns>
+    /// The updated entity on success, or a failure result with one of the following errors:
+    /// NotFound, EntryDeleted, or ConcurrencyConflict.
+    /// </returns>
     protected async Task<CrudResult<TEntity>> UpdateAndSaveChangesAsync<TEntity, TFrom>(TEntity? entity, TFrom from)
         where TEntity : Entity, IUpdateFrom
     {
@@ -250,7 +255,7 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
         {
             return Fail(CrudError.ConcurrencyConflict);
         }
-        catch (DbUpdateException)
+        catch (DbUpdateException) // todo check if we only want to handle DbUpdateConcurrencyException
         {
             return Fail(CrudError.Unknown);
         }

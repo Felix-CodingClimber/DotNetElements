@@ -1,9 +1,9 @@
-﻿using DotNetElements.AppFramework.Abstractions.Outbox;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using DotNetElements.AppFramework.Abstractions.Outbox;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace DotNetElements.AppFramework.Outbox;
 

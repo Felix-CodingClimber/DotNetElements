@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using DotNetElements.AppFramework.MudBlazorExtensions.Extensions;
+using DotNetElements.AppFramework.MudBlazorExtensions.Util;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetElements.AppFramework.MudBlazorExtensions.Services;
@@ -157,6 +158,7 @@ public class ApiService
         return Ok();
     }
 
+    // todo check if we can improve the message by including details from the ProblemDetails if available
     public async Task<Result<TReturn>> PostAsync<T, TReturn>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
     {
         HttpResponseMessage response = await httpClient.PostAsJsonAsync(url, content, cancellationToken);
@@ -164,6 +166,13 @@ public class ApiService
         if (!response.IsSuccessStatusCode)
         {
             logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+
+            ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
+
+            if (problemDetails is not null)
+            {
+                // todo return problem details type
+            }
 
             if (messageOnFail is not null)
                 snackbar.NotifyFailure(messageOnFail);
@@ -325,5 +334,23 @@ public class ApiService
         snackbar.NotifySuccessDeleteEntry();
 
         return Ok();
+    }
+
+    private async Task<ProblemDetails?> ReadProblemDetailsAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (response.Content.Headers.ContentType?.MediaType != "application/problem+json")
+            return null;
+
+        ProblemDetails problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken) ?? new ProblemDetails
+        {
+            Status = (int)response.StatusCode,
+            Title = "Unknown error",
+            Detail = "Failed to parse error details",
+            Type = "Unknown"
+        };
+
+        logger.LogError("Error details: [{problemType}] {problemDetail}", problemDetails.Type ?? problemDetails.Title, problemDetails.Detail);
+
+        return problemDetails;
     }
 }

@@ -44,7 +44,7 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
 
         await DbContext.SaveChangesAsync();
 
-        return CrudResult.Ok(); // todo remove CrudResult. when Result package is updated
+        return Ok();
     }
 
     // todo fix xml docs
@@ -118,7 +118,7 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
 
         await DbContext.SaveChangesAsync();
 
-        return CrudResult.Ok(); // todo remove CrudResult. when Result package is updated
+        return Ok();
     }
 
     // this should be high level method
@@ -249,7 +249,7 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
         {
             await DbContext.SaveChangesAsync();
 
-            return CrudResult.Ok(); // todo remove CrudResult. when Result package is updated
+            return Ok();
         }
         catch (DbUpdateConcurrencyException)
         {

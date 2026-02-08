@@ -36,7 +36,7 @@ internal sealed class DraftsService<TContent, TDbContext> : ModuleService<TDbCon
 
         await DbContext.SaveChangesAsync();
 
-        return CrudResult.Ok(); // todo change to Ok() if DotNetElements.Result is updated
+        return Ok();
     }
 
     public async Task<CrudResult<DraftModel<TContent>>> GetDraftById(Guid id)

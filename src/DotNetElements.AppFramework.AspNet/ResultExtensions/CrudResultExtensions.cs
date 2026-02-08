@@ -31,6 +31,7 @@ public static class CrudResultExtensions
         return MapToFailedHttpResult(error.Value);
     }
 
+    // todo improve with more detailed error
     private static IHttpResult MapToFailedHttpResult(CrudError errorCode)
     {
         return Results.Problem(title: $"{typeof(CrudError).Name}.{errorCode}", detail: ((int)errorCode).ToString(), type: typeof(CrudError).Name);

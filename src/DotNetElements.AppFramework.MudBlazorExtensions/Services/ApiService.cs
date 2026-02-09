@@ -1,356 +1,414 @@
 ﻿using System.Net.Http.Json;
 using DotNetElements.AppFramework.MudBlazorExtensions.Extensions;
 using DotNetElements.AppFramework.MudBlazorExtensions.Util;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetElements.AppFramework.MudBlazorExtensions.Services;
 
 public class ApiService
 {
-    private readonly HttpClient httpClient;
-    private readonly ISnackbar snackbar;
-    private readonly IDialogService dialogService;
-    private readonly ILogger<ApiService> logger;
-
-    public ApiService(HttpClient httpClient, ISnackbar snackbar, IDialogService dialogService, ILogger<ApiService> logger)
-    {
-        this.httpClient = httpClient;
-        this.snackbar = snackbar;
-        this.dialogService = dialogService;
-        this.logger = logger;
-    }
-
-    public Task<Result<TModel>> CreateAsync<TCreateModel, TModel>(string url, TCreateModel createModel, CancellationToken cancellationToken = default)
-    {
-        return PostAsync<TCreateModel, TModel>(
-            url,
-            createModel,
-            SnackbarExtensions.DefaultMessageSuccessCreate,
-            SnackbarExtensions.DefaultMessageFailureCreate,
-            cancellationToken);
-    }
-
-    public Task<Result<TModel>> UpdateAsync<TEditModel, TModel>(string url, TEditModel editModel, CancellationToken cancellationToken = default)
-    {
-        return PutAsync<TEditModel, TModel>(
-            url,
-            editModel,
-            SnackbarExtensions.DefaultMessageSuccessUpdate,
-            SnackbarExtensions.DefaultMessageFailureUpdate,
-            cancellationToken);
-    }
-
-    public Task<Result> UpdateAsync<TEditModel>(string url, TEditModel editModel, CancellationToken cancellationToken = default)
-    {
-        return PutAsync<TEditModel>(
-            url,
-            editModel,
-            SnackbarExtensions.DefaultMessageSuccessUpdate,
-            SnackbarExtensions.DefaultMessageFailureUpdate,
-            cancellationToken);
-    }
-
-    public async Task<Result<List<ModelWithDetails<TModel, TDetails>>>> GetModelsWithDetailsAsync<TModel, TDetails>(string url, CancellationToken cancellationToken = default)
-        where TDetails : ModelDetails
-    {
-        Result<List<TModel>> result = await GetAsync<List<TModel>>(url, cancellationToken);
-
-        if (!result.TryGetValue(out List<TModel>? returnValue))
-            return Fail();
-
-        return returnValue.Select(model => new ModelWithDetails<TModel, TDetails>(model)).ToList();
-    }
-
-    public async Task<Result<T>> GetAsync<T>(string url, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.GetAsync(url, cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error fetching data from {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
-            snackbar.NotifyFailureFetchData();
-
-            return Fail();
-        }
-
-        T? content = await response.Content.ReadFromJsonAsync<T>(cancellationToken);
-
-        if (content is null)
-        {
-            logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(T).Name, url, response.StatusCode, response.ReasonPhrase);
-            snackbar.NotifyFailureFetchData();
-
-            return Fail();
-        }
+	private static readonly ErrorDetails ClientFailErrorDetails = new()
+	{
+		Type = "Client.HandleResponseError",
+		Title = "Client Error",
+		Details = "Failed to handle response"
+	};
+
+	private static readonly ErrorDetails CancelledByUserErrorDetails = new()
+	{
+		Type = "Client.CancelledByUser",
+		Title = "Cancelled By User"
+	};
+
+	private readonly HttpClient httpClient;
+	private readonly ISnackbar snackbar;
+	private readonly IDialogService dialogService;
+	private readonly ILogger<ApiService> logger;
+
+	public ApiService(HttpClient httpClient, ISnackbar snackbar, IDialogService dialogService, ILogger<ApiService> logger)
+	{
+		this.httpClient = httpClient;
+		this.snackbar = snackbar;
+		this.dialogService = dialogService;
+		this.logger = logger;
+	}
+
+	public Task<ApiResult<TModel>> CreateAsync<TCreateModel, TModel>(string url, TCreateModel createModel, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		return PostAsync<TCreateModel, TModel>(
+			url,
+			createModel,
+			SnackbarExtensions.DefaultMessageSuccessCreate,
+			SnackbarExtensions.DefaultMessageFailureCreate,
+			noMessage,
+			cancellationToken);
+	}
+
+	public Task<ApiResult<TModel>> UpdateAsync<TEditModel, TModel>(string url, TEditModel editModel, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		return PutAsync<TEditModel, TModel>(
+			url,
+			editModel,
+			SnackbarExtensions.DefaultMessageSuccessUpdate,
+			SnackbarExtensions.DefaultMessageFailureUpdate,
+			noMessage,
+			cancellationToken);
+	}
+
+	public Task<ApiResult> UpdateAsync<TEditModel>(string url, TEditModel editModel, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		return PutAsync<TEditModel>(
+			url,
+			editModel,
+			SnackbarExtensions.DefaultMessageSuccessUpdate,
+			SnackbarExtensions.DefaultMessageFailureUpdate,
+			noMessage,
+			cancellationToken);
+	}
+
+	public async Task<ApiResult<List<ModelWithDetails<TModel, TDetails>>>> GetModelsWithDetailsAsync<TModel, TDetails>(string url, bool noMessage = false, CancellationToken cancellationToken = default)
+		where TDetails : ModelDetails
+	{
+		ApiResult<List<TModel>> result = await GetAsync<List<TModel>>(url, noMessage, cancellationToken);
+
+		if (!result.TryGetValue(out List<TModel>? returnValue, out ErrorDetails? error))
+			return Fail(error.Value);
+
+		return returnValue.Select(model => new ModelWithDetails<TModel, TDetails>(model)).ToList();
+	}
+
+	public async Task<ApiResult<T>> GetAsync<T>(string url, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.GetAsync(url, cancellationToken);
+
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error fetching data from {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
+
+			if (!noMessage)
+				NotifyFailure(SnackbarExtensions.DefaultMessageFailureFetch, problemDetails);
+
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
+
+		T? content = await response.Content.ReadFromJsonAsync<T>(cancellationToken);
+
+		if (content is null)
+		{
+			logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(T).Name, url, response.StatusCode, response.ReasonPhrase);
+
+			if (!noMessage)
+				snackbar.NotifyFailure(SnackbarExtensions.DefaultMessageFailureFetch);
+
+			return Fail(ClientFailErrorDetails);
+		}
+
+		return content;
+	}
 
-        return content;
-    }
-
-    public async Task<Result> PostAsync(string url, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.PostAsync(url, null, cancellationToken);
+	public async Task<ApiResult> PostAsync(string url, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.PostAsync(url, null, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
 
-            return Fail();
-        }
+			if (!noMessage)
+				NotifyFailure(messageOnFail, problemDetails);
 
-        if (messageOnSuccess is not null)
-            snackbar.NotifySuccess(messageOnSuccess);
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
 
-        return Ok();
-    }
+		if (!noMessage && messageOnSuccess is not null)
+			snackbar.NotifySuccess(messageOnSuccess);
 
-    public async Task<Result<TReturn>> PostAsync<TReturn>(string url, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.PostAsync(url, null, cancellationToken);
+		return Ok();
+	}
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+	public async Task<ApiResult<TReturn>> PostAsync<TReturn>(string url, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.PostAsync(url, null, cancellationToken);
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
 
-            return Fail();
-        }
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
 
-        TReturn? content = await response.Content.ReadFromJsonAsync<TReturn>(cancellationToken);
+			if (!noMessage)
+				NotifyFailure(messageOnFail, problemDetails);
 
-        if (content is null)
-        {
-            logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(TReturn).Name, url, response.StatusCode, response.ReasonPhrase);
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+		TReturn? content = await response.Content.ReadFromJsonAsync<TReturn>(cancellationToken);
 
-            return Fail();
-        }
+		if (content is null)
+		{
+			logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(TReturn).Name, url, response.StatusCode, response.ReasonPhrase);
 
-        if (messageOnSuccess is not null)
-            snackbar.NotifySuccess(messageOnSuccess);
+			if (!noMessage && messageOnFail is not null)
+				snackbar.NotifyFailure(messageOnFail);
 
-        return content;
-    }
+			return Fail(ClientFailErrorDetails);
+		}
 
-    public async Task<Result> PostAsync<T>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.PostAsJsonAsync(url, content, cancellationToken);
+		if (!noMessage && messageOnSuccess is not null)
+			snackbar.NotifySuccess(messageOnSuccess);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+		return content;
+	}
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+	public async Task<ApiResult> PostAsync<T>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.PostAsJsonAsync(url, content, cancellationToken);
 
-            return Fail();
-        }
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
 
-        if (messageOnSuccess is not null)
-            snackbar.NotifySuccess(messageOnSuccess);
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
 
-        return Ok();
-    }
+			if (!noMessage)
+				NotifyFailure(messageOnFail, problemDetails);
 
-    // todo check if we can improve the message by including details from the ProblemDetails if available
-    public async Task<Result<TReturn>> PostAsync<T, TReturn>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.PostAsJsonAsync(url, content, cancellationToken);
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+		if (!noMessage && messageOnSuccess is not null)
+			snackbar.NotifySuccess(messageOnSuccess);
 
-            ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
+		return Ok();
+	}
 
-            if (problemDetails is not null)
-            {
-                // todo return problem details type
-            }
+	public async Task<ApiResult<TReturn>> PostAsync<T, TReturn>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.PostAsJsonAsync(url, content, cancellationToken);
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
 
-            return Fail();
-        }
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
 
-        TReturn? returnContent = await response.Content.ReadFromJsonAsync<TReturn>(cancellationToken);
+			if (!noMessage)
+				NotifyFailure(messageOnFail, problemDetails);
 
-        if (returnContent is null)
-        {
-            logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(TReturn).Name, url, response.StatusCode, response.ReasonPhrase);
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+		TReturn? returnContent = await response.Content.ReadFromJsonAsync<TReturn>(cancellationToken);
 
-            return Fail();
-        }
+		if (returnContent is null)
+		{
+			logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(TReturn).Name, url, response.StatusCode, response.ReasonPhrase);
 
-        if (messageOnSuccess is not null)
-            snackbar.NotifySuccess(messageOnSuccess);
+			if (!noMessage && messageOnFail is not null)
+				snackbar.NotifyFailure(messageOnFail);
 
-        return returnContent;
-    }
+			return Fail(ClientFailErrorDetails);
+		}
 
-    public async Task<Result> PutAsync(string url, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.PutAsync(url, null, cancellationToken);
+		if (!noMessage && messageOnSuccess is not null)
+			snackbar.NotifySuccess(messageOnSuccess);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+		return returnContent;
+	}
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+	public async Task<ApiResult> PutAsync(string url, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.PutAsync(url, null, cancellationToken);
 
-            return Fail();
-        }
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
 
-        if (messageOnSuccess is not null)
-            snackbar.NotifySuccess(messageOnSuccess);
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
 
-        return Ok();
-    }
+			if (!noMessage)
+				NotifyFailure(messageOnFail, problemDetails);
 
-    public async Task<Result<TReturn>> PutAsync<TReturn>(string url, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.PutAsync(url, null, cancellationToken);
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+		if (!noMessage && messageOnSuccess is not null)
+			snackbar.NotifySuccess(messageOnSuccess);
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+		return Ok();
+	}
 
-            return Fail();
-        }
+	public async Task<ApiResult<TReturn>> PutAsync<TReturn>(string url, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.PutAsync(url, null, cancellationToken);
 
-        TReturn? content = await response.Content.ReadFromJsonAsync<TReturn>(cancellationToken);
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
 
-        if (content is null)
-        {
-            logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(TReturn).Name, url, response.StatusCode, response.ReasonPhrase);
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+			if (!noMessage)
+				NotifyFailure(messageOnFail, problemDetails);
 
-            return Fail();
-        }
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
 
-        if (messageOnSuccess is not null)
-            snackbar.NotifySuccess(messageOnSuccess);
+		TReturn? content = await response.Content.ReadFromJsonAsync<TReturn>(cancellationToken);
 
-        return content;
-    }
+		if (content is null)
+		{
+			logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(TReturn).Name, url, response.StatusCode, response.ReasonPhrase);
 
-    public async Task<Result> PutAsync<T>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.PutAsJsonAsync(url, content, cancellationToken);
+			if (!noMessage && messageOnFail is not null)
+				snackbar.NotifyFailure(messageOnFail);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+			return Fail(ClientFailErrorDetails);
+		}
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+		if (!noMessage && messageOnSuccess is not null)
+			snackbar.NotifySuccess(messageOnSuccess);
 
-            return Fail();
-        }
+		return content;
+	}
 
-        if (messageOnSuccess is not null)
-            snackbar.NotifySuccess(messageOnSuccess);
+	public async Task<ApiResult> PutAsync<T>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.PutAsJsonAsync(url, content, cancellationToken);
 
-        return Ok();
-    }
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
 
-    public async Task<Result<TReturn>> PutAsync<T, TReturn>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.PutAsJsonAsync(url, content, cancellationToken);
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+			if (!noMessage)
+				NotifyFailure(messageOnFail, problemDetails);
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
 
-            return Fail();
-        }
+		if (!noMessage && messageOnSuccess is not null)
+			snackbar.NotifySuccess(messageOnSuccess);
 
-        TReturn? returnContent = await response.Content.ReadFromJsonAsync<TReturn>(cancellationToken);
+		return Ok();
+	}
 
-        if (returnContent is null)
-        {
-            logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(TReturn).Name, url, response.StatusCode, response.ReasonPhrase);
+	public async Task<ApiResult<TReturn>> PutAsync<T, TReturn>(string url, T content, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.PutAsJsonAsync(url, content, cancellationToken);
 
-            if (messageOnFail is not null)
-                snackbar.NotifyFailure(messageOnFail);
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error sending data to {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
 
-            return Fail();
-        }
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
 
-        if (messageOnSuccess is not null)
-            snackbar.NotifySuccess(messageOnSuccess);
+			if (!noMessage)
+				NotifyFailure(messageOnFail, problemDetails);
 
-        return returnContent;
-    }
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
 
-    public async Task<Result> DeleteAsync(
-        string url,
-        string confirmItemLabel,
-        string confirmItemValue,
-        string confirmTitle = "Confirm Deletion",
-        string? additionalMessage = null,
-        bool needToConfirmValue = false,
-        CancellationToken cancellationToken = default)
-    {
-        bool confirmed = await dialogService.ShowConfirmDeleteDialogAsync(confirmTitle, confirmItemLabel, confirmItemValue, additionalMessage, needToConfirmValue);
+		TReturn? returnContent = await response.Content.ReadFromJsonAsync<TReturn>(cancellationToken);
 
-        if (!confirmed)
-            return Fail();
+		if (returnContent is null)
+		{
+			logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(TReturn).Name, url, response.StatusCode, response.ReasonPhrase);
 
-        return await DeleteAsync(url, cancellationToken);
-    }
+			if (!noMessage && messageOnFail is not null)
+				snackbar.NotifyFailure(messageOnFail);
 
-    public async Task<Result> DeleteAsync(string url, CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage response = await httpClient.DeleteAsync(url, cancellationToken);
+			return Fail(ClientFailErrorDetails);
+		}
 
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogError("Error deleting data at {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
-            snackbar.NotifyFailureDeleteEntry();
+		if (!noMessage && messageOnSuccess is not null)
+			snackbar.NotifySuccess(messageOnSuccess);
 
-            return Fail();
-        }
+		return returnContent;
+	}
 
-        snackbar.NotifySuccessDeleteEntry();
+	public async Task<ApiResult> DeleteAsync(
+		string url,
+		string confirmItemLabel,
+		string confirmItemValue,
+		string confirmTitle = "Confirm Deletion",
+		string? additionalMessage = null,
+		bool needToConfirmValue = false,
+		bool noMessage = false,
+		CancellationToken cancellationToken = default)
+	{
+		bool confirmed = await dialogService.ShowConfirmDeleteDialogAsync(confirmTitle, confirmItemLabel, confirmItemValue, additionalMessage, needToConfirmValue);
 
-        return Ok();
-    }
+		if (!confirmed)
+			return Fail(CancelledByUserErrorDetails);
 
-    private async Task<ProblemDetails?> ReadProblemDetailsAsync(HttpResponseMessage response, CancellationToken cancellationToken)
-    {
-        if (response.Content.Headers.ContentType?.MediaType != "application/problem+json")
-            return null;
+		return await DeleteAsync(url, noMessage, cancellationToken);
+	}
 
-        ProblemDetails problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken) ?? new ProblemDetails
-        {
-            Status = (int)response.StatusCode,
-            Title = "Unknown error",
-            Detail = "Failed to parse error details",
-            Type = "Unknown"
-        };
+	public async Task<ApiResult> DeleteAsync(string url, bool noMessage = false, CancellationToken cancellationToken = default)
+	{
+		HttpResponseMessage response = await httpClient.DeleteAsync(url, cancellationToken);
 
-        logger.LogError("Error details: [{problemType}] {problemDetail}", problemDetails.Type ?? problemDetails.Title, problemDetails.Detail);
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogError("Error deleting data at {url}: {statusCode} - {reasonPhrase}", url, response.StatusCode, response.ReasonPhrase);
+			snackbar.NotifyFailureDeleteEntry();
 
-        return problemDetails;
-    }
+			ProblemDetails? problemDetails = await ReadProblemDetailsAsync(response, cancellationToken);
+
+			if (!noMessage)
+				NotifyFailure(SnackbarExtensions.DefaultMessageFailureDelete, problemDetails);
+
+			if (problemDetails is not null)
+				return Fail(problemDetails.ToErrorDetails());
+		}
+
+		if (!noMessage)
+			snackbar.NotifySuccessDeleteEntry();
+
+		return Ok();
+	}
+
+	private void NotifyFailure(string? messageOnFail, ProblemDetails? problemDetails)
+	{
+		MarkupString? message = problemDetails?.ToNotification() ?? messageOnFail?.ToMarkupString();
+
+		if (message is null)
+			return;
+
+		snackbar.NotifyFailure(message.Value);
+	}
+
+	private async Task<ProblemDetails?> ReadProblemDetailsAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+	{
+		if (response.Content.Headers.ContentType?.MediaType != "application/problem+json")
+			return null;
+
+		ProblemDetails problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken) ?? new ProblemDetails
+		{
+			Status = (int)response.StatusCode,
+			Title = ClientFailErrorDetails.Title,
+			Detail = "Failed to get error details",
+			Type = ClientFailErrorDetails.Type
+		};
+
+		logger.LogError("Error details: [{problemType}] {problemDetail}", problemDetails.Type ?? problemDetails.Title, problemDetails.Detail);
+
+		return problemDetails;
+	}
 }

@@ -1,4 +1,6 @@
-﻿namespace DotNetElements.AppFramework.MudBlazorExtensions.Extensions;
+﻿using Microsoft.AspNetCore.Components;
+
+namespace DotNetElements.AppFramework.MudBlazorExtensions.Extensions;
 
 public static class SnackbarExtensions
 {
@@ -55,8 +57,18 @@ public static class SnackbarExtensions
         snackbar.Add(message, Severity.Error);
     }
 
-    public static void NotifySuccess(this ISnackbar snackbar, string message)
+	public static void NotifyFailure(this ISnackbar snackbar, MarkupString message)
+	{
+		snackbar.Add(message, Severity.Error);
+	}
+
+	public static void NotifySuccess(this ISnackbar snackbar, string message)
     {
         snackbar.Add(message, Severity.Success);
     }
+
+	public static void NotifySuccess(this ISnackbar snackbar, MarkupString message)
+	{
+		snackbar.Add(message, Severity.Success);
+	}
 }

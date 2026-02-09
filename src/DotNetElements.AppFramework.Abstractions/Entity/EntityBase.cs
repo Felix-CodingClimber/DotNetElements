@@ -2,7 +2,10 @@
 
 namespace DotNetElements.AppFramework;
 
-public abstract class Entity { }
+public abstract class Entity
+{
+    public abstract string GetDebugId();
+}
 
 public abstract class Entity<TKey> : Entity, IEntity<TKey>
     where TKey : notnull, IEquatable<TKey>
@@ -20,6 +23,8 @@ public abstract class Entity<TKey> : Entity, IEntity<TKey>
 
         Id = id;
     }
+
+    public override string GetDebugId() => Id.ToString();
 }
 
 public class CreationAuditedEntity<TKey> : Entity<TKey>, ICreationAuditedEntity

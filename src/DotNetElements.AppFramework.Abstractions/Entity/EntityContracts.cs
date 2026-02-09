@@ -1,6 +1,11 @@
 ﻿namespace DotNetElements.AppFramework.Abstractions.Entity;
 
-public interface IEntity<TKey> : IHasKey<TKey>
+public interface IEntity
+{
+    string GetDebugId();
+}
+
+public interface IEntity<TKey> : IEntity, IHasKey<TKey>
     where TKey : notnull, IEquatable<TKey>;
 
 public interface ICreationAuditedEntity

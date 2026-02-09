@@ -2,8 +2,10 @@
 using DotNetElements.AppFramework.Abstractions.Auth;
 using DotNetElements.AppFramework.Abstractions.Entity;
 using DotNetElements.AppFramework.Abstractions.Model;
+using DotNetElements.AppFramework.Abstractions.ResultObject;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetElements.AppFramework;
 
@@ -16,12 +18,14 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
     protected readonly TDbContext DbContext;
     protected readonly ICurrentUserProvider CurrentUserProvider;
     protected readonly TimeProvider TimeProvider;
+    protected readonly ILogger<ModuleService<TDbContext>> Logger;
 
-    protected ModuleService(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider)
+    protected ModuleService(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider, ILogger<ModuleService<TDbContext>> logger)
     {
         DbContext = dbContext;
         CurrentUserProvider = currentUserProvider;
         TimeProvider = timeProvider;
+        Logger = logger;
     }
 
     // this should be high level method
@@ -33,48 +37,49 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
         await DbContext.SaveChangesAsync();
     }
 
-    // this should be high level method
-    protected async Task<CrudResult> AttachAndSaveChangesAsync<TEntity>(TEntity entity, Expression<Func<TEntity, bool>> checkDuplicate)
-        where TEntity : class
-    {
-        if (!await EnsureNoDuplicateAsync<TEntity>(checkDuplicate))
-            return Fail(CrudError.DuplicateEntry);
-
-        DbContext.Set<TEntity>().Attach(entity);
-
-        await DbContext.SaveChangesAsync();
-
-        return Ok();
-    }
-
     // todo fix xml docs
     // todo this should be high level method
     /// <returns>
     /// The updated entity on success, or a failure result with one of the following errors:
-    /// NotFound, EntryDeleted, or ConcurrencyConflict.
+    /// <see cref="CrudError.NotFound"/>, <see cref="CrudError.EntryDeleted"/>, or <see cref="CrudError.ConcurrencyConflict"/>.
     /// </returns>
-    protected async Task<CrudResult<TEntity>> UpdateAndSaveChangesAsync<TEntity, TFrom>(TEntity? entity, TFrom from)
-        where TEntity : Entity, IUpdateFrom
+    protected async Task<ApiResult<TEntity>> UpdateAndSaveChangesAsync<TEntity, TFrom>(TEntity? entity, TFrom from, Func<CrudError, ErrorDetails> errorMapper)
+        where TEntity : class, IEntity, IUpdateFrom
     {
         if (entity is null)
-            return Fail(CrudError.NotFound);
+        {
+            Logger.LogDebug("Entity of type {EntityType} not found, can not update.", typeof(TEntity).Name);
+            return Fail(errorMapper.Invoke(CrudError.NotFound));
+        }
 
         if (entity is IDeletionAuditedEntity deletionAuditedEntity && deletionAuditedEntity.IsDeleted)
-            return Fail(CrudError.EntryDeleted);
+        {
+            Logger.LogDebug("Entity with {EntityId} of type {EntityType} is marked as deleted, can not update.", entity.GetDebugId(), typeof(TEntity).Name);
+            return Fail(errorMapper.Invoke(CrudError.EntryDeleted));
+        }
 
         if (entity is IEntityHasVersion entityWithVersion && from is IHasVersion fromWithVersion && !EnsureVersion(fromWithVersion, entityWithVersion))
-            return Fail(CrudError.ConcurrencyConflict);
+        {
+            Logger.LogDebug("Concurrency conflict detected when trying to update entity with {EntityId} of type {EntityType}.", entity.GetDebugId(), typeof(TEntity).Name);
+            return Fail(errorMapper.Invoke(CrudError.ConcurrencyConflict));
+        }
 
         UpdateEntity(entity, from);
 
-        await DbContext.SaveChangesAsync();
+        CrudResult saveChangesResult = await SaveChangesWithResultAsync();
+
+        if (saveChangesResult.HasError(out CrudError error))
+        {
+            Logger.LogDebug("Failed to save changes when trying to update entity with {EntityId} of type {EntityType}. Error: {Error}.", entity.GetDebugId(), typeof(TEntity).Name, error);
+            return Fail(errorMapper.Invoke(error));
+        }
 
         return entity;
     }
 
     // this should be low level method
     protected void UpdateEntity<TEntity, TFrom>(TEntity entity, TFrom from)
-        where TEntity : Entity, IUpdateFrom
+        where TEntity : IUpdateFrom
     {
         if (entity is IUpdateFrom<TFrom> updateFromEntity)
             updateFromEntity.Update(from);
@@ -85,21 +90,20 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
     }
 
     // this should be high level method
-    protected Task<CrudResult> RemoveByIdAndSaveChangesAsync<TEntity>(Guid id)
+    protected Task<ApiResult> RemoveByIdAndSaveChangesAsync<TEntity>(Guid id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<Guid>
     {
-        return RemoveByIdAndSaveChangesAsync<TEntity, Guid>(id);
+        return RemoveByIdAndSaveChangesAsync<TEntity, Guid>(id, errorMapper);
     }
 
     // this should be high level method
-    protected Task<CrudResult> RemoveByIdAndSaveChangesAsync<TEntity>(int id)
+    protected Task<ApiResult> RemoveByIdAndSaveChangesAsync<TEntity>(int id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<int>
     {
-        return RemoveByIdAndSaveChangesAsync<TEntity, int>(id);
+        return RemoveByIdAndSaveChangesAsync<TEntity, int>(id, errorMapper);
     }
 
-    // this should be low level method
-    protected async Task<CrudResult> RemoveByIdAndSaveChangesAsync<TEntity, TKey>(TKey id)
+    protected async Task<ApiResult> RemoveByIdAndSaveChangesAsync<TEntity, TKey>(TKey id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<TKey>
         where TKey : notnull, IEquatable<TKey>
     {
@@ -109,10 +113,16 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
             .FindAsync(id);
 
         if (existingEntity is null)
-            return Fail(CrudError.NotFound);
+        {
+            Logger.LogDebug("Entity with id {EntityId} of type {EntityType} not found, can not remove.", id, typeof(TEntity).Name);
+            return Fail(errorMapper.Invoke(CrudError.NotFound));
+        }
 
         if (existingEntity is IDeletionAuditedEntity deletionAuditedEntity && deletionAuditedEntity.IsDeleted)
-            return Fail(CrudError.EntryDeleted);
+        {
+            Logger.LogDebug("Entity with id {EntityId} of type {EntityType} is marked as deleted, can not remove.", id, typeof(TEntity).Name);
+            return Fail(errorMapper.Invoke(CrudError.EntryDeleted));
+        }
 
         dbSet.Remove(existingEntity);
 
@@ -122,21 +132,21 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
     }
 
     // this should be high level method
-    protected Task<CrudResult<CreationAuditedModelDetails>> GetCreationAuditedDetailsByEntityId<TEntity>(Guid id)
+    protected Task<ApiResult<CreationAuditedModelDetails>> GetCreationAuditedDetailsByEntityId<TEntity>(Guid id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<Guid>, ICreationAuditedEntity
     {
-        return GetCreationAuditedDetailsByEntityId<TEntity, Guid>(id);
+        return GetCreationAuditedDetailsByEntityId<TEntity, Guid>(id, errorMapper);
     }
 
     // this should be high level method
-    protected Task<CrudResult<CreationAuditedModelDetails>> GetCreationAuditedDetailsByEntityId<TEntity>(int id)
+    protected Task<ApiResult<CreationAuditedModelDetails>> GetCreationAuditedDetailsByEntityId<TEntity>(int id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<int>, ICreationAuditedEntity
     {
-        return GetCreationAuditedDetailsByEntityId<TEntity, int>(id);
+        return GetCreationAuditedDetailsByEntityId<TEntity, int>(id, errorMapper);
     }
 
     // this should be low level method
-    protected async Task<CrudResult<CreationAuditedModelDetails>> GetCreationAuditedDetailsByEntityId<TEntity, TKey>(TKey id)
+    protected async Task<ApiResult<CreationAuditedModelDetails>> GetCreationAuditedDetailsByEntityId<TEntity, TKey>(TKey id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<TKey>, ICreationAuditedEntity
         where TKey : notnull, IEquatable<TKey>
     {
@@ -155,25 +165,31 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
                 })
             .FirstOrDefaultAsync();
 
-        return OkIfNotNull(details, CrudError.NotFound);
+        if (details is null)
+        {
+            Logger.LogDebug("Entity with id {EntityId} of type {EntityType} not found, can not get creation audited details.", id, typeof(TEntity).Name);
+            return Fail(errorMapper.Invoke(CrudError.NotFound));
+        }
+
+        return details;
     }
 
     // this should be high level method
-    protected Task<CrudResult<AuditedModelDetails>> GetAuditedDetailsByEntityId<TEntity>(Guid id)
+    protected Task<ApiResult<AuditedModelDetails>> GetAuditedDetailsByEntityId<TEntity>(Guid id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<Guid>, IAuditedEntity
     {
-        return GetAuditedDetailsByEntityId<TEntity, Guid>(id);
+        return GetAuditedDetailsByEntityId<TEntity, Guid>(id, errorMapper);
     }
 
     // this should be high level method
-    protected Task<CrudResult<AuditedModelDetails>> GetAuditedDetailsByEntityId<TEntity>(int id)
+    protected Task<ApiResult<AuditedModelDetails>> GetAuditedDetailsByEntityId<TEntity>(int id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<int>, IAuditedEntity
     {
-        return GetAuditedDetailsByEntityId<TEntity, int>(id);
+        return GetAuditedDetailsByEntityId<TEntity, int>(id, errorMapper);
     }
 
     // this should be low level method
-    protected async Task<CrudResult<AuditedModelDetails>> GetAuditedDetailsByEntityId<TEntity, TKey>(TKey id)
+    protected async Task<ApiResult<AuditedModelDetails>> GetAuditedDetailsByEntityId<TEntity, TKey>(TKey id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<TKey>, IAuditedEntity
         where TKey : notnull, IEquatable<TKey>
     {
@@ -195,25 +211,31 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
                 })
             .FirstOrDefaultAsync();
 
-        return OkIfNotNull(details, CrudError.NotFound);
+        if (details is null)
+        {
+            Logger.LogDebug("Entity with id {EntityId} of type {EntityType} not found, can not get audited details.", id, typeof(TEntity).Name);
+            return Fail(errorMapper.Invoke(CrudError.NotFound));
+        }
+
+        return details;
     }
 
     // this should be high level method
-    protected Task<CrudResult<DeletionAuditedModelDetails>> GetDeletionAuditedDetailsByEntityId<TEntity>(Guid id)
+    protected Task<ApiResult<DeletionAuditedModelDetails>> GetDeletionAuditedDetailsByEntityId<TEntity>(Guid id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<Guid>, IDeletionAuditedEntity
     {
-        return GetDeletionAuditedDetailsByEntityId<TEntity, Guid>(id);
+        return GetDeletionAuditedDetailsByEntityId<TEntity, Guid>(id, errorMapper);
     }
 
     // this should be high level method
-    protected Task<CrudResult<DeletionAuditedModelDetails>> GetDeletionAuditedDetailsByEntityId<TEntity>(int id)
+    protected Task<ApiResult<DeletionAuditedModelDetails>> GetDeletionAuditedDetailsByEntityId<TEntity>(int id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<int>, IDeletionAuditedEntity
     {
-        return GetDeletionAuditedDetailsByEntityId<TEntity, int>(id);
+        return GetDeletionAuditedDetailsByEntityId<TEntity, int>(id, errorMapper);
     }
 
     // this should be low level method
-    protected async Task<CrudResult<DeletionAuditedModelDetails>> GetDeletionAuditedDetailsByEntityId<TEntity, TKey>(TKey id)
+    protected async Task<ApiResult<DeletionAuditedModelDetails>> GetDeletionAuditedDetailsByEntityId<TEntity, TKey>(TKey id, Func<CrudError, ErrorDetails> errorMapper)
         where TEntity : class, IEntity<TKey>, IDeletionAuditedEntity
         where TKey : notnull, IEquatable<TKey>
     {
@@ -239,11 +261,18 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
                 })
             .FirstOrDefaultAsync();
 
-        return OkIfNotNull(details, CrudError.NotFound);
+        if (details is null)
+        {
+            Logger.LogDebug("Entity with id {EntityId} of type {EntityType} not found, can not get deletion audited details.", id, typeof(TEntity).Name);
+            return Fail(errorMapper.Invoke(CrudError.NotFound));
+        }
+
+        return details;
     }
 
     // this should be low level method
-    protected async Task<CrudResult> SaveChangesWithResultAsync()
+    // todo use this in all methods that save changes and return CrudResult, to ensure consistent error handling for concurrency conflicts
+    protected async Task<ApiResult> SaveChangesWithResultAsync(Func<CrudError, ErrorDetails> errorMapper)
     {
         try
         {
@@ -251,13 +280,11 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
 
             return Ok();
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateConcurrencyException ex)
         {
-            return Fail(CrudError.ConcurrencyConflict);
-        }
-        catch (DbUpdateException) // todo check if we only want to handle DbUpdateConcurrencyException
-        {
-            return Fail(CrudError.Unknown);
+            Logger.LogDebug(ex, "Concurrency conflict detected during SaveChanges.");
+
+            return Fail(errorMapper.Invoke(CrudError.ConcurrencyConflict));
         }
     }
 
@@ -284,7 +311,12 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
         where TEntity : class, IEntityHasVersion
     {
         if (model.Version != existingEntity.Version)
+        {
+            Logger.LogDebug("Version mismatch detected. Model of type {ModelType} version: {ModelVersion}, Entity of type {EntityType} version: {EntityVersion}.",
+                typeof(TModel).Name, model.Version, typeof(TEntity).Name, existingEntity.Version);
+
             return false;
+        }
 
         existingEntity.UpdateVersion();
 
@@ -298,6 +330,13 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
         bool hasDuplicate = await DbContext.Set<TEntity>().AnyAsync(checkDuplicate);
 
         return !hasDuplicate;
+    }
+
+    protected Task LoadRelatedAsync<TEntity, TRelatedEntity>(TEntity entity, Expression<Func<TEntity, TRelatedEntity?>> navigationProperty)
+        where TEntity : class
+        where TRelatedEntity : class
+    {
+        return DbContext.Entry(entity).Reference(navigationProperty).LoadAsync();
     }
 
     // this should be high level method

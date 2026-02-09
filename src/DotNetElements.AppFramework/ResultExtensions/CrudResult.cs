@@ -5,7 +5,6 @@ public enum CrudError
     None,
     Unknown,
     NotFound,
-    DuplicateEntry,
     EntryDeleted,
     ConcurrencyConflict,
 }

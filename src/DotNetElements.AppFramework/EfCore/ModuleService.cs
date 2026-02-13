@@ -66,12 +66,12 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
 
         UpdateEntity(entity, from);
 
-        CrudResult saveChangesResult = await SaveChangesWithResultAsync();
+        ApiResult saveChangesResult = await SaveChangesWithResultAsync(errorMapper);
 
-        if (saveChangesResult.HasError(out CrudError error))
+        if (saveChangesResult.HasError(out ErrorDetails error))
         {
             Logger.LogDebug("Failed to save changes when trying to update entity with {EntityId} of type {EntityType}. Error: {Error}.", entity.GetDebugId(), typeof(TEntity).Name, error);
-            return Fail(errorMapper.Invoke(error));
+            return Fail(error);
         }
 
         return entity;

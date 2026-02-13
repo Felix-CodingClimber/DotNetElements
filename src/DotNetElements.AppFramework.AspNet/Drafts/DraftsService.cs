@@ -1,75 +1,77 @@
 ﻿using DotNetElements.AppFramework.Abstractions.Auth;
 using DotNetElements.AppFramework.Abstractions.Drafts;
 using DotNetElements.AppFramework.Abstractions.Model;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetElements.AppFramework.AspNet.Drafts;
 
+// todo move to ApiResult
 internal sealed class DraftsService<TContent, TDbContext> : ModuleService<TDbContext>
-    where TContent : class
-    where TDbContext : DbContext, IDbSetDraft<TContent>
+	where TContent : class
+	where TDbContext : DbContext, IDbSetDraft<TContent>
 {
-    public DraftsService(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider)
-        : base(dbContext, currentUserProvider, timeProvider)
-    {
-    }
+	public DraftsService(TDbContext dbContext, ICurrentUserProvider currentUserProvider, TimeProvider timeProvider, ILogger<DraftsService<TContent, TDbContext>> logger)
+		: base(dbContext, currentUserProvider, timeProvider, logger)
+	{
+	}
 
-    public async Task<CrudResult<DraftModel<TContent>>> CreateOrUpdateDraftAsync(DraftModel<TContent> model)
-    {
-        Draft<TContent>? existingEntity = await DbContext.Drafts
-            .FindAsync(model.Id);
+	public async Task<CrudResult<DraftModel<TContent>>> CreateOrUpdateDraftAsync(DraftModel<TContent> model)
+	{
+		Draft<TContent>? existingEntity = await DbContext.Drafts
+			.FindAsync(model.Id);
 
-        if (existingEntity is null)
-            return await CreateDraftAsync(model);
-        else
-            return await UpdateDraftAsync(existingEntity, model);
-    }
+		if (existingEntity is null)
+			return await CreateDraftAsync(model);
+		else
+			return await UpdateDraftAsync(existingEntity, model);
+	}
 
-    public async Task<CrudResult> DeleteDraftByIdAsync(Guid id)
-    {
-        Draft<TContent>? existingEntity = await DbContext.Drafts
-            .FindAsync(id);
+	public async Task<CrudResult> DeleteDraftByIdAsync(Guid id)
+	{
+		Draft<TContent>? existingEntity = await DbContext.Drafts
+			.FindAsync(id);
 
-        if (existingEntity is null)
-            return Fail(CrudError.NotFound);
+		if (existingEntity is null)
+			return Fail(CrudError.NotFound);
 
-        DbContext.Drafts.Remove(existingEntity);
+		DbContext.Drafts.Remove(existingEntity);
 
-        await DbContext.SaveChangesAsync();
+		await DbContext.SaveChangesAsync();
 
-        return Ok();
-    }
+		return Ok();
+	}
 
-    public async Task<CrudResult<DraftModel<TContent>>> GetDraftById(Guid id)
-    {
-        Draft<TContent>? existingEntity = await DbContext.Drafts
-            .FindAsync(id);
+	public async Task<CrudResult<DraftModel<TContent>>> GetDraftById(Guid id)
+	{
+		Draft<TContent>? existingEntity = await DbContext.Drafts
+			.FindAsync(id);
 
-        if (existingEntity is null)
-            return Fail(CrudError.NotFound);
+		if (existingEntity is null)
+			return Fail(CrudError.NotFound);
 
-        return existingEntity.MapToModel();
-    }
+		return existingEntity.MapToModel();
+	}
 
-    public Task<CrudResult<AuditedModelDetails>> GetDraftAuditDetailsById(Guid id)
-    {
-        return GetAuditedDetailsByEntityId<Draft<TContent>, Guid>(id);
-    }
+	public Task<CrudResult<AuditedModelDetails>> GetDraftAuditDetailsById(Guid id)
+	{
+		return GetAuditedDetailsByEntityId<Draft<TContent>, Guid>(id);
+	}
 
-    private async Task<CrudResult<DraftModel<TContent>>> CreateDraftAsync(DraftModel<TContent> model)
-    {
-        Draft<TContent> newDraft = model.MapToEntity();
+	private async Task<CrudResult<DraftModel<TContent>>> CreateDraftAsync(DraftModel<TContent> model)
+	{
+		Draft<TContent> newDraft = model.MapToEntity();
 
-        await AttachAndSaveChangesAsync(newDraft);
+		await AttachAndSaveChangesAsync(newDraft);
 
-        return newDraft.MapToModel();
-    }
+		return newDraft.MapToModel();
+	}
 
-    private async Task<CrudResult<DraftModel<TContent>>> UpdateDraftAsync(Draft<TContent> existingEntity, DraftModel<TContent> model)
-    {
-        existingEntity.Update(model);
+	private async Task<CrudResult<DraftModel<TContent>>> UpdateDraftAsync(Draft<TContent> existingEntity, DraftModel<TContent> model)
+	{
+		existingEntity.Update(model);
 
-        await DbContext.SaveChangesAsync();
+		await DbContext.SaveChangesAsync();
 
-        return existingEntity.MapToModel();
-    }
+		return existingEntity.MapToModel();
+	}
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace DotNetElements.AppFramework.AspNet.Drafts;
 
+// todo move to ApiResult
 public static class EndpointRouteBuilderExtensions
 {
     public static IEndpointRouteBuilder MapDrafts<TContent, TDbContext>(this IEndpointRouteBuilder endpoints, string draftsEndpoint)

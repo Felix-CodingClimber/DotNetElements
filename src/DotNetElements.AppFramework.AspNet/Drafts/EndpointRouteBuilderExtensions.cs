@@ -16,7 +16,7 @@ public static class EndpointRouteBuilderExtensions
         // Create or update
         endpoints.MapPut(DraftsRoutes.CreateOrUpdate(draftsEndpoint), async (DraftModel<TContent> model, DraftsService<TContent, TDbContext> draftsService) =>
         {
-            CrudResult<DraftModel<TContent>> updateResult = await draftsService.CreateOrUpdateDraftAsync(model);
+            ApiResult<DraftModel<TContent>> updateResult = await draftsService.CreateOrUpdateDraftAsync(model);
 
             return updateResult.MapToHttpResult();
         });
@@ -24,7 +24,7 @@ public static class EndpointRouteBuilderExtensions
         // Delete
         endpoints.MapDelete(DraftsRoutes.Delete(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
         {
-            CrudResult deleteResult = await draftsService.DeleteDraftByIdAsync(id);
+            ApiResult deleteResult = await draftsService.DeleteDraftByIdAsync(id);
 
             return deleteResult.MapToHttpResult();
         });
@@ -32,7 +32,7 @@ public static class EndpointRouteBuilderExtensions
         // Get by ID
         endpoints.MapGet(DraftsRoutes.GetById(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
         {
-            CrudResult<DraftModel<TContent>> result = await draftsService.GetDraftById(id);
+            ApiResult<DraftModel<TContent>> result = await draftsService.GetDraftById(id);
 
             return result.MapToHttpResult();
         });
@@ -40,7 +40,7 @@ public static class EndpointRouteBuilderExtensions
         // Get Audit Details
         endpoints.MapGet(DraftsRoutes.GetDetails(draftsEndpoint), async (Guid id, DraftsService<TContent, TDbContext> draftsService) =>
         {
-            CrudResult<AuditedModelDetails> auditResult = await draftsService.GetDraftAuditDetailsById(id);
+            ApiResult<AuditedModelDetails> auditResult = await draftsService.GetDraftAuditDetailsById(id);
 
             return auditResult.MapToHttpResult();
         });

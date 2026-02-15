@@ -99,19 +99,27 @@ public class ApiService
                 return Fail(problemDetails.ToErrorDetails());
         }
 
-        T? content = await response.Content.ReadFromJsonAsync<T>(jsonOptions, cancellationToken);
-
-        if (content is null)
+        // todo this should not be needed?
+        try
         {
-            logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(T).Name, url, response.StatusCode, response.ReasonPhrase);
+            T? content = await response.Content.ReadFromJsonAsync<T>(jsonOptions, cancellationToken);
 
-            if (!noMessage)
-                snackbar.NotifyFailure(SnackbarExtensions.DefaultMessageFailureFetch);
+            if (content is null)
+            {
+                logger.LogError("Error deserializing type {type} from {url}: {statusCode} - {reasonPhrase}", typeof(T).Name, url, response.StatusCode, response.ReasonPhrase);
 
+                if (!noMessage)
+                    snackbar.NotifyFailure(SnackbarExtensions.DefaultMessageFailureFetch);
+
+                return Fail(ClientFailErrorDetails);
+            }
+
+            return content;
+        }
+        catch (Exception ex)
+        {
             return Fail(ClientFailErrorDetails);
         }
-
-        return content;
     }
 
     public async Task<ApiResult> PostAsync(string url, string? messageOnSuccess = null, string? messageOnFail = null, bool noMessage = false, CancellationToken cancellationToken = default)

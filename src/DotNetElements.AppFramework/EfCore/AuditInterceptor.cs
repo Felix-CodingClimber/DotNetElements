@@ -33,12 +33,12 @@ public sealed class AuditInterceptor : SaveChangesInterceptor
             if (auditedEntity.State is EntityState.Added)
             {
                 auditedEntity.Property(nameof(ICreationAuditedEntity.CreationTime)).CurrentValue = timeProvider.GetUtcNow();
-                auditedEntity.Property(nameof(ICreationAuditedEntity.CreatorId)).CurrentValue = currentUserProvider.GetCurrentUserId();
+                auditedEntity.Property(nameof(ICreationAuditedEntity.CreatorId)).CurrentValue = currentUserProvider.GetRequiredCurrentUserId();
             }
             else if (auditedEntity.State is EntityState.Modified && auditedEntity.Entity is IAuditedEntity)
             {
 				auditedEntity.Property(nameof(IAuditedEntity.LastModificationTime)).CurrentValue = timeProvider.GetUtcNow();
-                auditedEntity.Property(nameof(IAuditedEntity.LastModifierId)).CurrentValue = currentUserProvider.GetCurrentUserId();
+                auditedEntity.Property(nameof(IAuditedEntity.LastModifierId)).CurrentValue = currentUserProvider.GetRequiredCurrentUserId();
             }
         }
 
@@ -52,7 +52,7 @@ public sealed class AuditInterceptor : SaveChangesInterceptor
 		foreach (EntityEntry<IDeletionAuditedEntity> deletionAuditedEntity in deletedEntities)
 		{
 			deletionAuditedEntity.State = EntityState.Modified;
-			deletionAuditedEntity.Entity.SetIsDeletedWithAudit(currentUserProvider.GetCurrentUserId(), timeProvider.GetUtcNow());
+			deletionAuditedEntity.Entity.SetIsDeletedWithAudit(currentUserProvider.GetRequiredCurrentUserId(), timeProvider.GetUtcNow());
 		}
 
 		return base.SavingChangesAsync(eventData, result, cancellationToken);

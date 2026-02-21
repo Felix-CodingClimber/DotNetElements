@@ -357,7 +357,7 @@ public abstract class ModuleService<TDbContext> : IEntityUpdateHelper
 	// this should be high level method
 	protected Guid GetCurrentUserId()
 	{
-		return CurrentUserProvider.GetCurrentUserId();
+		return CurrentUserProvider.GetRequiredCurrentUserId();
 	}
 
 	// this should be high level method

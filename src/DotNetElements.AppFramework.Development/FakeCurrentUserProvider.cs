@@ -4,40 +4,48 @@ namespace DotNetElements.AppFramework.Development;
 
 public sealed class FakeCurrentUserProvider : ICurrentUserProvider
 {
-	private Guid? temporaryUserId;
+    private Guid? temporaryUserId;
 
-	private readonly Guid fakeUserId;
-	private readonly string fakeUserEmail;
+    private readonly Guid fakeUserId;
+    private readonly string fakeUserEmail;
 
-	public FakeCurrentUserProvider(Guid fakeUserId, string fakeUserEmail)
-	{
-		this.fakeUserId = fakeUserId;
-		this.fakeUserEmail = fakeUserEmail;
-	}
+    public FakeCurrentUserProvider(Guid fakeUserId, string fakeUserEmail)
+    {
+        this.fakeUserId = fakeUserId;
+        this.fakeUserEmail = fakeUserEmail;
+    }
 
-	public Guid GetCurrentUserId()
-	{
-		if (temporaryUserId is not null)
-			return temporaryUserId.Value;
+    public Guid? GetCurrentUserId()
+    {
+        if (temporaryUserId is not null)
+            return temporaryUserId.Value;
 
-		return fakeUserId;
-	}
+        return fakeUserId;
+    }
 
-	public string GetCurrentUserEmail()
-	{
-		if (temporaryUserId is not null)
-			throw new InvalidOperationException("Temporary user ID is set; email is not available.");
+    public Guid GetRequiredCurrentUserId()
+    {
+        if (temporaryUserId is not null)
+            return temporaryUserId.Value;
 
-		return fakeUserEmail;
-	}
+        return fakeUserId;
+    }
 
-	public void SetTemporaryUserId(Guid userId)
-	{
-		temporaryUserId = userId;
-	}
+    public string GetCurrentUserEmail()
+    {
+        if (temporaryUserId is not null)
+            throw new InvalidOperationException("Temporary user ID is set; email is not available.");
 
-	public void ResetTemporaryUserId()
-	{
-		temporaryUserId = null;
-	}
+        return fakeUserEmail;
+    }
+
+    public void SetTemporaryUserId(Guid userId)
+    {
+        temporaryUserId = userId;
+    }
+
+    public void ResetTemporaryUserId()
+    {
+        temporaryUserId = null;
+    }
 }

@@ -1,0 +1,309 @@
+﻿@using Microsoft.JSInterop
+@using MudBlazor
+@using MudBlazor.Utilities
+
+@inherits MudComponentBase
+
+<div class="@Class" style="@Style" @attributes="UserAttributes">
+	<div style="@GetMainContainerStyle()">
+		@* Left Column - Template Variables & Help *@
+		<div style="@GetSidebarStyle()">
+			<div style="flex: 1; overflow-y: auto; padding: 8px; border-bottom: 1px solid var(--mud-palette-lines-default);">
+				<MudText Typo="Typo.subtitle2" Class="mb-2">Template Variables</MudText>
+				<MudText Typo="Typo.caption" Color="Color.Tertiary">
+					Available variables will be displayed here
+				</MudText>
+				@* TODO: Add variable list here *@
+			</div>
+			<div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+				@* Custom compact tab headers *@
+				<div style="display: flex; border-bottom: 1px solid var(--mud-palette-lines-default);">
+					<button @onclick="() => activeHelpTab = HelpTab.Syntax"
+							style="@GetTabButtonStyle(activeHelpTab == HelpTab.Syntax)"
+							type="button">
+						<MudText Typo="Typo.caption">Syntax</MudText>
+					</button>
+					<button @onclick="() => activeHelpTab = HelpTab.Functions"
+							style="@GetTabButtonStyle(activeHelpTab == HelpTab.Functions)"
+							type="button">
+						<MudText Typo="Typo.caption">Functions</MudText>
+					</button>
+				</div>
+
+				@* Tab content *@
+				<div style="flex: 1; overflow-y: auto; padding: 8px;">
+					@if (activeHelpTab == HelpTab.Syntax)
+					{
+						<MudText Typo="Typo.subtitle2" Class="mb-2">Scriban Syntax</MudText>
+
+						<MudText Typo="Typo.body2" Class="mb-1"><strong>Output:</strong></MudText>
+						<MudText Typo="Typo.caption" Class="mb-3">
+							<code>{{ "{{" }} variable {{ "}}" }}</code> - Outputs the value
+						</MudText>
+
+						<MudText Typo="Typo.body2" Class="mb-1"><strong>Filters:</strong></MudText>
+						<MudText Typo="Typo.caption" Class="mb-3">
+							<code>{{ "{{" }} variable | function {{ "}}" }}</code> - Apply function to value
+						</MudText>
+
+						<MudText Typo="Typo.body2" Class="mb-1"><strong>Control Flow:</strong></MudText>
+						<MudText Typo="Typo.caption" Class="mb-1">
+							<code>{{ "{{" }}~ if condition ~{{ "}}" }}</code>
+						</MudText>
+						<MudText Typo="Typo.caption" Class="mb-3">
+							<code>{{ "{{" }}~ else ~{{ "}}" }}</code><br />
+							<code>{{ "{{" }}~ end ~{{ "}}" }}</code>
+						</MudText>
+
+						<MudText Typo="Typo.body2" Class="mb-1"><strong>Loops:</strong></MudText>
+						<MudText Typo="Typo.caption" Class="mb-3">
+							<code>{{ "{{" }}~ for item in items ~{{ "}}" }}</code><br />
+							<code>{{ "{{" }}~ end ~{{ "}}" }}</code>
+						</MudText>
+
+						<MudText Typo="Typo.body2" Class="mb-1"><strong>Comments:</strong></MudText>
+						<MudText Typo="Typo.caption">
+							<code>{{ "{{" }}# This is a comment #{{ "}}" }}</code>
+						</MudText>
+					}
+					else
+					{
+						<MudText Typo="Typo.subtitle2" Class="mb-3">String Functions</MudText>
+
+						@foreach (ScribanFunctionDefinition func in BuiltInStringFunctions)
+						{
+							<div class="mb-3">
+								<MudText Typo="Typo.body2" Style="font-weight: 600; font-size: 0.8rem;">@func.Name</MudText>
+								<MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mb-1">@func.Description</MudText>
+
+								@if (func.FunctionParams.Length > 0)
+								{
+									<div class="ml-2">
+										<MudText Typo="Typo.caption" Style="font-style: italic; font-size: 0.7rem;">Parameters:</MudText>
+										@foreach (FunctionParam param in func.FunctionParams)
+										{
+											<MudText Typo="Typo.caption" Class="ml-2" Style="font-size: 0.7rem;">
+												• <strong>@param.Name:</strong> @param.Description
+											</MudText>
+										}
+									</div>
+								}
+							</div>
+						}
+					}
+				</div>
+			</div>
+		</div>
+
+		@* Middle & Right Columns - Editor and Preview *@
+		<div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+			@* Toolbar *@
+			<div style="display: flex; align-items: center; padding: 4px 8px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface); min-height: 40px;">
+				<MudSpacer />
+				@if (PreviewEnabled)
+				{
+					<MudIconButton Icon="@(previewShown? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+								   Color="Color.Default"
+								   Size="Size.Small"
+								   OnClick="TogglePreview"
+								   Title="@(previewShown ? "Hide Preview" : "Show Preview")" />
+				}
+			</div>
+
+			@* Editor and Preview Row *@
+			<div style="display: flex; flex-direction: row; flex: 1; overflow: hidden;">
+				@* Editor Column *@
+				<div @ref="editorContainer" style="flex: 1; overflow: hidden;" />
+
+				@* Preview Column *@
+				@if (previewShown)
+				{
+					<div style="display: flex; flex-direction: column; flex: 1; padding: 12px; border-left: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-background); overflow: hidden;">
+						<MudText Typo="Typo.subtitle2" Class="mb-2">Preview</MudText>
+						<div style="flex: 1; overflow-y: auto;">
+							<MudText Typo="Typo.body2" Color="Color.Tertiary">
+								Rendered template preview will be displayed here
+							</MudText>
+							@* TODO: Add rendered preview content here *@
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+@code
+{
+	[Parameter]
+	public string? InitialContent { get; set; }
+
+	[Parameter]
+	public bool Resizable { get; set; } = true;
+
+	[Parameter]
+	public bool PreviewEnabled { get; set; } = true;
+
+	[Parameter]
+	public string? MinHeight { get; set; } = "100px";
+
+	[Parameter]
+	public string? MaxHeight { get; set; }
+
+	[Parameter]
+	public string SidebarWidth { get; set; } = "250px";
+
+	private bool previewShown;
+	private HelpTab activeHelpTab = HelpTab.Syntax;
+
+	private ElementReference editorContainer;
+
+	private readonly IJSRuntime jsRuntime;
+
+	public ScribanEditor(IJSRuntime jsRuntime)
+	{
+		this.jsRuntime = jsRuntime;
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (!firstRender)
+			return;
+
+		await InitEditor();
+
+		if (!string.IsNullOrEmpty(InitialContent))
+			await SetEditorContent(InitialContent);
+	}
+
+	private void TogglePreview()
+	{
+		previewShown = !previewShown;
+	}
+
+	private string GetMainContainerStyle()
+	{
+		StyleBuilder builder = new();
+		builder.AddStyle("display: flex");
+		builder.AddStyle("flex-direction: row");
+		builder.AddStyle("border: 1px solid var(--mud-palette-lines-inputs)");
+		builder.AddStyle("border-radius: var(--mud-default-borderradius)");
+		builder.AddStyle("height: 100%");
+		builder.AddStyle("overflow: hidden");
+		builder.AddStyle("resize: vertical", Resizable);
+		builder.AddStyle("min-height", MinHeight, MinHeight is not null);
+		builder.AddStyle("max-height", MaxHeight, MaxHeight is not null);
+
+		return builder.Build();
+	}
+
+	private string GetSidebarStyle()
+	{
+		StyleBuilder builder = new();
+		builder.AddStyle("display: flex");
+		builder.AddStyle("flex-direction: column");
+		builder.AddStyle("width", SidebarWidth);
+		builder.AddStyle("border-right: 1px solid var(--mud-palette-lines-inputs)");
+		builder.AddStyle("background-color: var(--mud-palette-background-grey)");
+		builder.AddStyle("overflow: hidden");
+
+		return builder.Build();
+	}
+
+	private string GetTabButtonStyle(bool isActive)
+	{
+		StyleBuilder builder = new();
+		builder.AddStyle("flex: 1");
+		builder.AddStyle("padding: 6px 8px");
+		builder.AddStyle("background: transparent");
+		builder.AddStyle("border: none");
+		builder.AddStyle("cursor: pointer");
+		builder.AddStyle("transition: all 0.2s");
+		builder.AddStyle("border-bottom: 2px solid var(--mud-palette-primary)", isActive);
+		builder.AddStyle("color: var(--mud-palette-primary)", isActive);
+		builder.AddStyle("color: var(--mud-palette-text-secondary)", !isActive);
+
+		return builder.Build();
+	}
+
+	// scriban-editor.js interop helpers
+	private ValueTask InitEditor()
+	{
+		return jsRuntime.InvokeVoidAsync("ScribanEditor.initEditor", editorContainer);
+	}
+
+	private ValueTask SetEditorContent(string content)
+	{
+		return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorContent", editorContainer, content);
+	}
+
+	private ValueTask<string> GetEditorContent()
+	{
+		return jsRuntime.InvokeAsync<string>("ScribanEditor.getEditorContent", editorContainer);
+	}
+
+	private ValueTask SetScribanFunctions(IEnumerable<ScribanFunctionDefinition> functions)
+	{
+		return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanFunctions", editorContainer, functions);
+	}
+
+	private ValueTask SetScribanVariables(IEnumerable<ScribanVariableDefinition> variables)
+	{
+		return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanVariables", editorContainer, variables);
+	}
+
+	private ValueTask SetEditorTheme(EditorTheme theme)
+	{
+		return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorTheme", editorContainer, theme.ToString().ToLowerInvariant());
+	}
+
+	private sealed record class ScribanFunctionDefinition(string Name, string Description, FunctionParam[] FunctionParams);
+	private sealed record class FunctionParam(string Name, string Description);
+
+	private sealed record class ScribanVariableDefinition(string Name, ScribanVariableDefinition[] ChildVars);
+
+	private enum EditorTheme
+	{
+		Dark,
+		Light,
+	}
+
+	private enum HelpTab
+	{
+		Syntax,
+		Functions
+	}
+
+	// Scriban built-in string functions
+	private static readonly ScribanFunctionDefinition[] BuiltInStringFunctions =
+	[
+		new("string.append", "Appends a string to another string", [new("text", "The string to append")]),
+		new("string.capitalize", "Capitalizes the first character of the string", []),
+		new("string.downcase", "Converts the string to lowercase", []),
+		new("string.upcase", "Converts the string to uppercase", []),
+		new("string.strip", "Removes whitespace from both ends", []),
+		new("string.lstrip", "Removes whitespace from the left end", []),
+		new("string.rstrip", "Removes whitespace from the right end", []),
+		new("string.replace", "Replaces occurrences of a string", [new("old", "The string to find"), new("new", "The replacement string")]),
+		new("string.replace_first", "Replaces the first occurrence", [new("old", "The string to find"), new("new", "The replacement string")]),
+		new("string.remove", "Removes all occurrences of a string", [new("text", "The string to remove")]),
+		new("string.remove_first", "Removes the first occurrence", [new("text", "The string to remove")]),
+		new("string.slice", "Extracts a substring", [new("start", "Starting position (0-based)"), new("length", "Number of characters (optional)")]),
+		new("string.split", "Splits string into an array", [new("delimiter", "The string to split on")]),
+		new("string.starts_with", "Checks if string starts with text", [new("text", "The text to check for")]),
+		new("string.ends_with", "Checks if string ends with text", [new("text", "The text to check for")]),
+		new("string.contains", "Checks if string contains text", [new("text", "The text to search for")]),
+		new("string.truncate", "Truncates string to length", [new("length", "Maximum length")]),
+		new("string.truncatewords", "Truncates to word count", [new("count", "Maximum number of words")]),
+		new("string.pad_left", "Pads string on the left", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
+		new("string.pad_right", "Pads string on the right", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
+		new("string.pluralize", "Returns singular or plural form", [new("count", "Number to check"), new("singular", "Singular form"), new("plural", "Plural form")]),
+		new("string.md5", "Computes MD5 hash", []),
+		new("string.sha1", "Computes SHA1 hash", []),
+		new("string.sha256", "Computes SHA256 hash", []),
+		new("string.hmac_sha1", "Computes HMAC SHA1", [new("key", "The secret key")]),
+		new("string.hmac_sha256", "Computes HMAC SHA256", [new("key", "The secret key")]),
+		new("string.handle", "Converts to URL-friendly string", []),
+		new("string.handleize", "Converts to handleized string", [])
+	];
+}

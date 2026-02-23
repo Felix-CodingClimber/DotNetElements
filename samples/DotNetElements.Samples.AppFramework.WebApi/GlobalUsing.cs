@@ -9,3 +9,4 @@ global using DotNetElements.AppFramework;
 
 global using static DotNetElements.Core.ResultObject.ResultHelper;
 global using static DotNetElements.AppFramework.CrudResultHelper;
+global using static DotNetElements.AppFramework.Abstractions.ResultObject.ApiResultHelper;

@@ -12,7 +12,7 @@ builder.Services.AddAppFrameworkDbContext<AppDbContext>();
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddFakeUserProvider(new Guid("D8EFD474-43D2-48E5-8885-81E55DDCEB97"));
+    builder.Services.AddFakeUserProvider(new Guid("D8EFD474-43D2-48E5-8885-81E55DDCEB97"), "fakeUser@email.com");
 }
 
 WebApplication app = builder.Build();
@@ -23,7 +23,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.UseAppFramework();
+await app.UseAppFrameworkAsync();
 
 app.MigrateDatabase<AppDbContext>();
 

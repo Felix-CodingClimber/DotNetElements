@@ -1,0 +1,42 @@
+﻿@using DotNetElements.ScribanEditor.Examples.Utils
+
+<MudThemeProvider @ref="@mudThemeProvider" @bind-IsDarkMode="@DarkModeActive" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+@code
+{
+    [Parameter, EditorRequired]
+    public bool DarkModeActive { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> DarkModeActiveChanged { get; set; }
+
+    private MudThemeProvider mudThemeProvider = default!;
+
+    private readonly IThemeProvider themeProvider;
+
+    public MudProviders(IThemeProvider themeProvider)
+    {
+        this.themeProvider = themeProvider;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        DarkModeActive = await mudThemeProvider.GetSystemDarkModeAsync();
+
+        themeProvider.SetIsDarkModeActive(DarkModeActive);
+
+        if (DarkModeActiveChanged.HasDelegate)
+            await DarkModeActiveChanged.InvokeAsync(DarkModeActive);
+    }
+
+    protected override void OnParametersSet()
+    {
+        themeProvider.SetIsDarkModeActive(DarkModeActive);
+    }
+}

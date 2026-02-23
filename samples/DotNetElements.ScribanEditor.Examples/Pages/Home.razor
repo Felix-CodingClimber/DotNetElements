@@ -1,3 +1,33 @@
 ﻿@page "/"
 
-<ScribanEditor Style="height: 80vh;" />
+@using DotNetElements.ScribanEditor.Examples.Utils
+
+<ScribanEditor @ref="scribanEditorRef" Style="height: 80vh;" />
+<button @onclick="() => OnTest()">TEST-BUTTON</button>
+
+@code
+{
+    private ScribanEditor? scribanEditorRef;
+    private readonly IThemeProvider themeProvider;
+    public Home(IThemeProvider themeProvider)
+    {
+        this.themeProvider = themeProvider;
+        themeProvider.ThemeChanged += OnThemeChanged;
+    }
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        scribanEditorRef?.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+        ArgumentNullException.ThrowIfNull(scribanEditorRef);
+        await scribanEditorRef.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
+    }
+
+    private void OnTest()
+    {
+        
+    }
+}

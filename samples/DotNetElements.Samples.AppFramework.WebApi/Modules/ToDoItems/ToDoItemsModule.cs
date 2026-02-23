@@ -1,4 +1,5 @@
-﻿using DotNetElements.AppFramework.AspNet;
+﻿using DotNetElements.AppFramework.Abstractions.ResultObject;
+using DotNetElements.AppFramework.AspNet;
 using DotNetElements.AppFramework.AspNet.ResultExtensions;
 
 namespace DotNetElements.Samples.AppFramework.WebApi.Modules.ToDoItems;
@@ -21,35 +22,35 @@ internal sealed class ToDoItemsModule : IModule
 
         groupBuilder.MapGet("{id}", async (ToDoItemsService service, Guid id) =>
         {
-            CrudResult<ToDoItemModel> result = await service.GetToDoItemByIdAsync(id);
+            ApiResult<ToDoItemModel> result = await service.GetToDoItemByIdAsync(id);
 
             return result.MapToHttpResult();
         });
 
         groupBuilder.MapPost("", async (ToDoItemsService service, CreateToDoItemModel model) =>
         {
-            CrudResult<ToDoItemModel> result = await service.CreateToDoItemAsync(model);
+            ApiResult<ToDoItemModel> result = await service.CreateToDoItemAsync(model);
 
             return result.MapToHttpResult();
         });
 
         groupBuilder.MapPut("", async (ToDoItemsService service, EditToDoItemModel model) =>
         {
-            CrudResult<ToDoItemModel> result = await service.UpdateToDoItemAsync(model);
+            ApiResult<ToDoItemModel> result = await service.UpdateToDoItemAsync(model);
 
             return result.MapToHttpResult();
         });
 
         groupBuilder.MapPut("{id}/setCompleted", async (ToDoItemsService service, Guid id) =>
         {
-            CrudResult result = await service.SetToDoItemCompletedAsync(id, true);
+            ApiResult result = await service.SetToDoItemCompletedAsync(id, true);
 
             return result.MapToHttpResult();
         });
 
         groupBuilder.MapDelete("{id}", async (ToDoItemsService service, Guid id) =>
         {
-            CrudResult result = await service.DeleteToDoItemByIdAsync(id);
+            ApiResult result = await service.DeleteToDoItemByIdAsync(id);
 
             return result.MapToHttpResult();
         });

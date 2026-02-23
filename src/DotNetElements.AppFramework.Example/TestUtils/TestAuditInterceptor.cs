@@ -35,14 +35,14 @@ public sealed class TestAuditInterceptor : SaveChangesInterceptor
                 Logger.Instance?.Log(LogType.Interceptor, $"Entity {auditedEntity.Entity.GetType().Name} is added");
 
                 auditedEntity.Property(nameof(ICreationAuditedEntity.CreationTime)).CurrentValue = timeProvider.GetUtcNow();
-                auditedEntity.Property(nameof(ICreationAuditedEntity.CreatorId)).CurrentValue = currentUserProvider.GetCurrentUserId();
+                auditedEntity.Property(nameof(ICreationAuditedEntity.CreatorId)).CurrentValue = currentUserProvider.GetRequiredCurrentUserId();
             }
             else if (auditedEntity.State is EntityState.Modified && auditedEntity.Entity is IAuditedEntity)
             {
                 Logger.Instance?.Log(LogType.Interceptor, $"Entity {auditedEntity.Entity.GetType().Name} is modified");
 
                 auditedEntity.Property(nameof(IAuditedEntity.LastModificationTime)).CurrentValue = timeProvider.GetUtcNow();
-                auditedEntity.Property(nameof(IAuditedEntity.LastModifierId)).CurrentValue = currentUserProvider.GetCurrentUserId();
+                auditedEntity.Property(nameof(IAuditedEntity.LastModifierId)).CurrentValue = currentUserProvider.GetRequiredCurrentUserId();
             }
         }
 
@@ -58,7 +58,7 @@ public sealed class TestAuditInterceptor : SaveChangesInterceptor
             Logger.Instance?.Log(LogType.Interceptor, $"Entity {deletionAuditedEntity.Entity.GetType().Name} is deleted");
 
             deletionAuditedEntity.State = EntityState.Modified;
-			deletionAuditedEntity.Entity.SetIsDeletedWithAudit(currentUserProvider.GetCurrentUserId(), timeProvider.GetUtcNow());
+			deletionAuditedEntity.Entity.SetIsDeletedWithAudit(currentUserProvider.GetRequiredCurrentUserId(), timeProvider.GetUtcNow());
 		}
 
 		return base.SavingChangesAsync(eventData, result, cancellationToken);

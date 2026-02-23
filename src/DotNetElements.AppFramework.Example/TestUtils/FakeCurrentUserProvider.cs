@@ -2,6 +2,7 @@
 
 namespace DotNetElements.AppFramework.DebugEfCore;
 
+// todo
 internal sealed class FakeCurrentUserProvider : ICurrentUserProvider
 {
     public static readonly Guid FakeUserIdOne = new Guid("DC0BA927-FBAE-4DCA-8BAE-C1C70CBB948D");
@@ -14,4 +15,29 @@ internal sealed class FakeCurrentUserProvider : ICurrentUserProvider
     public void SetCurrentUserId(Guid userId) => currentUser = userId;
 
     public Guid GetCurrentUserId() => currentUser;
+
+    Guid? ICurrentUserProvider.GetCurrentUserId()
+    {
+        return GetCurrentUserId();
+    }
+
+    public Guid GetRequiredCurrentUserId()
+    {
+        throw new NotImplementedException();
+    }
+
+    public string GetCurrentUserEmail()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetTemporaryUserId(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ResetTemporaryUserId()
+    {
+        throw new NotImplementedException();
+    }
 }

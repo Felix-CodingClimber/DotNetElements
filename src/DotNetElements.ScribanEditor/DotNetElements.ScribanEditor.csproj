@@ -6,18 +6,23 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<!-- [HACK] seems to fix some hot reload failures. Normaly not needed -->
+		<RazorLangVersion>latest</RazorLangVersion>
+	</PropertyGroup>
+
+	<!-- ToDo Debug only -->
+	<PropertyGroup>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.11" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.5" />
 		<PackageReference Include="MudBlazor" Version="8.15.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="wwwroot\" />
 	</ItemGroup>
 
 </Project>

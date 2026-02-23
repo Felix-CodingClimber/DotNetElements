@@ -2,25 +2,41 @@
 
 @typeparam TValue
 
-<ValidationMessage For="@For" class="@($"mud-input-helper-text mud-input-error pl-2 {Class}")" style="@Style" />
+@if (EditContext is not null)
+{
+    <CascadingValue Value="EditContext" IsFixed="true">
+        <ValidationMessage For="@For" class="@($"mud-input-helper-text mud-input-error pl-2 {Class}")" style="@Style" />
+    </CascadingValue>
+}
+else
+{
+    <ValidationMessage For="@For" class="@($"mud-input-helper-text mud-input-error pl-2 {Class}")" style="@Style" />
+}
 
 @code
 {
-	/// <summary>
-	/// Specifies the field for which validation messages should be displayed.
-	/// </summary>
-	[Parameter, EditorRequired]
-	public Expression<Func<TValue>>? For { get; set; }
+    /// <summary>
+    /// Specifies the field for which validation messages should be displayed.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public Expression<Func<TValue>>? For { get; set; }
 
-	/// <summary>
-	/// The CSS classes applied to this component.
-	/// </summary>
-	[Parameter]
-	public string? Class { get; set; }
+    /// <summary>
+    /// Non cascading parameter that specifies the EditContext to use for validation.
+    /// If not provided, the component will attempt to find an EditContext in the cascading parameters.
+    /// </summary>
+    [Parameter]
+    public EditContext? EditContext { get; set; }
 
-	/// <summary>
-	/// The CSS styles applied to this component.
-	/// </summary>
-	[Parameter]
-	public string? Style { get; set; }
+    /// <summary>
+    /// The CSS classes applied to this component.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// The CSS styles applied to this component.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
 }

@@ -3,113 +3,125 @@
 
 @* todo check if we want to move this to css file *@
 <style>
-	.mud-input-inline-edit {
-		display: flex;
-		flex-direction: row;
-		align-items: stretch;
-	}
+    .mud-input-inline-edit {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+    }
 
-		.mud-input-inline-edit .mud-input-outlined-border {
-			border-top-right-radius: 0 !important;
-			border-bottom-right-radius: 0 !important;
-		}
+        .mud-input-inline-edit .mud-input-outlined-border {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
 
-	.mud-input-inline-edit-read-only input {
-		cursor: default;
-	}
+    .mud-input-inline-edit-read-only input {
+        cursor: default;
+    }
 </style>
 
-<div>
-	<div class="mud-input-inline-edit">
-		<MudTextField Value="@Value" ValueChanged="@ValueChanged" ReadOnly="@(!isEditMode)" Label="@Label" Required="@Required" Class="@(!isEditMode ? "mud-input-inline-edit-read-only" : "")" />
-		@if (isEditMode)
-		{
-			<MudIconButton Icon="@Icons.Material.Outlined.Save"
-						   Variant="Variant.Outlined"
-						   Color="Color.Primary"
-						   OnClick="OnSaveAsync"
-						   Class="mt-2 mb-1"
-						   Style="border-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
-			<MudIconButton Icon="@Icons.Material.Outlined.Cancel"
-						   Variant="Variant.Outlined"
-						   Color="Color.Default"
-						   OnClick="OnCancelAsync"
-						   Class="mt-2 mb-1"
-						   Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
-		}
-		else
-		{
-			<MudIconButton Icon="@Icons.Material.Outlined.Edit"
-						   Variant="Variant.Outlined"
-						   Color="Color.Warning"
-						   OnClick="OnEnterEditMode"
-						   Class="mt-2 mb-1"
-						   Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
-		}
-	</div>
-	<MudValidationMessage For="@For" />
-</div>
+@if (ReadOnly)
+{
+    <MudTextField Value="@Value" ReadOnly="true" Label="@Label" Class="mud-input-inline-edit-read-only" />
+}
+else
+{
+    <div>
+        <div class="mud-input-inline-edit">
+            <MudTextField Value="@Value" ValueChanged="@ValueChanged" ReadOnly="@(!isEditMode)" Label="@Label" Required="@Required" Class="@(!isEditMode ? "mud-input-inline-edit-read-only" : "")" />
+            @if (isEditMode)
+            {
+                <MudIconButton Icon="@Icons.Material.Outlined.Save"
+                               Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               OnClick="OnSaveAsync"
+                               Class="mt-2 mb-1"
+                               Style="border-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
+                <MudIconButton Icon="@Icons.Material.Outlined.Cancel"
+                               Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               OnClick="OnCancelAsync"
+                               Class="mt-2 mb-1"
+                               Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
+            }
+            else
+            {
+                <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                               Variant="Variant.Outlined"
+                               Color="Color.Warning"
+                               OnClick="OnEnterEditMode"
+                               Class="mt-2 mb-1"
+                               Style="border-bottom-left-radius: 0; border-top-left-radius: 0; border: 1px solid var(--mud-palette-lines-inputs); border-left-width: 0; width: 40px;" />
+            }
+        </div>
+        <MudValidationMessage For="@For" />
+    </div>
+}
 
 @code
 {
-	[Parameter, EditorRequired]
-	public string? Value { get; set; }
+    [Parameter, EditorRequired]
+    public string? Value { get; set; }
 
-	[Parameter]
-	public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
 
-	[Parameter]
-	public Expression<Func<string?>>? For { get; set; }
+    [Parameter]
+    public Expression<Func<string?>>? For { get; set; }
 
-	[Parameter]
-	public string? Label { get; set; }
+    [Parameter]
+    public string? Label { get; set; }
 
-	[Parameter]
-	public bool Required { get; set; }
+    [Parameter]
+    public bool Required { get; set; }
 
-	[Parameter]
-	public EventCallback<CallbackResultArgs> OnSave { get; set; }
+    [Parameter]
+    public bool ReadOnly { get; set; }
 
-	[Parameter]
-	public EventCallback OnCancel { get; set; }
+    [Parameter]
+    public EventCallback<CallbackResultArgs> OnSave { get; set; }
 
-	private bool isEditMode;
-	private string? initialValue;
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
 
-	private void OnEnterEditMode()
-	{
-		initialValue = Value;
-		isEditMode = true;
-	}
+    private bool isEditMode;
+    private string? initialValue;
 
-	private async Task OnSaveAsync()
-	{
-		if (!OnSave.HasDelegate)
-		{
-			isEditMode = false;
-		}
+    private void OnEnterEditMode()
+    {
+        initialValue = Value;
+        isEditMode = true;
+    }
 
-		CallbackResultArgs resultArgs = new();
+    private async Task OnSaveAsync()
+    {
+        if (!OnSave.HasDelegate)
+        {
+            isEditMode = false;
+            initialValue = Value;
+            return;
+        }
 
-		await OnSave.InvokeAsync(resultArgs);
+        CallbackResultArgs resultArgs = new();
 
-		if (resultArgs.Cancelled)
-			return;
+        await OnSave.InvokeAsync(resultArgs);
 
-		initialValue = Value;
-		isEditMode = false;
-	}
+        if (resultArgs.Cancelled)
+            return;
 
-	private async Task OnCancelAsync()
-	{
-		isEditMode = false;
-		Value = initialValue;
+        initialValue = Value;
+        isEditMode = false;
+    }
 
-		await ValueChanged.InvokeAsync(Value);
+    private async Task OnCancelAsync()
+    {
+        isEditMode = false;
+        Value = initialValue;
 
-		if (!OnCancel.HasDelegate)
-			return;
+        await ValueChanged.InvokeAsync(Value);
 
-		await OnCancel.InvokeAsync();
-	}
+        if (!OnCancel.HasDelegate)
+            return;
+
+        await OnCancel.InvokeAsync();
+    }
 }

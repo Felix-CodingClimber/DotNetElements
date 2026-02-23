@@ -16,8 +16,19 @@ public class CurrentUserProvider : ICurrentUserProvider
 		this.contextAccessor = contextAccessor;
 	}
 
-	// todo consider caching the user id as CurrentUserProvider is scoped per request
-	public Guid GetCurrentUserId()
+    // todo consider caching the user id as CurrentUserProvider is scoped per request
+    public Guid? GetCurrentUserId()
+    {
+        if (temporaryUserId is not null)
+            return temporaryUserId.Value;
+
+        ArgumentNullException.ThrowIfNull(contextAccessor.HttpContext);
+
+        return contextAccessor.HttpContext.User.GetValue<Guid>(ClaimTypes.NameIdentifier);
+    }
+
+    // todo consider caching the user id as CurrentUserProvider is scoped per request
+    public Guid GetRequiredCurrentUserId()
 	{
 		if (temporaryUserId is not null)
 			return temporaryUserId.Value;

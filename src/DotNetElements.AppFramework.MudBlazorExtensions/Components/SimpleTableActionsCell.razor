@@ -5,16 +5,16 @@
 @if (SimpleTable)
 {
     <td class="py-0 pl-2 @Class" style="@($"white-space: nowrap; width: 0px; text-align: right; {Style}")">
-        <TableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
-        <TableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        <TableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@EditButtonIcon" Disabled="@EditButtonDisabled" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;")" />
+        <TableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Disabled="@DeleteButtonDisabled" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;")" />
         @ChildContent
     </td>
 }
 else
 {
     <MudTd Class="@($"py-0 pl-2 {@Class}")" Style="@($"white-space: nowrap; width: 0px; text-align: right; {Style}")" DataLabel="Actions">
-        <TableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Edit" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
-        <TableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;" )" />
+        <TableActionsButton OnClick="() => OnEditEntry.InvokeAsync(Context)" Icon="@EditButtonIcon" Disabled="@EditButtonDisabled" Color="Color.Warning" Style="@(EditButtonShown ? "visibility: visible;" : "visibility: hidden;")" />
+        <TableActionsButton OnClick="() => OnDeleteEntry.InvokeAsync(Context)" Icon="@Icons.Material.Outlined.Delete" Disabled="@DeleteButtonDisabled" Color="Color.Error" Style="@(DeleteButtonShown ? "visibility: visible;" : "visibility: hidden;")" />
         @ChildContent
     </MudTd>
 }
@@ -37,7 +37,16 @@ else
     public bool EditButtonShown { get; set; } = true;
 
     [Parameter]
+    public bool EditButtonDisabled { get; set; }
+
+    [Parameter]
+    public string EditButtonIcon { get; set; } = Icons.Material.Outlined.Edit;
+
+    [Parameter]
     public bool DeleteButtonShown { get; set; } = true;
+
+    [Parameter]
+    public bool DeleteButtonDisabled { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

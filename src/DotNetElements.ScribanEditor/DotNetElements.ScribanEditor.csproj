@@ -11,11 +11,6 @@
 		<RazorLangVersion>latest</RazorLangVersion>
 	</PropertyGroup>
 
-	<!-- ToDo Debug only -->
-	<PropertyGroup>
-		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-	</PropertyGroup>
-
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />
 	</ItemGroup>

@@ -21319,4 +21319,4 @@ window.ScribanEditor = {
     }
   }
 };
-//# sourceMappingURL=scriban-editor.js.map
+//# sourceMappingURL=dotNetElementsScribanEditor.js.map

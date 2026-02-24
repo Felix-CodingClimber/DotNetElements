@@ -29,9 +29,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.Samples.AppF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.AppFramework.MudBlazorExtensions", "src\DotNetElements.AppFramework.MudBlazorExtensions\DotNetElements.AppFramework.MudBlazorExtensions.csproj", "{75923B91-446F-4B35-932A-A9F1922F76CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.ScribanEditor", "src\DotNetElements.ScribanEditor\DotNetElements.ScribanEditor.csproj", "{DC5E4581-3763-3715-F480-AC79EA7AB1E4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.ScribanEditor.Examples", "samples\DotNetElements.ScribanEditor.Examples\DotNetElements.ScribanEditor.Examples.csproj", "{A43C51CC-6882-F618-A112-0F62CE900974}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetElements.ScribanEditor", "src\DotNetElements.ScribanEditor\DotNetElements.ScribanEditor.csproj", "{DC5E4581-3763-3715-F480-AC79EA7AB1E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,14 +91,14 @@ Global
 		{75923B91-446F-4B35-932A-A9F1922F76CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75923B91-446F-4B35-932A-A9F1922F76CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75923B91-446F-4B35-932A-A9F1922F76CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC5E4581-3763-3715-F480-AC79EA7AB1E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC5E4581-3763-3715-F480-AC79EA7AB1E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC5E4581-3763-3715-F480-AC79EA7AB1E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC5E4581-3763-3715-F480-AC79EA7AB1E4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A43C51CC-6882-F618-A112-0F62CE900974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A43C51CC-6882-F618-A112-0F62CE900974}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A43C51CC-6882-F618-A112-0F62CE900974}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A43C51CC-6882-F618-A112-0F62CE900974}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC5E4581-3763-3715-F480-AC79EA7AB1E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC5E4581-3763-3715-F480-AC79EA7AB1E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC5E4581-3763-3715-F480-AC79EA7AB1E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC5E4581-3763-3715-F480-AC79EA7AB1E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

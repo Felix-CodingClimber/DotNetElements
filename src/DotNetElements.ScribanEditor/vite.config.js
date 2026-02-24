@@ -5,14 +5,14 @@ export default defineConfig({
         lib: {
             entry: 'editor.js',
             name: 'ScribanEditor',
-            fileName: 'scriban-editor',
+            fileName: 'dotNetElementsScribanEditor',
             formats: ['es']
         },
         outDir: 'wwwroot',
         rollupOptions: {
             output: {
-                entryFileNames: 'scriban-editor.js',
-                assetFileNames: 'scriban-editor.[ext]'
+                entryFileNames: 'dotNetElementsScribanEditor.js',
+                assetFileNames: 'dotNetElementsScribanEditor.[ext]'
             }
         },
         minify: 'esbuild',

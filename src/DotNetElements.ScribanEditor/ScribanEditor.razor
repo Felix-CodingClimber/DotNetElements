@@ -3,72 +3,95 @@
 
 @inherits MudComponentBase
 
+<style>
+	.mud-tabs-dense {
+	}
+
+		.mud-tabs-dense .mud-tab {
+			min-height: 34px;
+			min-width: 100px !important;
+			font-size: var(--mud-typography-subtitle2-size);
+			font-family: var(--mud-typography-subtitle2-family);
+			font-weight: var(--mud-typography-subtitle2-weight);
+			line-height: var(--mud-typography-subtitle2-lineheight);
+			letter-spacing: var(--mud-typography-subtitle2-letterspacing);
+			text-transform: var(--mud-typography-subtitle2-text-transform);
+		}
+
+		.mud-tabs-dense .mud-tabs-tabbar-inner {
+			min-height: 0px;
+		}
+
+		.mud-tabs-dense .mud-icon-button {
+			padding: 0px;
+			min-height: 34px;
+			min-width: 34px;
+		}
+
+	.mud-tree-view-dense {
+	}
+
+		.mud-tree-view-dense .mud-icon-button {
+			padding: 0px !important;
+		}
+</style>
+
 <div class="@Class" style="@Style" @attributes="UserAttributes">
 	<div style="@GetMainContainerStyle()">
 		@* Left Column - Template Variables & Help *@
 		<div style="@GetSidebarStyle()">
-			<div style="flex: 1; overflow-y: auto; padding: 8px; border-bottom: 1px solid var(--mud-palette-lines-default);">
-				<MudText Typo="Typo.subtitle2" Class="mb-2">Template Variables</MudText>
-				<MudText Typo="Typo.caption" Color="Color.Tertiary">
-					Available variables will be displayed here
-				</MudText>
-				@* TODO: Add variable list here *@
+			<div style="flex: 1; border-bottom: 1px solid var(--mud-palette-lines-default);">
+				<div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
+					<MudText Typo="Typo.subtitle2">Template Variables</MudText>
+				</div>
+				<MudTreeView Items="@availableVariablesTreeItems" ExpandOnClick="true" Dense="true" Class="mud-tree-view-dense" Style="overflow-y: auto;">
+					<ItemTemplate>
+						<MudTreeViewItem @bind-Expanded="@context.Expanded" Items="@context.Children" Value="@context.Value"
+										 Text="@context.Text" TextTypo="Typo.subtitle2" />
+					</ItemTemplate>
+				</MudTreeView>
 			</div>
 			<div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
-				@* Custom compact tab headers *@
-				<div style="display: flex; border-bottom: 1px solid var(--mud-palette-lines-default);">
-					<button @onclick="() => OnSwitchHelpTab(HelpTab.Syntax)"
-							style="@GetTabButtonStyle(activeHelpTab is HelpTab.Syntax)"
-							type="button">
-						<MudText Typo="Typo.caption">Syntax</MudText>
-					</button>
-					<button @onclick="() => OnSwitchHelpTab(HelpTab.Functions)"
-							style="@GetTabButtonStyle(activeHelpTab is HelpTab.Functions)"
-							type="button">
-						<MudText Typo="Typo.caption">Functions</MudText>
-					</button>
-				</div>
+				<MudTabs Class="mud-tabs-dense">
+					<MudTabPanel Text="Syntax">
+						<div style="overflow-y: auto; padding: 8px;">
+							<MudText Typo="Typo.subtitle2" Class="mb-2">Scriban Syntax</MudText>
+						</div>
+					</MudTabPanel>
+					<MudTabPanel Text="Functions">
+						<div style="overflow-y: auto; padding: 8px;">
+							<MudText Typo="Typo.subtitle2" Class="mb-3">String Functions</MudText>
 
-				@* Tab content *@
-				<div style="flex: 1; overflow-y: auto; padding: 8px;">
-					@if (activeHelpTab == HelpTab.Syntax)
-					{
-						<MudText Typo="Typo.subtitle2" Class="mb-2">Scriban Syntax</MudText>
-						<button @onclick="() => OnSwitchHelpTab(HelpTab.Syntax)">TEST</button>
-					}
-					else
-					{
-						<MudText Typo="Typo.subtitle2" Class="mb-3">String Functions</MudText>
+							@foreach (ScribanFunctionDefinition func in BuiltInStringFunctions)
+							{
+								<div class="mb-3">
+									<MudText Typo="Typo.body2" Style="font-weight: 600; font-size: 0.8rem;">@func.Name</MudText>
+									<MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mb-1">@func.Description</MudText>
 
-						@foreach (ScribanFunctionDefinition func in BuiltInStringFunctions)
-						{
-							<div class="mb-3">
-								<MudText Typo="Typo.body2" Style="font-weight: 600; font-size: 0.8rem;">@func.Name</MudText>
-								<MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mb-1">@func.Description</MudText>
-
-								@if (func.FunctionParams.Length > 0)
-								{
-									<div class="ml-2">
-										<MudText Typo="Typo.caption" Style="font-style: italic; font-size: 0.7rem;">Parameters:</MudText>
-										@foreach (FunctionParam param in func.FunctionParams)
-										{
-											<MudText Typo="Typo.caption" Class="ml-2" Style="font-size: 0.7rem;">
-												• <strong>@param.Name:</strong> @param.Description
-											</MudText>
-										}
-									</div>
-								}
-							</div>
-						}
-					}
-				</div>
+									@if (func.FunctionParams.Length > 0)
+									{
+										<div class="ml-2">
+											<MudText Typo="Typo.caption" Style="font-style: italic; font-size: 0.7rem;">Parameters:</MudText>
+											@foreach (FunctionParam param in func.FunctionParams)
+											{
+												<MudText Typo="Typo.caption" Class="ml-2" Style="font-size: 0.7rem;">
+													• <strong>@param.Name:</strong> @param.Description
+												</MudText>
+											}
+										</div>
+									}
+								</div>
+							}
+						</div>
+					</MudTabPanel>
+				</MudTabs>
 			</div>
 		</div>
 
 		@* Middle & Right Columns - Editor and Preview *@
 		<div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
 			@* Toolbar *@
-			<div style="display: flex; align-items: center; padding: 4px 8px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface); min-height: 40px;">
+			<div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
 				<MudSpacer />
 				@if (PreviewEnabled)
 				{
@@ -123,9 +146,10 @@
 	public string SidebarWidth { get; set; } = "250px";
 
 	private EditorTheme preferredTheme = EditorTheme.Dark;
+	private IReadOnlyList<ScribanVariableDefinition> availableVariables = [];
 
 	private bool previewShown;
-	private HelpTab activeHelpTab = HelpTab.Syntax;
+	private IReadOnlyList<TreeItemData<string>> availableVariablesTreeItems { get; set; } = [];
 
 	private bool editorInitialized;
 
@@ -148,6 +172,23 @@
 		return SetEditorContentAsync(content);
 	}
 
+	public async ValueTask SetAvailableVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
+	{
+		availableVariables = variables.ToList();
+
+		availableVariablesTreeItems = availableVariables
+			.Select(mainVar => new TreeItemPresenter(mainVar.Name)
+			{
+				Children = mainVar.ChildVars.Select(childVar => new TreeItemPresenter(childVar.Name)).Cast<TreeItemData<string>>().ToList()
+			})
+			.ToList();
+
+		if (!editorInitialized)
+			return;
+
+		await SetScribanVariablesAsync(availableVariables);
+	}
+
 	public async ValueTask SetIsDarkModeActiveAsync(bool isDarkMode)
 	{
 		preferredTheme = isDarkMode ? EditorTheme.Dark : EditorTheme.Light;
@@ -164,19 +205,11 @@
 			return;
 
 		await InitEditorAsync();
-
-		if (!string.IsNullOrEmpty(InitialContent))
-			await SetEditorContentAsync(InitialContent);
 	}
 
 	private void TogglePreview()
 	{
 		previewShown = !previewShown;
-	}
-
-	private void OnSwitchHelpTab(HelpTab tab)
-	{
-		activeHelpTab = tab;
 	}
 
 	private string GetMainContainerStyle()
@@ -198,6 +231,7 @@
 	private string GetSidebarStyle()
 	{
 		StyleBuilder builder = new();
+		builder.AddStyle("resize: horizontal");
 		builder.AddStyle("display: flex");
 		builder.AddStyle("flex-direction: column");
 		builder.AddStyle("width", SidebarWidth);
@@ -208,29 +242,22 @@
 		return builder.Build();
 	}
 
-	private string GetTabButtonStyle(bool isActive)
-	{
-		StyleBuilder builder = new();
-		builder.AddStyle("flex: 1");
-		builder.AddStyle("padding: 6px 8px");
-		builder.AddStyle("background: transparent");
-		builder.AddStyle("border: none");
-		builder.AddStyle("cursor: pointer");
-		builder.AddStyle("transition: all 0.2s");
-		builder.AddStyle("border-bottom: 2px solid var(--mud-palette-primary)", isActive);
-		builder.AddStyle("color: var(--mud-palette-primary)", isActive);
-		builder.AddStyle("color: var(--mud-palette-text-secondary)", !isActive);
-
-		return builder.Build();
-	}
-
 	// scriban-editor.js interop helpers
 	private async ValueTask InitEditorAsync()
 	{
 		await jsRuntime.InvokeVoidAsync("ScribanEditor.initEditor", editorContainer);
+
 		await SetEditorThemeAsync(preferredTheme);
 
+		if (availableVariables.Count > 0)
+			await SetScribanVariablesAsync(availableVariables);
+
+		if (!string.IsNullOrEmpty(InitialContent))
+			await SetEditorContentAsync(InitialContent);
+
 		editorInitialized = true;
+
+		StateHasChanged();
 	}
 
 	private ValueTask SetEditorContentAsync(string content)
@@ -261,18 +288,10 @@
 	private sealed record class ScribanFunctionDefinition(string Name, string Description, FunctionParam[] FunctionParams);
 	private sealed record class FunctionParam(string Name, string Description);
 
-	private sealed record class ScribanVariableDefinition(string Name, ScribanVariableDefinition[] ChildVars);
-
 	private enum EditorTheme
 	{
 		Dark,
 		Light,
-	}
-
-	private enum HelpTab
-	{
-		Syntax,
-		Functions
 	}
 
 	// Scriban built-in string functions
@@ -307,4 +326,14 @@
 		new("string.handle", "Converts to URL-friendly string", []),
 		new("string.handleize", "Converts to handleized string", [])
 	];
+
+	private sealed class TreeItemPresenter : TreeItemData<string>
+	{
+		public string VariableName { get; set; }
+
+		public TreeItemPresenter(string variableName) : base(variableName)
+		{
+			VariableName = variableName;
+		}
+	}
 }

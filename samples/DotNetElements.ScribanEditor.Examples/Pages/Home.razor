@@ -4,32 +4,48 @@
 
 <ScribanEditor @ref="scribanEditorRef" Style="height: 80vh;" />
 
-<ButtonTestTmp />
-<button @onclick="() => OnTest()">TEST-BUTTON</button>
-
 @code
 {
-    private ScribanEditor? scribanEditorRef;
-    private readonly IThemeProvider themeProvider;
-    public Home(IThemeProvider themeProvider)
-    {
-        this.themeProvider = themeProvider;
-        themeProvider.ThemeChanged += OnThemeChanged;
-    }
-    private void OnThemeChanged(object? sender, EventArgs e)
-    {
-        scribanEditorRef?.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
-    }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-            return;
-        ArgumentNullException.ThrowIfNull(scribanEditorRef);
-        await scribanEditorRef.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
-    }
+	private ScribanEditor? scribanEditorRef;
+	private readonly IThemeProvider themeProvider;
 
-    private void OnTest()
-    {
-        
-    }
+	public Home(IThemeProvider themeProvider)
+	{
+		this.themeProvider = themeProvider;
+		themeProvider.ThemeChanged += OnThemeChanged;
+	}
+
+	private void OnThemeChanged(object? sender, EventArgs e)
+	{
+		scribanEditorRef?.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (!firstRender)
+			return;
+
+		ArgumentNullException.ThrowIfNull(scribanEditorRef);
+
+		await scribanEditorRef.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
+		await scribanEditorRef.SetAvailableVariablesAsync(variableDefinitions);
+	}
+
+	private static readonly ScribanVariableDefinition[] variableDefinitions =
+	[
+		new ScribanVariableDefinition() { Name = "User", ChildVars =
+			[
+				new ScribanVariableDefinition() { Name = "FirstName" },
+				new ScribanVariableDefinition() { Name = "LastName" },
+				new ScribanVariableDefinition() { Name = "Email" }
+			]
+		},
+		new ScribanVariableDefinition() { Name = "Company", ChildVars =
+			[
+				new ScribanVariableDefinition() { Name = "Name" },
+				new ScribanVariableDefinition() { Name = "Address" }
+			]
+		},
+		new ScribanVariableDefinition() { Name = "Version" }
+	];
 }

@@ -3,7 +3,7 @@ import { EditorState, Compartment } from '@codemirror/state';
 import { html } from '@codemirror/lang-html';
 import { indentWithTab } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
-import { acceptCompletion, closeBrackets } from '@codemirror/autocomplete';
+import { acceptCompletion, closeBrackets, autocompletion } from '@codemirror/autocomplete';
 import { Decoration, ViewPlugin } from '@codemirror/view';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
@@ -451,9 +451,14 @@ function getEditorState(element) {
 	return element._scribanEditor;
 }
 
+// todo improvements
+// - Check if we can add a Completion Result Validity so the results do not need to get recomputed on every key press
+// - use vars. prefix for non loop variables
 // Scriban completions function
 function scribanCompletions(element, context) {
 	const state = getEditorState(element);
+
+	console.info('run scriban completions')
 
 	// Check if we're inside Scriban brackets
 	const textBefore = context.state.doc.sliceString(Math.max(0, context.pos - 100), context.pos);
@@ -462,8 +467,12 @@ function scribanCompletions(element, context) {
 
 	if (!inScribanOutput && !inScribanTag) return null;
 
+	console.info('run scriban completions inside tag')
+
 	const word = context.matchBefore(/[\w.]*/);
 	if (!word) return null;
+
+	console.info('run scriban completions with word')
 
 	const currentText = context.state.doc.toString();
 	const position = context.pos;
@@ -527,7 +536,8 @@ function scribanCompletions(element, context) {
 			return {
 				label: func.name,
 				type: 'function',
-				info: createInfo
+				info: createInfo,
+				boost: 90
 			};
 		}));
 	} else {
@@ -543,7 +553,8 @@ function scribanCompletions(element, context) {
 			completions.push({
 				label: loop.variable,
 				type: 'variable',
-				info: 'loop variable'
+				info: 'loop variable',
+				boost: 90
 			});
 
 			// Add loop variable properties
@@ -551,7 +562,8 @@ function scribanCompletions(element, context) {
 				completions.push({
 					label: `${loop.variable}.${prop}`,
 					type: 'property',
-					info: 'loop item property'
+					info: 'loop item property',
+					boost: 91
 				});
 			}
 		}
@@ -563,12 +575,15 @@ function scribanCompletions(element, context) {
 		? completions.filter(v => v.label.toLowerCase().includes(prefix))
 		: completions;
 
+	console.info('run scriban completions returns:', filtered)
+
 	return {
 		from: word.from,
 		options: filtered.map(v => ({
 			label: v.label,
 			type: v.type,
 			info: v.info,
+			boost: v.boost
 		}))
 	};
 }

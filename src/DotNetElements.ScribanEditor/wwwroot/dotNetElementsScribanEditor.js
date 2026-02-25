@@ -21171,10 +21171,14 @@ function Ft(n) {
   return n._scribanEditor;
 }
 function Sy(n, e) {
-  const t = Ft(n), i = e.state.doc.sliceString(Math.max(0, e.pos - 100), e.pos), r = /\{\{[^}]*$/.test(i), s = /\{~[^~]*$/.test(i);
+  const t = Ft(n);
+  console.info("run scriban completions");
+  const i = e.state.doc.sliceString(Math.max(0, e.pos - 100), e.pos), r = /\{\{[^}]*$/.test(i), s = /\{~[^~]*$/.test(i);
   if (!r && !s) return null;
+  console.info("run scriban completions inside tag");
   const o = e.matchBefore(/[\w.]*/);
   if (!o) return null;
+  console.info("run scriban completions with word");
   const l = e.state.doc.toString(), a = e.pos, h = e.state.doc.sliceString(0, a), c = Math.max(
     h.lastIndexOf("{{"),
     h.lastIndexOf("{~")
@@ -21204,7 +21208,8 @@ function Sy(n, e) {
       return {
         label: g.name,
         type: "function",
-        info: Q
+        info: Q,
+        boost: 90
       };
     }));
   else {
@@ -21215,23 +21220,26 @@ function Sy(n, e) {
       d.push({
         label: Q.variable,
         type: "variable",
-        info: "loop variable"
+        info: "loop variable",
+        boost: 90
       });
       for (const y of S)
         d.push({
           label: `${Q.variable}.${y}`,
           type: "property",
-          info: "loop item property"
+          info: "loop item property",
+          boost: 91
         });
     }
   }
   const O = o.text.toLowerCase(), m = O ? d.filter((g) => g.label.toLowerCase().includes(O)) : d;
-  return {
+  return console.info("run scriban completions returns:", m), {
     from: o.from,
     options: m.map((g) => ({
       label: g.label,
       type: g.type,
-      info: g.info
+      info: g.info,
+      boost: g.boost
     }))
   };
 }

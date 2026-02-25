@@ -38,9 +38,21 @@
             Name = "vars",
             ChildVars =
             [
-                new ScribanVariableDefinition() { Name = "FirstName" },
-                new ScribanVariableDefinition() { Name = "LastName" },
-                new ScribanVariableDefinition() { Name = "Email" },
+                new ScribanVariableDefinition()
+                {
+                    Name = "FirstName",
+                    Properties = ["Value", "Label"]
+                },
+                new ScribanVariableDefinition()
+                {
+                    Name = "LastName",
+                    Properties = ["Value", "Label"]
+                },
+                new ScribanVariableDefinition()
+                {
+                    Name = "Email",
+                    Properties = ["Value", "Label"]
+                },
                 new ScribanVariableDefinition()
                 {
                     Name = "Options1",
@@ -48,9 +60,21 @@
                     IsLoopable = true,
                     ChildVars =
                     [
-                        new ScribanVariableDefinition() { Name = "OptionA" },
-                        new ScribanVariableDefinition() { Name = "OptionB" },
-                        new ScribanVariableDefinition() { Name = "OptionC" }
+                        new ScribanVariableDefinition()
+                        {
+                            Name = "OptionA",
+                            Properties = ["Value", "Label"]
+                        },
+                        new ScribanVariableDefinition()
+                        {
+                            Name = "OptionB",
+                            Properties = ["Value", "Label"]
+                        },
+                        new ScribanVariableDefinition()
+                        {
+                            Name = "OptionC",
+                            Properties = ["Value", "Label"]
+                        }
                     ]
                 },
                 new ScribanVariableDefinition()
@@ -60,9 +84,21 @@
                     IsLoopable = true,
                     ChildVars =
                     [
-                        new ScribanVariableDefinition() { Name = "OptionA" },
-                        new ScribanVariableDefinition() { Name = "OptionB" },
-                        new ScribanVariableDefinition() { Name = "OptionC" }
+                        new ScribanVariableDefinition()
+                        {
+                            Name = "OptionA",
+                            Properties = ["Value", "Label"]
+                        },
+                        new ScribanVariableDefinition()
+                        {
+                            Name = "OptionB",
+                            Properties = ["Value", "Label"]
+                        },
+                        new ScribanVariableDefinition()
+                        {
+                            Name = "OptionC",
+                            Properties = ["Value", "Label"]
+                        }
                     ]
                 }
             ]

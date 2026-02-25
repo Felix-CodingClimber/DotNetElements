@@ -369,42 +369,139 @@ function getEditorState(element) {
 	return element._scribanEditor;
 }
 
-// Convert ScribanVariableDefinition array to flat completion list
-// Respects IsLoopable and FlattenChildren properties
-function flattenVariables(variableDefinitions, result = [], parentPath = '') {
-	if (!Array.isArray(variableDefinitions)) {
-		return result;
+// Get suggestions at a specific path level
+function getSuggestionsAtPath(variableDefinitions, pathParts, loops) {
+	const suggestions = [];
+
+	// If no path, show root-level variables and loop variables
+	if (pathParts.length === 0) {
+		// Add root variables
+		for (const varDef of variableDefinitions) {
+			suggestions.push({
+				label: varDef.name,
+				type: 'variable',
+				info: varDef.isLoopable ? 'loopable collection' : 'variable',
+				boost: 50
+			});
+		}
+
+		// Add loop variables
+		for (const loop of loops) {
+			suggestions.push({
+				label: loop.variable,
+				type: 'variable',
+				info: 'loop variable',
+				boost: 95
+			});
+		}
+
+		return suggestions;
 	}
 
-	for (const varDef of variableDefinitions) {
-		if (!varDef || !varDef.name) continue;
+	// Check if it's a loop variable path
+	for (const loop of loops) {
+		if (pathParts[0] === loop.variable) {
+			if (pathParts.length === 1) {
+				// Show children of loop collection (e.g., "item." → show OptionA, OptionB, OptionC)
+				const loopVarDef = findVariableByPath(variableDefinitions, loop.arrayPath);
+				if (loopVarDef && loopVarDef.childVars) {
+					for (const child of loopVarDef.childVars) {
+						suggestions.push({
+							label: child.name,
+							type: 'property',
+							info: 'loop item property',
+							boost: 96
+						});
+					}
+				}
 
-		const hasChildren = varDef.childVars && varDef.childVars.length > 0;
-		const currentPath = parentPath ? `${parentPath}.${varDef.name}` : varDef.name;
+				// Also show properties if the loop variable itself has them
+				if (loopVarDef && loopVarDef.properties) {
+					for (const prop of loopVarDef.properties) {
+						suggestions.push({
+							label: prop,
+							type: 'property',
+							info: 'property',
+							boost: 96
+						});
+					}
+				}
+				return suggestions;
+			} else {
+				// Navigate deeper: "item.OptionA." → show properties of OptionA
+				const loopVarDef = findVariableByPath(variableDefinitions, loop.arrayPath);
+				if (loopVarDef && loopVarDef.childVars) {
+					const remainingPath = pathParts.slice(1).join('.');
+					const targetVar = findVariableByPath(loopVarDef.childVars, remainingPath);
 
-		// Always add the variable itself
-		result.push({
-			label: currentPath,
-			type: 'variable',
-			info: varDef.isLoopable ? 'loopable collection' : (hasChildren ? 'object' : 'property'),
-			fullPath: currentPath,
-			isLoopable: varDef.isLoopable || false,
-			flattenChildren: varDef.flattenChildren || false
-		});
+					if (targetVar) {
+						// Show properties
+						if (targetVar.properties) {
+							for (const prop of targetVar.properties) {
+								suggestions.push({
+									label: prop,
+									type: 'property',
+									info: 'property',
+									boost: 96
+								});
+							}
+						}
 
-		// Process children
-		if (hasChildren) {
-			// If IsLoopable=true AND FlattenChildren=false, skip adding children to direct access
-			// They will only be accessible through loop iteration
-			const shouldIncludeChildren = !varDef.isLoopable || varDef.flattenChildren;
-
-			if (shouldIncludeChildren) {
-				flattenVariables(varDef.childVars, result, currentPath);
+						// Show children
+						if (targetVar.childVars) {
+							for (const child of targetVar.childVars) {
+								suggestions.push({
+									label: child.name,
+									type: 'property',
+									info: 'child variable',
+									boost: 96
+								});
+							}
+						}
+					}
+				}
+				return suggestions;
 			}
 		}
 	}
 
-	return result;
+	// Regular variable path navigation
+	const fullPath = pathParts.join('.');
+	const varDef = findVariableByPath(variableDefinitions, fullPath);
+
+	if (!varDef) {
+		return suggestions; // Path not found
+	}
+
+	// Show properties of this variable
+	if (varDef.properties) {
+		for (const prop of varDef.properties) {
+			suggestions.push({
+				label: prop,
+				type: 'property',
+				info: 'property',
+				boost: 90
+			});
+		}
+	}
+
+	// Show child variables (unless IsLoopable=true AND FlattenChildren=false)
+	if (varDef.childVars) {
+		const shouldShowChildren = !varDef.isLoopable || varDef.flattenChildren;
+
+		if (shouldShowChildren) {
+			for (const child of varDef.childVars) {
+				suggestions.push({
+					label: child.name,
+					type: 'variable',
+					info: child.isLoopable ? 'loopable collection' : 'child variable',
+					boost: 85
+				});
+			}
+		}
+	}
+
+	return suggestions;
 }
 
 // Find variable definition by path
@@ -501,7 +598,7 @@ function getLoopContext(text, position, availableVariables) {
 	return loops;
 }
 
-// Scriban completions function
+// Scriban completions function - SIMPLIFIED level-by-level approach
 function scribanCompletions(element, context) {
 	const state = getEditorState(element);
 
@@ -512,14 +609,21 @@ function scribanCompletions(element, context) {
 	const inScribanOutput = /\{\{[^}]*$/.test(textBefore);
 	const inScribanTag = /\{~[^~]*$/.test(textBefore);
 
-	if (!inScribanOutput && !inScribanTag) return null;
+	if (!inScribanOutput && !inScribanTag) {
+		console.info('Not in scriban brackets');
+		return null;
+	}
 
 	console.info('run scriban completions inside tag');
 
-	const word = context.matchBefore(/[\w.]*/);
-	if (!word) return null;
+	// Match word and partial paths (including after dots)
+	const word = context.matchBefore(/[\w.]*$/);
+	if (!word) {
+		console.info('No word match');
+		return null;
+	}
 
-	console.info('run scriban completions with word');
+	console.info('run scriban completions with word:', word.text);
 
 	const currentText = context.state.doc.toString();
 	const position = context.pos;
@@ -538,7 +642,6 @@ function scribanCompletions(element, context) {
 	if (afterPipe) {
 		// After pipe: show only functions
 		completions.push(...state.functions.map(func => {
-			// Create custom info tooltip
 			const createInfo = () => {
 				const dom = document.createElement('div');
 				dom.className = 'cm-scriban-tooltip';
@@ -588,38 +691,42 @@ function scribanCompletions(element, context) {
 			};
 		}));
 	} else {
-		// Before pipe: show variables and loop variables
-		completions = flattenVariables(state.availableVariables).map(v => ({
-			label: v.label,
-			type: v.type,
-			info: v.info,
-			boost: 50
-		}));
-
-		// Add loop variables if we're inside a loop
+		// Parse the current path being typed
 		const loops = getLoopContext(currentText, position, state.availableVariables);
-		for (const loop of loops) {
-			// Add loop variable itself
-			completions.push({
-				label: loop.variable,
-				type: 'variable',
-				info: 'loop variable',
-				boost: 95
-			});
 
-			// Add loop variable properties (e.g., option.OptionA)
-			for (const prop of loop.properties) {
-				completions.push({
-					label: `${loop.variable}.${prop}`,
-					type: 'property',
-					info: 'loop item property',
-					boost: 96
-				});
-			}
-		}
+		// Split by dots to determine depth
+		// "vars" → []
+		// "vars." → ["vars"]
+		// "vars.FirstName" → ["vars"]
+		// "vars.FirstName." → ["vars", "FirstName"]
+		const pathParts = word.text ? word.text.split('.').filter(p => p.length > 0) : [];
+
+		// If the word ends with a dot, we're looking for the next level
+		const endsWithDot = word.text.endsWith('.');
+
+		// If ends with dot, show next level. Otherwise, show current level + filtering
+		const searchPath = endsWithDot ? pathParts : pathParts.slice(0, -1);
+		const filterPrefix = endsWithDot ? '' : (pathParts[pathParts.length - 1] || '');
+
+		console.info('Path analysis:', { pathParts, searchPath, filterPrefix, endsWithDot });
+
+		// Get suggestions at the current path level
+		const levelSuggestions = getSuggestionsAtPath(state.availableVariables, searchPath, loops);
+
+		console.info('Level suggestions:', levelSuggestions);
+
+		// Build full paths for completions
+		const pathPrefix = searchPath.length > 0 ? searchPath.join('.') + '.' : '';
+
+		completions = levelSuggestions.map(suggestion => ({
+			label: pathPrefix + suggestion.label,
+			type: suggestion.type,
+			info: suggestion.info,
+			boost: suggestion.boost
+		}));
 	}
 
-	// Filter by prefix
+	// Filter by prefix (case-insensitive)
 	const prefix = word.text.toLowerCase();
 	const filtered = prefix
 		? completions.filter(v => v.label.toLowerCase().includes(prefix))

@@ -8,6 +8,12 @@ public sealed record class ScribanVariableDefinition
 	public required string Name { get; init; }
 
 	/// <summary>
+	/// Simple property names that are accessible on this variable (e.g., "Value", "Label").
+	/// Properties are accessible as variable.PropertyName (e.g., FirstName.Value, FirstName.Label).
+	/// </summary>
+	public string[] Properties { get; init; } = [];
+
+	/// <summary>
 	/// The child variables of this variable.
 	/// They are either properties of an object or elements of a collection.
 	/// Based on FlattenChildren and IsLoopable, they may be accessible directly and through loop iteration variables.

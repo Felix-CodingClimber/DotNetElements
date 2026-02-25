@@ -361,88 +361,6 @@ const scribanPlugin = ViewPlugin.fromClass(class {
 	decorations: v => v.decorations
 });
 
-// Convert ScribanVariableDefinition array to flat completion list
-// Input format: [{ name: 'User', childVars: [{ name: 'FirstName', childVars: [] }] }]
-function flattenVariables(variableDefinitions, prefix = '', result = []) {
-	if (!Array.isArray(variableDefinitions)) {
-		return result;
-	}
-
-	for (const varDef of variableDefinitions) {
-		if (!varDef || !varDef.name) continue;
-
-		const fullPath = prefix ? `${prefix}.${varDef.name}` : varDef.name;
-
-		// Add the variable itself
-		const hasChildren = varDef.childVars && varDef.childVars.length > 0;
-		result.push({
-			label: fullPath,
-			type: 'variable',
-			info: hasChildren ? 'object' : 'property'
-		});
-
-		// Recurse into child variables (only one level of nesting supported as per comment)
-		if (hasChildren) {
-			flattenVariables(varDef.childVars, fullPath, result);
-		}
-	}
-
-	return result;
-}
-
-// Detect loop context and return loop variables
-function getLoopContext(text, position) {
-	const textBeforePos = text.substring(0, position);
-
-	// Find all {~ for ~} blocks that contain the current position
-	const forLoopRegex = /\{~\s*for\s+(\w+)\s+in\s+([\w.]+)\s*~\}/g;
-	const loops = [];
-	let match;
-
-	while ((match = forLoopRegex.exec(text)) !== null) {
-		const loopStart = match.index;
-		const loopVariable = match[1];
-		const arrayPath = match[2];
-
-		// Find corresponding {~ end ~}
-		const afterLoop = text.substring(match.index + match[0].length);
-		const endMatch = afterLoop.match(/\{~\s*end\s*~\}/);
-
-		if (endMatch) {
-			const loopEnd = match.index + match[0].length + endMatch.index;
-
-			// Check if position is within this loop
-			if (position >= loopStart && position <= loopEnd) {
-				loops.push({ variable: loopVariable, arrayPath });
-			}
-		}
-	}
-
-	return loops;
-}
-
-// Generate loop variable properties based on array path
-function getLoopVariableProperties(arrayPath, availableVariables) {
-	const parts = arrayPath.split('.');
-	let current = availableVariables;
-
-	// Navigate to the array
-	for (const part of parts) {
-		if (current && current[part]) {
-			current = current[part];
-		} else {
-			return [];
-		}
-	}
-
-	// If it's an array with object elements, get properties from first element
-	if (Array.isArray(current) && current.length > 0 && typeof current[0] === 'object') {
-		return Object.keys(current[0]);
-	}
-
-	return [];
-}
-
 // Helper to get state from element
 function getEditorState(element) {
 	if (!element._scribanEditor) {
@@ -451,14 +369,143 @@ function getEditorState(element) {
 	return element._scribanEditor;
 }
 
-// todo improvements
-// - Check if we can add a Completion Result Validity so the results do not need to get recomputed on every key press
-// - use vars. prefix for non loop variables
+// Convert ScribanVariableDefinition array to flat completion list
+// Respects IsLoopable and FlattenChildren properties
+function flattenVariables(variableDefinitions, result = [], parentPath = '') {
+	if (!Array.isArray(variableDefinitions)) {
+		return result;
+	}
+
+	for (const varDef of variableDefinitions) {
+		if (!varDef || !varDef.name) continue;
+
+		const hasChildren = varDef.childVars && varDef.childVars.length > 0;
+		const currentPath = parentPath ? `${parentPath}.${varDef.name}` : varDef.name;
+
+		// Always add the variable itself
+		result.push({
+			label: currentPath,
+			type: 'variable',
+			info: varDef.isLoopable ? 'loopable collection' : (hasChildren ? 'object' : 'property'),
+			fullPath: currentPath,
+			isLoopable: varDef.isLoopable || false,
+			flattenChildren: varDef.flattenChildren || false
+		});
+
+		// Process children
+		if (hasChildren) {
+			// If IsLoopable=true AND FlattenChildren=false, skip adding children to direct access
+			// They will only be accessible through loop iteration
+			const shouldIncludeChildren = !varDef.isLoopable || varDef.flattenChildren;
+
+			if (shouldIncludeChildren) {
+				flattenVariables(varDef.childVars, result, currentPath);
+			}
+		}
+	}
+
+	return result;
+}
+
+// Find variable definition by path
+function findVariableByPath(variableDefinitions, path) {
+	const parts = path.split('.');
+	let current = variableDefinitions;
+
+	for (let i = 0; i < parts.length; i++) {
+		const part = parts[i];
+		const found = current.find(v => v.name === part);
+		if (!found) return null;
+
+		// If this is the last part, return the found variable
+		if (i === parts.length - 1) {
+			return found;
+		}
+
+		// Otherwise, continue to children
+		if (found.childVars && found.childVars.length > 0) {
+			current = found.childVars;
+		} else {
+			return null;
+		}
+	}
+
+	return null;
+}
+
+// Detect loop context and return loop variables with their properties
+function getLoopContext(text, position, availableVariables) {
+	// Scriban loop syntax: {~ for variable in collection ~}
+	const forLoopRegex = /\{~\s*for\s+(\w+)\s+in\s+([\w.]+)\s*~\}/g;
+	const loops = [];
+	let match;
+
+	while ((match = forLoopRegex.exec(text)) !== null) {
+		const loopStart = match.index;
+		const loopVariable = match[1]; // e.g., "item"
+		const arrayPath = match[2]; // e.g., "vars.Options2"
+
+		// Find corresponding end tag: {~ end ~}
+		const afterLoop = text.substring(match.index + match[0].length);
+		const endMatch = afterLoop.match(/\{~\s*end\s*~\}/);
+
+		if (endMatch) {
+			const loopEnd = match.index + match[0].length + endMatch.index + endMatch[0].length;
+
+			// Check if position is within this loop
+			if (position >= loopStart && position <= loopEnd) {
+				console.info('Found loop context:', { loopVariable, arrayPath, loopStart, loopEnd, position });
+
+				// Try to find the variable definition for this loop path
+				const varDef = findVariableByPath(availableVariables, arrayPath);
+
+				console.info('Variable definition found:', varDef);
+
+				if (varDef && varDef.isLoopable && varDef.childVars) {
+					loops.push({
+						variable: loopVariable,
+						arrayPath: arrayPath,
+						properties: varDef.childVars.map(child => child.name)
+					});
+				} else if (varDef && varDef.childVars) {
+					// Even if not explicitly marked as loopable, if it has children, allow loop access
+					console.warn('Variable has children but isLoopable=false. Adding anyway for loop context.');
+					loops.push({
+						variable: loopVariable,
+						arrayPath: arrayPath,
+						properties: varDef.childVars.map(child => child.name)
+					});
+				}
+			}
+		} else {
+			// No end tag found yet - still allow completions if we're past the loop start
+			const tentativeLoopEnd = text.length;
+			if (position >= loopStart && position <= tentativeLoopEnd) {
+				console.info('Found unclosed loop context:', { loopVariable, arrayPath, loopStart, position });
+
+				const varDef = findVariableByPath(availableVariables, arrayPath);
+				console.info('Variable definition found:', varDef);
+
+				if (varDef && varDef.childVars) {
+					loops.push({
+						variable: loopVariable,
+						arrayPath: arrayPath,
+						properties: varDef.childVars.map(child => child.name)
+					});
+				}
+			}
+		}
+	}
+
+	console.info('Loop context result:', loops);
+	return loops;
+}
+
 // Scriban completions function
 function scribanCompletions(element, context) {
 	const state = getEditorState(element);
 
-	console.info('run scriban completions')
+	console.info('run scriban completions');
 
 	// Check if we're inside Scriban brackets
 	const textBefore = context.state.doc.sliceString(Math.max(0, context.pos - 100), context.pos);
@@ -467,12 +514,12 @@ function scribanCompletions(element, context) {
 
 	if (!inScribanOutput && !inScribanTag) return null;
 
-	console.info('run scriban completions inside tag')
+	console.info('run scriban completions inside tag');
 
 	const word = context.matchBefore(/[\w.]*/);
 	if (!word) return null;
 
-	console.info('run scriban completions with word')
+	console.info('run scriban completions with word');
 
 	const currentText = context.state.doc.toString();
 	const position = context.pos;
@@ -542,28 +589,31 @@ function scribanCompletions(element, context) {
 		}));
 	} else {
 		// Before pipe: show variables and loop variables
-		completions = flattenVariables(state.availableVariables);
+		completions = flattenVariables(state.availableVariables).map(v => ({
+			label: v.label,
+			type: v.type,
+			info: v.info,
+			boost: 50
+		}));
 
 		// Add loop variables if we're inside a loop
-		const loops = getLoopContext(currentText, position);
+		const loops = getLoopContext(currentText, position, state.availableVariables);
 		for (const loop of loops) {
-			const properties = getLoopVariableProperties(loop.arrayPath, state.availableVariables);
-
 			// Add loop variable itself
 			completions.push({
 				label: loop.variable,
 				type: 'variable',
 				info: 'loop variable',
-				boost: 90
+				boost: 95
 			});
 
-			// Add loop variable properties
-			for (const prop of properties) {
+			// Add loop variable properties (e.g., option.OptionA)
+			for (const prop of loop.properties) {
 				completions.push({
 					label: `${loop.variable}.${prop}`,
 					type: 'property',
 					info: 'loop item property',
-					boost: 91
+					boost: 96
 				});
 			}
 		}
@@ -575,7 +625,7 @@ function scribanCompletions(element, context) {
 		? completions.filter(v => v.label.toLowerCase().includes(prefix))
 		: completions;
 
-	console.info('run scriban completions returns:', filtered)
+	console.info('run scriban completions returns:', filtered);
 
 	return {
 		from: word.from,

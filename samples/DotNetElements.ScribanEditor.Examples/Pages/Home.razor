@@ -31,28 +31,51 @@
 		await scribanEditorRef.SetAvailableVariablesAsync(variableDefinitions);
 	}
 
-	private static readonly ScribanVariableDefinition[] variableDefinitions =
-	[
-		new ScribanVariableDefinition() { Name = "vars", ChildVars =
-			[
-				new ScribanVariableDefinition() { Name = "FirstName" },
-				new ScribanVariableDefinition() { Name = "LastName" },
-				new ScribanVariableDefinition() { Name = "Email" },
-				new ScribanVariableDefinition() { Name = "PreferredOptions", ChildVars =
-					[
-						new ScribanVariableDefinition() { Name = "OptionA" },
-						new ScribanVariableDefinition() { Name = "OptionB" },
-						new ScribanVariableDefinition() { Name = "OptionC" }
-					]
-				}
-			]
-		},
-		new ScribanVariableDefinition() { Name = "env", ChildVars =
-			[
-				new ScribanVariableDefinition() { Name = "LocalNow" },
-				new ScribanVariableDefinition() { Name = "Environment" },
-				new ScribanVariableDefinition() { Name = "ApiVersion" }
-			]
-		}
-	];
+    private static readonly ScribanVariableDefinition[] variableDefinitions =
+    [
+        new ScribanVariableDefinition()
+        {
+            Name = "vars",
+            ChildVars =
+            [
+                new ScribanVariableDefinition() { Name = "FirstName" },
+                new ScribanVariableDefinition() { Name = "LastName" },
+                new ScribanVariableDefinition() { Name = "Email" },
+                new ScribanVariableDefinition()
+                {
+                    Name = "Options1",
+                    FlattenChildren = true,
+                    IsLoopable = true,
+                    ChildVars =
+                    [
+                        new ScribanVariableDefinition() { Name = "OptionA" },
+                        new ScribanVariableDefinition() { Name = "OptionB" },
+                        new ScribanVariableDefinition() { Name = "OptionC" }
+                    ]
+                },
+                new ScribanVariableDefinition()
+                {
+                    Name = "Options2",
+                    FlattenChildren = false,
+                    IsLoopable = true,
+                    ChildVars =
+                    [
+                        new ScribanVariableDefinition() { Name = "OptionA" },
+                        new ScribanVariableDefinition() { Name = "OptionB" },
+                        new ScribanVariableDefinition() { Name = "OptionC" }
+                    ]
+                }
+            ]
+        },
+        new ScribanVariableDefinition()
+        {
+            Name = "env",
+            ChildVars =
+            [
+                new ScribanVariableDefinition() { Name = "LocalNow" },
+                new ScribanVariableDefinition() { Name = "Environment" },
+                new ScribanVariableDefinition() { Name = "ApiVersion" }
+            ]
+        }
+    ];
 }

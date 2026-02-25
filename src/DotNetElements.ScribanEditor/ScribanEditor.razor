@@ -34,6 +34,30 @@
 		.mud-tree-view-dense .mud-icon-button {
 			padding: 0px !important;
 		}
+
+
+
+	.variable-badge {
+		display: inline-block;
+		font-size: 0.65rem;
+		padding: 1px 4px;
+		margin-left: 4px;
+		border-radius: 3px;
+		font-weight: 500;
+		vertical-align: middle;
+	}
+
+	.variable-badge-loopable {
+		background-color: rgba(103, 58, 183, 0.2);
+		color: var(--mud-palette-primary);
+		border: 1px solid var(--mud-palette-primary);
+	}
+
+	.variable-badge-property {
+		background-color: rgba(76, 175, 80, 0.2);
+		color: #4caf50;
+		border: 1px solid #4caf50;
+	}
 </style>
 
 <div class="@Class" style="@Style" @attributes="UserAttributes">
@@ -42,12 +66,30 @@
 		<div style="@GetSidebarStyle()">
 			<div style="flex: 1; border-bottom: 1px solid var(--mud-palette-lines-default);">
 				<div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
-					<MudText Typo="Typo.subtitle2">Template Variables (vars.)</MudText>
+					<MudText Typo="Typo.subtitle2">Template Variables</MudText>
 				</div>
-				<MudTreeView Items="@availableVariablesTreeItems" ExpandOnClick="true" Dense="true" Class="mud-tree-view-dense" Style="overflow-y: auto;">
-					<ItemTemplate>
-						<MudTreeViewItem @bind-Expanded="@context.Expanded" Items="@context.Children" Value="@context.Value"
-										 Text="@context.Text" TextTypo="Typo.subtitle2" />
+				<MudTreeView Items="@availableVariablesTreeItems" ExpandOnClick="true" ReadOnly="true" Dense="true" Class="mud-tree-view-dense" Style="overflow-y: auto;">
+					<ItemTemplate Context="treeItem">
+						<MudTreeViewItem @bind-Expanded="@treeItem.Expanded" Items="@treeItem.Children" Value="@treeItem.Value">
+							<Content>
+								<div style="display: flex; align-items: center; gap: 4px;">
+									<MudText Typo="Typo.subtitle2" Style="font-size: 0.8rem;">@treeItem.Text</MudText>
+									@if (treeItem is not TreeItemPresenter presenter)
+									{
+										throw new InvalidOperationException("Expected tree item to be of type TreeItemPresenter");
+									}
+
+									@if (presenter.IsLoopable)
+									{
+										<span class="variable-badge variable-badge-loopable" title="Can be used in for loops">loop</span>
+									}
+									@if (presenter.IsProperty)
+									{
+										<span class="variable-badge variable-badge-property" title="Property">prop</span>
+									}
+								</div>
+							</Content>
+						</MudTreeViewItem>
 					</ItemTemplate>
 				</MudTreeView>
 			</div>
@@ -175,13 +217,7 @@
 	public async ValueTask SetAvailableVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
 	{
 		availableVariables = variables.ToList();
-
-		availableVariablesTreeItems = availableVariables
-			.Select(mainVar => new TreeItemPresenter(mainVar.Name)
-			{
-				Children = mainVar.ChildVars.Select(childVar => new TreeItemPresenter(childVar.Name)).Cast<TreeItemData<string>>().ToList()
-			})
-			.ToList();
+		availableVariablesTreeItems = BuildTreeItems(availableVariables);
 
 		if (!editorInitialized)
 			return;
@@ -212,6 +248,78 @@
 		previewShown = !previewShown;
 	}
 
+	private List<TreeItemData<string>> BuildTreeItems(IReadOnlyList<ScribanVariableDefinition> variables)
+	{
+		List<TreeItemData<string>> items = [];
+
+		foreach (ScribanVariableDefinition varDef in variables)
+		{
+			TreeItemPresenter item = new(varDef.Name)
+			{
+				IsLoopable = varDef.IsLoopable,
+				IsProperty = false
+			};
+
+			List<TreeItemData<string>> children = [];
+
+			// Add properties first
+			if (varDef.Properties.Length > 0)
+			{
+				foreach (string property in varDef.Properties)
+				{
+					children.Add(new TreeItemPresenter(property)
+					{
+						IsLoopable = false,
+						IsProperty = true
+					});
+				}
+			}
+
+			// Add child variables
+			if (varDef.ChildVars.Length > 0)
+			{
+				// Only show children if not loopable OR if flatten is enabled
+				bool shouldShowChildren = !varDef.IsLoopable || varDef.FlattenChildren;
+
+				if (shouldShowChildren)
+				{
+					children.AddRange(BuildTreeItems(varDef.ChildVars));
+				}
+				else if (varDef.IsLoopable)
+				{
+					// For loop-only variables, show item properties directly
+					// Get the first child as a representative (all items have the same structure)
+					ScribanVariableDefinition firstChild = varDef.ChildVars[0];
+
+					// Add hint text as a direct child
+					children.Add(new TreeItemPresenter("Item properties:")
+					{
+						IsLoopable = false,
+						IsProperty = false,
+						IsHint = true
+					});
+
+					// Add properties directly at the same level
+					if (firstChild.Properties.Length > 0)
+					{
+						foreach (string property in firstChild.Properties)
+						{
+							children.Add(new TreeItemPresenter(property)
+							{
+								IsLoopable = false,
+								IsProperty = true
+							});
+						}
+					}
+				}
+			}
+
+			item.Children = children;
+			items.Add(item);
+		}
+
+		return items;
+	}
 	private string GetMainContainerStyle()
 	{
 		StyleBuilder builder = new();
@@ -329,11 +437,13 @@
 
 	private sealed class TreeItemPresenter : TreeItemData<string>
 	{
-		public string VariableName { get; set; }
+		public bool IsLoopable { get; set; }
+		public bool IsProperty { get; set; }
+		public bool IsHint { get; set; }
 
 		public TreeItemPresenter(string variableName) : base(variableName)
 		{
-			VariableName = variableName;
+			Text = variableName;
 		}
 	}
 }

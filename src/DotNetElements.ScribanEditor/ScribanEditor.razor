@@ -1,5 +1,8 @@
 ﻿@using Microsoft.JSInterop
 @using MudBlazor.Utilities
+@using Scriban
+@using Scriban.Runtime
+@using System.Collections
 
 @inherits MudComponentBase
 
@@ -76,6 +79,16 @@
         background-color: rgba(76, 175, 80, 0.2);
         color: #4caf50;
         border: 1px solid #4caf50;
+    }
+
+    .preview-container-dark {
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+    }
+
+    .preview-container-light {
+        background-color: #ffffff;
+        color: #000000;
     }
 </style>
 
@@ -156,7 +169,7 @@
         @* Middle & Right Columns - Editor and Preview *@
         <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
             @* Toolbar *@
-            <div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
+            <div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; gap: 8px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
                 <MudSpacer />
                 @if (PreviewEnabled)
                 {
@@ -164,6 +177,17 @@
                                    Color="Color.Default"
                                    Size="Size.Small"
                                    OnClick="TogglePreview" />
+                    @if (previewShown)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="UpdatePreviewAsync" />
+                        <MudIconButton Icon="@(previewDarkModeActive? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="TogglePreviewDarkMode" />
+                    }
                 }
             </div>
 
@@ -175,14 +199,8 @@
                 @* Preview Column *@
                 @if (previewShown)
                 {
-                    <div style="display: flex; flex-direction: column; flex: 1; padding: 12px; border-left: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-background); overflow: hidden;">
-                        <MudText Typo="Typo.subtitle2" Class="mb-2">Preview</MudText>
-                        <div style="flex: 1; overflow-y: auto;">
-                            <MudText Typo="Typo.body2" Color="Color.Tertiary">
-                                Rendered template preview will be displayed here
-                            </MudText>
-                            @* TODO: Add rendered preview content here *@
-                        </div>
+                    <div class="@GetPreviewContainerClass()" style="display: flex; flex-direction: column; flex: 1; padding: 12px; border-left: 1px solid var(--mud-palette-lines-inputs); overflow: hidden;">
+                        @renderedPreview
                     </div>
                 }
             </div>
@@ -192,281 +210,423 @@
 
 @code
 {
-	[Parameter]
-	public string? InitialContent { get; set; }
+    [Parameter]
+    public string? InitialContent { get; set; }
 
-	[Parameter]
-	public bool Resizable { get; set; } = true;
+    [Parameter]
+    public bool Resizable { get; set; } = true;
 
-	[Parameter]
-	public bool PreviewEnabled { get; set; } = true;
+    [Parameter]
+    public bool PreviewEnabled { get; set; } = true;
 
-	[Parameter]
-	public string? MinHeight { get; set; } = "100px";
+    [Parameter]
+    public string? MinHeight { get; set; } = "100px";
 
-	[Parameter]
-	public string? MaxHeight { get; set; }
+    [Parameter]
+    public string? MaxHeight { get; set; }
 
-	[Parameter]
-	public string SidebarWidth { get; set; } = "250px";
+    [Parameter]
+    public string SidebarWidth { get; set; } = "250px";
 
-	private EditorTheme preferredTheme = EditorTheme.Dark;
-	private IReadOnlyList<ScribanVariableDefinition> availableVariables = [];
+    private EditorTheme preferredTheme = EditorTheme.Dark;
+    private IReadOnlyList<ScribanVariableDefinition> availableVariables = [];
 
-	private bool previewShown;
-	private IReadOnlyList<TreeItemData<string>> availableVariablesTreeItems { get; set; } = [];
+    private bool previewShown;
+    private bool previewDarkModeActive = true;
+    private TemplateContext? templateContext;
+    private MarkupString renderedPreview;
+    private IReadOnlyList<TreeItemData<string>> availableVariablesTreeItems { get; set; } = [];
 
-	private bool editorInitialized;
+    private bool editorInitialized;
 
-	private ElementReference editorContainer;
+    private ElementReference editorContainer;
 
-	private readonly IJSRuntime jsRuntime;
+    private readonly IJSRuntime jsRuntime;
 
-	public ScribanEditor(IJSRuntime jsRuntime)
-	{
-		this.jsRuntime = jsRuntime;
-	}
+    public ScribanEditor(IJSRuntime jsRuntime)
+    {
+        this.jsRuntime = jsRuntime;
+    }
 
-	public ValueTask<string> GetContentAsync()
-	{
-		return GetEditorContentAsync();
-	}
+    public ValueTask<string> GetContentAsync()
+    {
+        return GetEditorContentAsync();
+    }
 
-	public ValueTask SetContentAsync(string content)
-	{
-		return SetEditorContentAsync(content);
-	}
+    public ValueTask SetContentAsync(string content)
+    {
+        return SetEditorContentAsync(content);
+    }
 
-	public async ValueTask SetAvailableVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
-	{
-		availableVariables = variables.ToList();
-		availableVariablesTreeItems = BuildTreeItems(availableVariables);
+    public async ValueTask SetAvailableVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
+    {
+        availableVariables = variables.ToList();
+        availableVariablesTreeItems = BuildTreeItems(availableVariables);
 
-		if (!editorInitialized)
-			return;
+        SetupScribanContext();
 
-		await SetScribanVariablesAsync(availableVariables);
-	}
+        if (!editorInitialized)
+            return;
 
-	public async ValueTask SetIsDarkModeActiveAsync(bool isDarkMode)
-	{
-		preferredTheme = isDarkMode ? EditorTheme.Dark : EditorTheme.Light;
+        await SetScribanVariablesAsync(availableVariables);
+    }
 
-		if (!editorInitialized)
-			return;
+    public async ValueTask SetIsDarkModeActiveAsync(bool isDarkMode)
+    {
+        preferredTheme = isDarkMode ? EditorTheme.Dark : EditorTheme.Light;
 
-		await SetEditorThemeAsync(preferredTheme);
-	}
+        if (!editorInitialized)
+            return;
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (!firstRender)
-			return;
+        await SetEditorThemeAsync(preferredTheme);
+    }
 
-		await InitEditorAsync();
-	}
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
 
-	private void TogglePreview()
-	{
-		previewShown = !previewShown;
-	}
+        await InitEditorAsync();
+    }
 
-	private List<TreeItemData<string>> BuildTreeItems(IReadOnlyList<ScribanVariableDefinition> variables)
-	{
-		List<TreeItemData<string>> items = [];
+    private void TogglePreview()
+    {
+        previewShown = !previewShown;
+    }
 
-		foreach (ScribanVariableDefinition varDef in variables)
-		{
-			TreeItemPresenter item = new(varDef.Name)
-			{
-				IsLoopable = varDef.IsLoopable,
-				IsProperty = false
-			};
+    private void TogglePreviewDarkMode()
+    {
+        previewDarkModeActive = !previewDarkModeActive;
+    }
 
-			List<TreeItemData<string>> children = [];
+    private void SetupScribanContext()
+    {
+        templateContext = new()
+        {
+            StrictVariables = true,
+            EnableRelaxedIndexerAccess = false,
+            EnableRelaxedFunctionAccess = false,
+            EnableRelaxedTargetAccess = false,
+            EnableRelaxedMemberAccess = false,
+            MemberRenamer = member => member.Name,
+        };
 
-			// Add properties first
-			if (varDef.Properties.Length > 0)
-			{
-				foreach (string property in varDef.Properties)
-				{
-					children.Add(new TreeItemPresenter(property)
-					{
-						IsLoopable = false,
-						IsProperty = true
-					});
-				}
-			}
+        ScriptObject scriptObject = new();
 
-			// Add child variables
-			if (varDef.ChildVars.Length > 0)
-			{
-				// Only show children if not loopable OR if flatten is enabled
-				bool shouldShowChildren = !varDef.IsLoopable || varDef.FlattenChildren;
+        // Build the variable structure from availableVariables
+        foreach (ScribanVariableDefinition varDef in availableVariables)
+            scriptObject[varDef.Name] = BuildVariableObject(varDef);
 
-				if (shouldShowChildren)
-				{
-					children.AddRange(BuildTreeItems(varDef.ChildVars));
-				}
-				else if (varDef.IsLoopable)
-				{
-					// For loop-only variables, show item properties directly
-					// Get the first child as a representative (all items have the same structure)
-					ScribanVariableDefinition firstChild = varDef.ChildVars[0];
+        templateContext.PushGlobal(scriptObject);
+    }
 
-					// Add hint text as a direct child
-					children.Add(new TreeItemPresenter("Item properties:")
-					{
-						IsLoopable = false,
-						IsProperty = false,
-						IsHint = true
-					});
+    private async Task UpdatePreviewAsync()
+    {
+        string templateContent = await GetEditorContentAsync();
 
-					// Add properties directly at the same level
-					if (firstChild.Properties.Length > 0)
-					{
-						foreach (string property in firstChild.Properties)
-						{
-							children.Add(new TreeItemPresenter(property)
-							{
-								IsLoopable = false,
-								IsProperty = true
-							});
-						}
-					}
-				}
-			}
+        try
+        {
+            Template template = Template.Parse(templateContent);
+            string result = template.Render(templateContext);
 
-			item.Children = children;
-			items.Add(item);
-		}
+            renderedPreview = new MarkupString(result);
+        }
+        catch (Exception ex)
+        {
+            renderedPreview = new MarkupString($"<div style='color: red; font-weight: bold;'>Error rendering preview: {ex.Message}</div>");
+        }
+    }
 
-		return items;
-	}
-	private string GetMainContainerStyle()
-	{
-		StyleBuilder builder = new();
-		builder.AddStyle("display: flex");
-		builder.AddStyle("flex-direction: row");
-		builder.AddStyle("border: 1px solid var(--mud-palette-lines-inputs)");
-		builder.AddStyle("border-radius: var(--mud-default-borderradius)");
-		builder.AddStyle("height: 100%");
-		builder.AddStyle("overflow: hidden");
-		builder.AddStyle("resize: vertical", Resizable);
-		builder.AddStyle("min-height", MinHeight, MinHeight is not null);
-		builder.AddStyle("max-height", MaxHeight, MaxHeight is not null);
+    private object BuildVariableObject(ScribanVariableDefinition varDef)
+    {
+        ScriptObject obj = new();
 
-		return builder.Build();
-	}
+        // Add properties with sample values
+        if (varDef.Properties.Length > 0)
+        {
+            foreach (string property in varDef.Properties)
+            {
+                obj[property] = $"[{varDef.Name}.{property}]";
+            }
+        }
 
-	private string GetSidebarStyle()
-	{
-		StyleBuilder builder = new();
-		builder.AddStyle("resize: horizontal");
-		builder.AddStyle("display: flex");
-		builder.AddStyle("flex-direction: column");
-		builder.AddStyle("width", SidebarWidth);
-		builder.AddStyle("border-right: 1px solid var(--mud-palette-lines-inputs)");
-		builder.AddStyle("background-color: var(--mud-palette-background-grey)");
-		builder.AddStyle("overflow: hidden");
+        // Add child variables
+        if (varDef.ChildVars.Length > 0)
+        {
+            if (varDef.IsLoopable && !varDef.FlattenChildren)
+            {
+                // Loop-only: Create an array of items (e.g., Options2)
+                // Children are ONLY accessible through loop iteration
+                List<object> items = [];
+                foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
+                {
+                    items.Add(BuildVariableObject(childVar));
+                }
+                return new ScriptArray(items);
+            }
+            else if (varDef.IsLoopable && varDef.FlattenChildren)
+            {
+                // Flattened + Loopable: Create array AND add children as direct properties (e.g., Options1)
+                // Children are accessible both directly AND through loop iteration
+                List<object> items = [];
+                foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
+                {
+                    object childObj = BuildVariableObject(childVar);
+                    items.Add(childObj);
+                    // Also add as direct property for flattened access
+                    obj[childVar.Name] = childObj;
+                }
+                // Make it iterable by implementing IEnumerable behavior
+                // Return a ScriptObject that also acts as an array
+                obj.SetValue("Items", new ScriptArray(items), false);
+                obj.Import(typeof(Enumerable));
 
-		return builder.Build();
-	}
+                // Return custom wrapper that supports both property access and iteration
+                return new FlattenedLoopableVariable(obj, items);
+            }
+            else
+            {
+                // Normal nested structure: Add children as nested properties
+                foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
+                {
+                    obj[childVar.Name] = BuildVariableObject(childVar);
+                }
+            }
+        }
 
-	// scriban-editor.js interop helpers
-	private async ValueTask InitEditorAsync()
-	{
-		await jsRuntime.InvokeVoidAsync("ScribanEditor.initEditor", editorContainer);
+        // If no properties and no children, return a placeholder string
+        if (varDef.Properties.Length == 0 && varDef.ChildVars.Length == 0)
+        {
+            return $"[{varDef.Name}]";
+        }
 
-		await SetEditorThemeAsync(preferredTheme);
+        return obj;
+    }
 
-		if (availableVariables.Count > 0)
-			await SetScribanVariablesAsync(availableVariables);
+    // Helper class to support both property access and iteration
+    private sealed class FlattenedLoopableVariable : ScriptObject, IEnumerable
+    {
+        private readonly List<object> items;
 
-		if (!string.IsNullOrEmpty(InitialContent))
-			await SetEditorContentAsync(InitialContent);
+        public FlattenedLoopableVariable(ScriptObject properties, List<object> items)
+        {
+            this.items = items;
 
-		editorInitialized = true;
+            // Copy all properties from the source object
+            foreach (KeyValuePair<string, object?> kvp in properties)
+            {
+                this[kvp.Key] = kvp.Value;
+            }
+        }
 
-		StateHasChanged();
-	}
+        public IEnumerator GetEnumerator()
+        {
+            return items.GetEnumerator();
+        }
+    }
 
-	private ValueTask SetEditorContentAsync(string content)
-	{
-		return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorContent", editorContainer, content);
-	}
+    private List<TreeItemData<string>> BuildTreeItems(IReadOnlyList<ScribanVariableDefinition> variables)
+    {
+        List<TreeItemData<string>> items = [];
 
-	private ValueTask<string> GetEditorContentAsync()
-	{
-		return jsRuntime.InvokeAsync<string>("ScribanEditor.getEditorContent", editorContainer);
-	}
+        foreach (ScribanVariableDefinition varDef in variables)
+        {
+            TreeItemPresenter item = new(varDef.Name)
+            {
+                IsLoopable = varDef.IsLoopable,
+                IsProperty = false
+            };
 
-	private ValueTask SetScribanFunctionsAsync(IEnumerable<ScribanFunctionDefinition> functions)
-	{
-		return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanFunctions", editorContainer, functions);
-	}
+            List<TreeItemData<string>> children = [];
 
-	private ValueTask SetScribanVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
-	{
-		return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanVariables", editorContainer, variables);
-	}
+            // Add properties first
+            if (varDef.Properties.Length > 0)
+            {
+                foreach (string property in varDef.Properties)
+                {
+                    children.Add(new TreeItemPresenter(property)
+                    {
+                        IsLoopable = false,
+                        IsProperty = true
+                    });
+                }
+            }
 
-	private ValueTask SetEditorThemeAsync(EditorTheme theme)
-	{
-		return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorTheme", editorContainer, theme.ToString().ToLowerInvariant());
-	}
+            // Add child variables
+            if (varDef.ChildVars.Length > 0)
+            {
+                // Only show children if not loopable OR if flatten is enabled
+                bool shouldShowChildren = !varDef.IsLoopable || varDef.FlattenChildren;
 
-	private sealed record class ScribanFunctionDefinition(string Name, string Description, FunctionParam[] FunctionParams);
-	private sealed record class FunctionParam(string Name, string Description);
+                if (shouldShowChildren)
+                {
+                    children.AddRange(BuildTreeItems(varDef.ChildVars));
+                }
+                else if (varDef.IsLoopable)
+                {
+                    // For loop-only variables, show item properties directly
+                    // Get the first child as a representative (all items have the same structure)
+                    ScribanVariableDefinition firstChild = varDef.ChildVars[0];
 
-	private enum EditorTheme
-	{
-		Dark,
-		Light,
-	}
+                    // Add hint text as a direct child
+                    children.Add(new TreeItemPresenter("Item properties:")
+                    {
+                        IsLoopable = false,
+                        IsProperty = false,
+                        IsHint = true
+                    });
 
-	// Scriban built-in string functions
-	private static readonly ScribanFunctionDefinition[] BuiltInStringFunctions =
-	[
-		new("string.append", "Appends a string to another string", [new("text", "The string to append")]),
-		new("string.capitalize", "Capitalizes the first character of the string", []),
-		new("string.downcase", "Converts the string to lowercase", []),
-		new("string.upcase", "Converts the string to uppercase", []),
-		new("string.strip", "Removes whitespace from both ends", []),
-		new("string.lstrip", "Removes whitespace from the left end", []),
-		new("string.rstrip", "Removes whitespace from the right end", []),
-		new("string.replace", "Replaces occurrences of a string", [new("old", "The string to find"), new("new", "The replacement string")]),
-		new("string.replace_first", "Replaces the first occurrence", [new("old", "The string to find"), new("new", "The replacement string")]),
-		new("string.remove", "Removes all occurrences of a string", [new("text", "The string to remove")]),
-		new("string.remove_first", "Removes the first occurrence", [new("text", "The string to remove")]),
-		new("string.slice", "Extracts a substring", [new("start", "Starting position (0-based)"), new("length", "Number of characters (optional)")]),
-		new("string.split", "Splits string into an array", [new("delimiter", "The string to split on")]),
-		new("string.starts_with", "Checks if string starts with text", [new("text", "The text to check for")]),
-		new("string.ends_with", "Checks if string ends with text", [new("text", "The text to check for")]),
-		new("string.contains", "Checks if string contains text", [new("text", "The text to search for")]),
-		new("string.truncate", "Truncates string to length", [new("length", "Maximum length")]),
-		new("string.truncatewords", "Truncates to word count", [new("count", "Maximum number of words")]),
-		new("string.pad_left", "Pads string on the left", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
-		new("string.pad_right", "Pads string on the right", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
-		new("string.pluralize", "Returns singular or plural form", [new("count", "Number to check"), new("singular", "Singular form"), new("plural", "Plural form")]),
-		new("string.md5", "Computes MD5 hash", []),
-		new("string.sha1", "Computes SHA1 hash", []),
-		new("string.sha256", "Computes SHA256 hash", []),
-		new("string.hmac_sha1", "Computes HMAC SHA1", [new("key", "The secret key")]),
-		new("string.hmac_sha256", "Computes HMAC SHA256", [new("key", "The secret key")]),
-		new("string.handle", "Converts to URL-friendly string", []),
-		new("string.handleize", "Converts to handleized string", [])
-	];
+                    // Add properties directly at the same level
+                    if (firstChild.Properties.Length > 0)
+                    {
+                        foreach (string property in firstChild.Properties)
+                        {
+                            children.Add(new TreeItemPresenter(property)
+                            {
+                                IsLoopable = false,
+                                IsProperty = true
+                            });
+                        }
+                    }
+                }
+            }
 
-	private sealed class TreeItemPresenter : TreeItemData<string>
-	{
-		public bool IsLoopable { get; set; }
-		public bool IsProperty { get; set; }
-		public bool IsHint { get; set; }
+            item.Children = children;
+            items.Add(item);
+        }
 
-		public TreeItemPresenter(string variableName) : base(variableName)
-		{
-			Text = variableName;
-		}
-	}
+        return items;
+    }
+
+    private string GetPreviewContainerClass()
+    {
+        return previewDarkModeActive ? "preview-container-dark" : "preview-container-light";
+    }
+
+    private string GetMainContainerStyle()
+    {
+        StyleBuilder builder = new();
+        builder.AddStyle("display: flex");
+        builder.AddStyle("flex-direction: row");
+        builder.AddStyle("border: 1px solid var(--mud-palette-lines-inputs)");
+        builder.AddStyle("border-radius: var(--mud-default-borderradius)");
+        builder.AddStyle("height: 100%");
+        builder.AddStyle("overflow: hidden");
+        builder.AddStyle("resize: vertical", Resizable);
+        builder.AddStyle("min-height", MinHeight, MinHeight is not null);
+        builder.AddStyle("max-height", MaxHeight, MaxHeight is not null);
+
+        return builder.Build();
+    }
+
+    private string GetSidebarStyle()
+    {
+        StyleBuilder builder = new();
+        builder.AddStyle("resize: horizontal");
+        builder.AddStyle("display: flex");
+        builder.AddStyle("flex-direction: column");
+        builder.AddStyle("width", SidebarWidth);
+        builder.AddStyle("border-right: 1px solid var(--mud-palette-lines-inputs)");
+        builder.AddStyle("background-color: var(--mud-palette-background-grey)");
+        builder.AddStyle("overflow: hidden");
+
+        return builder.Build();
+    }
+
+    // scriban-editor.js interop helpers
+    private async ValueTask InitEditorAsync()
+    {
+        await jsRuntime.InvokeVoidAsync("ScribanEditor.initEditor", editorContainer);
+
+        await SetEditorThemeAsync(preferredTheme);
+
+        if (availableVariables.Count > 0)
+            await SetScribanVariablesAsync(availableVariables);
+
+        if (!string.IsNullOrEmpty(InitialContent))
+            await SetEditorContentAsync(InitialContent);
+
+        editorInitialized = true;
+
+        StateHasChanged();
+    }
+
+    private ValueTask SetEditorContentAsync(string content)
+    {
+        return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorContent", editorContainer, content);
+    }
+
+    private ValueTask<string> GetEditorContentAsync()
+    {
+        return jsRuntime.InvokeAsync<string>("ScribanEditor.getEditorContent", editorContainer);
+    }
+
+    private ValueTask SetScribanFunctionsAsync(IEnumerable<ScribanFunctionDefinition> functions)
+    {
+        return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanFunctions", editorContainer, functions);
+    }
+
+    private ValueTask SetScribanVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
+    {
+        return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanVariables", editorContainer, variables);
+    }
+
+    private ValueTask SetEditorThemeAsync(EditorTheme theme)
+    {
+        return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorTheme", editorContainer, theme.ToString().ToLowerInvariant());
+    }
+
+    private sealed record class ScribanFunctionDefinition(string Name, string Description, FunctionParam[] FunctionParams);
+    private sealed record class FunctionParam(string Name, string Description);
+
+    private enum EditorTheme
+    {
+        Dark,
+        Light,
+    }
+
+    // Scriban built-in string functions
+    private static readonly ScribanFunctionDefinition[] BuiltInStringFunctions =
+    [
+        new("string.append", "Appends a string to another string", [new("text", "The string to append")]),
+        new("string.capitalize", "Capitalizes the first character of the string", []),
+        new("string.downcase", "Converts the string to lowercase", []),
+        new("string.upcase", "Converts the string to uppercase", []),
+        new("string.strip", "Removes whitespace from both ends", []),
+        new("string.lstrip", "Removes whitespace from the left end", []),
+        new("string.rstrip", "Removes whitespace from the right end", []),
+        new("string.replace", "Replaces occurrences of a string", [new("old", "The string to find"), new("new", "The replacement string")]),
+        new("string.replace_first", "Replaces the first occurrence", [new("old", "The string to find"), new("new", "The replacement string")]),
+        new("string.remove", "Removes all occurrences of a string", [new("text", "The string to remove")]),
+        new("string.remove_first", "Removes the first occurrence", [new("text", "The string to remove")]),
+        new("string.slice", "Extracts a substring", [new("start", "Starting position (0-based)"), new("length", "Number of characters (optional)")]),
+        new("string.split", "Splits string into an array", [new("delimiter", "The string to split on")]),
+        new("string.starts_with", "Checks if string starts with text", [new("text", "The text to check for")]),
+        new("string.ends_with", "Checks if string ends with text", [new("text", "The text to check for")]),
+        new("string.contains", "Checks if string contains text", [new("text", "The text to search for")]),
+        new("string.truncate", "Truncates string to length", [new("length", "Maximum length")]),
+        new("string.truncatewords", "Truncates to word count", [new("count", "Maximum number of words")]),
+        new("string.pad_left", "Pads string on the left", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
+        new("string.pad_right", "Pads string on the right", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
+        new("string.pluralize", "Returns singular or plural form", [new("count", "Number to check"), new("singular", "Singular form"), new("plural", "Plural form")]),
+        new("string.md5", "Computes MD5 hash", []),
+        new("string.sha1", "Computes SHA1 hash", []),
+        new("string.sha256", "Computes SHA256 hash", []),
+        new("string.hmac_sha1", "Computes HMAC SHA1", [new("key", "The secret key")]),
+        new("string.hmac_sha256", "Computes HMAC SHA256", [new("key", "The secret key")]),
+        new("string.handle", "Converts to URL-friendly string", []),
+        new("string.handleize", "Converts to handleized string", [])
+    ];
+
+    private sealed class TreeItemPresenter : TreeItemData<string>
+    {
+        public bool IsLoopable { get; set; }
+        public bool IsProperty { get; set; }
+        public bool IsHint { get; set; }
+
+        public TreeItemPresenter(string variableName) : base(variableName)
+        {
+            Text = variableName;
+        }
+    }
 }

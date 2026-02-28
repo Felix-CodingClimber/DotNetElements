@@ -4,167 +4,190 @@
 @inherits MudComponentBase
 
 <style>
-	.mud-tabs-dense {
-	}
+    .mud-tabs-dense {
+    }
 
-		.mud-tabs-dense .mud-tab {
-			min-height: 34px;
-			min-width: 100px !important;
-			font-size: var(--mud-typography-subtitle2-size);
-			font-family: var(--mud-typography-subtitle2-family);
-			font-weight: var(--mud-typography-subtitle2-weight);
-			line-height: var(--mud-typography-subtitle2-lineheight);
-			letter-spacing: var(--mud-typography-subtitle2-letterspacing);
-			text-transform: var(--mud-typography-subtitle2-text-transform);
-		}
+        .mud-tabs-dense .mud-tab {
+            min-height: 34px;
+            min-width: 100px !important;
+            font-size: var(--mud-typography-subtitle2-size);
+            font-family: var(--mud-typography-subtitle2-family);
+            font-weight: var(--mud-typography-subtitle2-weight);
+            line-height: var(--mud-typography-subtitle2-lineheight);
+            letter-spacing: var(--mud-typography-subtitle2-letterspacing);
+            text-transform: var(--mud-typography-subtitle2-text-transform);
+        }
 
-		.mud-tabs-dense .mud-tabs-tabbar-inner {
-			min-height: 0px;
-		}
+        .mud-tabs-dense .mud-tabs-tabbar-inner {
+            min-height: 0px;
+        }
 
-		.mud-tabs-dense .mud-icon-button {
-			padding: 0px;
-			min-height: 34px;
-			min-width: 34px;
-		}
+        .mud-tabs-dense .mud-icon-button {
+            padding: 0px;
+            min-height: 34px;
+            min-width: 34px;
+        }
 
-	.mud-tree-view-dense {
-	}
+    .mud-tree-view-dense {
+    }
 
-		.mud-tree-view-dense .mud-icon-button {
-			padding: 0px !important;
-		}
+        .mud-tree-view-dense .mud-icon-button {
+            padding: 0px !important;
+        }
 
+        .mud-tree-view-dense .mud-collapse-wrapper {
+            scrollbar-width: none;
+        }
 
+    .tree-item-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
 
-	.variable-badge {
-		display: inline-block;
-		font-size: 0.65rem;
-		padding: 1px 4px;
-		margin-left: 4px;
-		border-radius: 3px;
-		font-weight: 500;
-		vertical-align: middle;
-	}
+        .tree-item-content .tree-item-text {
+            flex: 1;
+            min-width: 0;
+        }
 
-	.variable-badge-loopable {
-		background-color: rgba(103, 58, 183, 0.2);
-		color: var(--mud-palette-primary);
-		border: 1px solid var(--mud-palette-primary);
-	}
+        .tree-item-content .tree-item-badges {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
 
-	.variable-badge-property {
-		background-color: rgba(76, 175, 80, 0.2);
-		color: #4caf50;
-		border: 1px solid #4caf50;
-	}
+    .variable-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-weight: 500;
+        vertical-align: middle;
+    }
+
+    .variable-badge-loopable {
+        background-color: rgba(103, 58, 183, 0.2);
+        color: var(--mud-palette-primary);
+        border: 1px solid var(--mud-palette-primary);
+    }
+
+    .variable-badge-property {
+        background-color: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+        border: 1px solid #4caf50;
+    }
 </style>
 
 <div class="@Class" style="@Style" @attributes="UserAttributes">
-	<div style="@GetMainContainerStyle()">
-		@* Left Column - Template Variables & Help *@
-		<div style="@GetSidebarStyle()">
-			<div style="flex: 1; border-bottom: 1px solid var(--mud-palette-lines-default);">
-				<div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
-					<MudText Typo="Typo.subtitle2">Template Variables</MudText>
-				</div>
-				<MudTreeView Items="@availableVariablesTreeItems" ExpandOnClick="true" ReadOnly="true" Dense="true" Class="mud-tree-view-dense" Style="overflow-y: auto;">
-					<ItemTemplate Context="treeItem">
-						<MudTreeViewItem @bind-Expanded="@treeItem.Expanded" Items="@treeItem.Children" Value="@treeItem.Value">
-							<Content>
-								<div style="display: flex; align-items: center; gap: 4px;">
-									<MudText Typo="Typo.subtitle2" Style="font-size: 0.8rem;">@treeItem.Text</MudText>
-									@if (treeItem is not TreeItemPresenter presenter)
-									{
-										throw new InvalidOperationException("Expected tree item to be of type TreeItemPresenter");
-									}
+    <div style="@GetMainContainerStyle()">
+        @* Left Column - Template Variables & Help *@
+        <div style="@GetSidebarStyle()">
+            <div style="flex: 1; border-bottom: 1px solid var(--mud-palette-lines-default);">
+                <div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
+                    <MudText Typo="Typo.subtitle2">Template Variables</MudText>
+                </div>
+                <MudTreeView Items="@availableVariablesTreeItems" ExpandOnClick="true" ReadOnly="true" Dense="true" Class="mud-tree-view-dense" Style="overflow-y: auto;">
+                    <ItemTemplate Context="treeItem">
+                        <MudTreeViewItem @bind-Expanded="@treeItem.Expanded" Items="@treeItem.Children" Value="@treeItem.Value">
+                            <Content>
+                                <div class="tree-item-content">
+                                    <div class="tree-item-text">
+                                        <MudText Typo="Typo.subtitle2" Style="font-size: 0.8rem;">@treeItem.Text</MudText>
+                                    </div>
+                                    @if (treeItem is not TreeItemPresenter presenter)
+                                    {
+                                        throw new InvalidOperationException("Expected tree item to be of type TreeItemPresenter");
+                                    }
 
-									@if (presenter.IsLoopable)
-									{
-										<span class="variable-badge variable-badge-loopable" title="Can be used in for loops">loop</span>
-									}
-									@if (presenter.IsProperty)
-									{
-										<span class="variable-badge variable-badge-property" title="Property">prop</span>
-									}
-								</div>
-							</Content>
-						</MudTreeViewItem>
-					</ItemTemplate>
-				</MudTreeView>
-			</div>
-			<div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
-				<MudTabs Class="mud-tabs-dense">
-					<MudTabPanel Text="Syntax">
-						<div style="overflow-y: auto; padding: 8px;">
-							<MudText Typo="Typo.subtitle2" Class="mb-2">Scriban Syntax</MudText>
-						</div>
-					</MudTabPanel>
-					<MudTabPanel Text="Functions">
-						<div style="overflow-y: auto; padding: 8px;">
-							<MudText Typo="Typo.subtitle2" Class="mb-3">String Functions</MudText>
+                                    <div class="tree-item-badges">
+                                        @if (presenter.IsLoopable)
+                                        {
+                                            <span class="variable-badge variable-badge-loopable" title="Can be used in for loops">loop</span>
+                                        }
+                                        @if (presenter.IsProperty)
+                                        {
+                                            <span class="variable-badge variable-badge-property" title="Property">prop</span>
+                                        }
+                                    </div>
+                                </div>
+                            </Content>
+                        </MudTreeViewItem>
+                    </ItemTemplate>
+                </MudTreeView>
+            </div>
+            <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                <MudTabs Class="mud-tabs-dense">
+                    <MudTabPanel Text="Syntax">
+                        <div style="overflow-y: auto; padding: 8px;">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Scriban Syntax</MudText>
+                        </div>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Functions">
+                        <div style="overflow-y: auto; padding: 8px;">
+                            <MudText Typo="Typo.subtitle2" Class="mb-3">String Functions</MudText>
 
-							@foreach (ScribanFunctionDefinition func in BuiltInStringFunctions)
-							{
-								<div class="mb-3">
-									<MudText Typo="Typo.body2" Style="font-weight: 600; font-size: 0.8rem;">@func.Name</MudText>
-									<MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mb-1">@func.Description</MudText>
+                            @foreach (ScribanFunctionDefinition func in BuiltInStringFunctions)
+                            {
+                                <div class="mb-3">
+                                    <MudText Typo="Typo.body2" Style="font-weight: 600; font-size: 0.8rem;">@func.Name</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mb-1">@func.Description</MudText>
 
-									@if (func.FunctionParams.Length > 0)
-									{
-										<div class="ml-2">
-											<MudText Typo="Typo.caption" Style="font-style: italic; font-size: 0.7rem;">Parameters:</MudText>
-											@foreach (FunctionParam param in func.FunctionParams)
-											{
-												<MudText Typo="Typo.caption" Class="ml-2" Style="font-size: 0.7rem;">
-													• <strong>@param.Name:</strong> @param.Description
-												</MudText>
-											}
-										</div>
-									}
-								</div>
-							}
-						</div>
-					</MudTabPanel>
-				</MudTabs>
-			</div>
-		</div>
+                                    @if (func.FunctionParams.Length > 0)
+                                    {
+                                        <div class="ml-2">
+                                            <MudText Typo="Typo.caption" Style="font-style: italic; font-size: 0.7rem;">Parameters:</MudText>
+                                            @foreach (FunctionParam param in func.FunctionParams)
+                                            {
+                                                <MudText Typo="Typo.caption" Class="ml-2" Style="font-size: 0.7rem;">
+                                                    • <strong>@param.Name:</strong> @param.Description
+                                                </MudText>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </MudTabPanel>
+                </MudTabs>
+            </div>
+        </div>
 
-		@* Middle & Right Columns - Editor and Preview *@
-		<div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
-			@* Toolbar *@
-			<div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
-				<MudSpacer />
-				@if (PreviewEnabled)
-				{
-					<MudIconButton Icon="@(previewShown? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-								   Color="Color.Default"
-								   Size="Size.Small"
-								   OnClick="TogglePreview" />
-				}
-			</div>
+        @* Middle & Right Columns - Editor and Preview *@
+        <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+            @* Toolbar *@
+            <div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
+                <MudSpacer />
+                @if (PreviewEnabled)
+                {
+                    <MudIconButton Icon="@(previewShown? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                   Color="Color.Default"
+                                   Size="Size.Small"
+                                   OnClick="TogglePreview" />
+                }
+            </div>
 
-			@* Editor and Preview Row *@
-			<div style="display: flex; flex-direction: row; flex: 1; overflow: hidden;">
-				@* Editor Column *@
-				<div @ref="editorContainer" style="flex: 1; overflow: hidden;" />
+            @* Editor and Preview Row *@
+            <div style="display: flex; flex-direction: row; flex: 1; overflow: hidden;">
+                @* Editor Column *@
+                <div @ref="editorContainer" style="flex: 1; overflow: hidden;" />
 
-				@* Preview Column *@
-				@if (previewShown)
-				{
-					<div style="display: flex; flex-direction: column; flex: 1; padding: 12px; border-left: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-background); overflow: hidden;">
-						<MudText Typo="Typo.subtitle2" Class="mb-2">Preview</MudText>
-						<div style="flex: 1; overflow-y: auto;">
-							<MudText Typo="Typo.body2" Color="Color.Tertiary">
-								Rendered template preview will be displayed here
-							</MudText>
-							@* TODO: Add rendered preview content here *@
-						</div>
-					</div>
-				}
-			</div>
-		</div>
-	</div>
+                @* Preview Column *@
+                @if (previewShown)
+                {
+                    <div style="display: flex; flex-direction: column; flex: 1; padding: 12px; border-left: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-background); overflow: hidden;">
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Preview</MudText>
+                        <div style="flex: 1; overflow-y: auto;">
+                            <MudText Typo="Typo.body2" Color="Color.Tertiary">
+                                Rendered template preview will be displayed here
+                            </MudText>
+                            @* TODO: Add rendered preview content here *@
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
 
 @code

@@ -6,30 +6,30 @@
 
 @code
 {
-	private ScribanEditor? scribanEditorRef;
-	private readonly IThemeProvider themeProvider;
+    private ScribanEditor? scribanEditorRef;
+    private readonly IThemeProvider themeProvider;
 
-	public Home(IThemeProvider themeProvider)
-	{
-		this.themeProvider = themeProvider;
-		themeProvider.ThemeChanged += OnThemeChanged;
-	}
+    public Home(IThemeProvider themeProvider)
+    {
+        this.themeProvider = themeProvider;
+        themeProvider.ThemeChanged += OnThemeChanged;
+    }
 
-	private void OnThemeChanged(object? sender, EventArgs e)
-	{
-		scribanEditorRef?.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
-	}
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        scribanEditorRef?.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
+    }
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (!firstRender)
-			return;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
 
-		ArgumentNullException.ThrowIfNull(scribanEditorRef);
+        ArgumentNullException.ThrowIfNull(scribanEditorRef);
 
-		await scribanEditorRef.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
-		await scribanEditorRef.SetAvailableVariablesAsync(variableDefinitions);
-	}
+        await scribanEditorRef.SetIsDarkModeActiveAsync(themeProvider.IsDarkModeActive);
+        await scribanEditorRef.SetAvailableVariablesAsync(variableDefinitions);
+    }
 
     private static readonly ScribanVariableDefinition[] variableDefinitions =
     [
@@ -41,17 +41,20 @@
                 new ScribanVariableDefinition()
                 {
                     Name = "FirstName",
-                    Properties = ["Value", "Label"]
+                    Properties = ["Value", "Label"],
+                    ExampleValue = "John"
                 },
                 new ScribanVariableDefinition()
                 {
                     Name = "LastName",
-                    Properties = ["Value", "Label"]
+                    Properties = ["Value", "Label"],
+                    ExampleValue = "Doe"
                 },
                 new ScribanVariableDefinition()
                 {
                     Name = "Email",
-                    Properties = ["Value", "Label"]
+                    Properties = ["Value", "Label"],
+                    ExampleValue = "john.doe@example.com"
                 },
                 new ScribanVariableDefinition()
                 {
@@ -63,17 +66,20 @@
                         new ScribanVariableDefinition()
                         {
                             Name = "OptionA",
-                            Properties = ["Value", "Label"]
+                            Properties = ["Value", "Label"],
+                            ExampleValue = "option_a"
                         },
                         new ScribanVariableDefinition()
                         {
                             Name = "OptionB",
-                            Properties = ["Value", "Label"]
+                            Properties = ["Value", "Label"],
+                            ExampleValue = "option_b"
                         },
                         new ScribanVariableDefinition()
                         {
                             Name = "OptionC",
-                            Properties = ["Value", "Label"]
+                            Properties = ["Value", "Label"],
+                            ExampleValue = "option_c"
                         }
                     ]
                 },
@@ -86,17 +92,20 @@
                         new ScribanVariableDefinition()
                         {
                             Name = "OptionA",
-                            Properties = ["Value", "Label"]
+                            Properties = ["Value", "Label"],
+                            ExampleValue = "choice_a"
                         },
                         new ScribanVariableDefinition()
                         {
                             Name = "OptionB",
-                            Properties = ["Value", "Label"]
+                            Properties = ["Value", "Label"],
+                            ExampleValue = "choice_b"
                         },
                         new ScribanVariableDefinition()
                         {
                             Name = "OptionC",
-                            Properties = ["Value", "Label"]
+                            Properties = ["Value", "Label"],
+                            ExampleValue = "choice_c"
                         }
                     ]
                 }
@@ -107,9 +116,21 @@
             Name = "env",
             ChildVars =
             [
-                new ScribanVariableDefinition() { Name = "LocalNow" },
-                new ScribanVariableDefinition() { Name = "Environment" },
-                new ScribanVariableDefinition() { Name = "ApiVersion" }
+                new ScribanVariableDefinition()
+                {
+                    Name = "LocalNow",
+                    ExampleValue = "2024-02-28 14:30:00"
+                },
+                new ScribanVariableDefinition()
+                {
+                    Name = "Environment",
+                    ExampleValue = "Development"
+                },
+                new ScribanVariableDefinition()
+                {
+                    Name = "ApiVersion",
+                    ExampleValue = "v1.0.0"
+                }
             ]
         }
     ];

@@ -81,14 +81,63 @@
         border: 1px solid #4caf50;
     }
 
-    .preview-container-dark {
-        background-color: #1e1e1e;
-        color: #d4d4d4;
+    .preview-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background-color: transparent;
     }
 
-    .preview-container-light {
-        background-color: #ffffff;
-        color: #000000;
+    .preview-container {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        border-left: 1px solid var(--mud-palette-lines-inputs);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .viewport-frame {
+        margin: 16px auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: white;
+        transition: all 0.3s ease;
+    }
+
+    .viewport-frame-desktop {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .viewport-frame-tablet {
+        width: 768px;
+        max-width: calc(100% - 32px);
+        height: calc(100% - 48px);
+    }
+
+    .viewport-frame-mobile {
+        width: 375px;
+        max-width: calc(100% - 32px);
+        height: calc(100% - 48px);
+    }
+
+    .viewport-label {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        z-index: 1;
+        pointer-events: none;
     }
 </style>
 
@@ -162,6 +211,20 @@
                             }
                         </div>
                     </MudTabPanel>
+                    <MudTabPanel Text="Email Tips">
+                        <div style="overflow-y: auto; padding: 8px;">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Email Best Practices</MudText>
+                            <MudText Typo="Typo.caption" Class="mb-2">
+                                • Use inline styles (style="...") instead of CSS classes<br />
+                                • Use tables for layout (email clients have poor CSS support)<br />
+                                • Keep width ≤ 600px for optimal display<br />
+                                • Always specify font-family, color, and font-size<br />
+                                • Use absolute URLs for images<br />
+                                • Test with different email clients<br />
+                                • Avoid JavaScript, forms, and CSS Grid/Flexbox
+                            </MudText>
+                        </div>
+                    </MudTabPanel>
                 </MudTabs>
             </div>
         </div>
@@ -187,6 +250,10 @@
                                        Color="Color.Default"
                                        Size="Size.Small"
                                        OnClick="TogglePreviewDarkMode" />
+                        <MudIconButton Icon="@GetDeviceIcon()"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="TogglePreviewDevice" />
                     }
                 }
             </div>
@@ -199,8 +266,16 @@
                 @* Preview Column *@
                 @if (previewShown)
                 {
-                    <div class="@GetPreviewContainerClass()" style="display: flex; flex-direction: column; flex: 1; padding: 12px; border-left: 1px solid var(--mud-palette-lines-inputs); overflow: hidden;">
-                        @renderedPreview
+                    <div class="preview-container" style="background-color: @GetPreviewBackgroundColor();">
+                        @if (previewDeviceMode != DeviceMode.Desktop)
+                        {
+                            <div class="viewport-label">
+                                @GetViewportLabel()
+                            </div>
+                        }
+                        <div class="viewport-frame @GetViewportFrameClass()">
+                            <iframe class="preview-iframe" srcdoc="@renderedPreviewDoc" sandbox="allow-same-origin" />
+                        </div>
                     </div>
                 }
             </div>
@@ -233,8 +308,10 @@
 
     private bool previewShown;
     private bool previewDarkModeActive = true;
+    private DeviceMode previewDeviceMode = DeviceMode.Desktop;
     private TemplateContext? templateContext;
-    private MarkupString renderedPreview;
+    private string? renderedPreviewHtml;
+    private string? renderedPreviewDoc;
     private IReadOnlyList<TreeItemData<string>> availableVariablesTreeItems { get; set; } = [];
 
     private bool editorInitialized;
@@ -297,6 +374,23 @@
     private void TogglePreviewDarkMode()
     {
         previewDarkModeActive = !previewDarkModeActive;
+
+        // Update iFrame content to reflect the new background color
+        if (!string.IsNullOrEmpty(renderedPreviewHtml))
+            UpdateIFrameContent(renderedPreviewHtml);
+    }
+
+    private async Task TogglePreviewDevice()
+    {
+        previewDeviceMode = previewDeviceMode switch
+        {
+            DeviceMode.Desktop => DeviceMode.Tablet,
+            DeviceMode.Tablet => DeviceMode.Mobile,
+            DeviceMode.Mobile => DeviceMode.Desktop,
+            _ => DeviceMode.Desktop
+        };
+
+        await UpdatePreviewAsync();
     }
 
     private void SetupScribanContext()
@@ -329,12 +423,67 @@
             Template template = Template.Parse(templateContent);
             string result = template.Render(templateContext);
 
-            renderedPreview = new MarkupString(result);
+            renderedPreviewHtml = result;
+
+            UpdateIFrameContent(renderedPreviewHtml);
         }
         catch (Exception ex)
         {
-            renderedPreview = new MarkupString($"<div style='color: red; font-weight: bold;'>Error rendering preview: {ex.Message}</div>");
+            string errorHtml = $@"
+                <div style='padding: 16px; color: #d32f2f; font-family: monospace; background-color: #ffebee; border: 1px solid #ef5350; border-radius: 4px; margin: 16px;'>
+                    <strong>Error rendering preview:</strong><br/>
+                    {System.Web.HttpUtility.HtmlEncode(ex.Message)}
+                </div>";
+
+            UpdateIFrameContent(errorHtml);
         }
+    }
+
+    // Create a complete HTML document for email rendering
+    private void UpdateIFrameContent(string htmlContent)
+    {
+        // todo use shared const for widths
+        string maxWidth = previewDeviceMode switch
+        {
+            DeviceMode.Mobile => "375px",
+            DeviceMode.Tablet => "768px",
+            _ => "100%"
+        };
+
+        // Respect dark mode for iframe background
+        string bodyBackground = previewDarkModeActive ? "#1e1e1e" : "#ffffff";
+        string bodyColor = previewDarkModeActive ? "#d4d4d4" : "#000000";
+
+        renderedPreviewDoc = $@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <style>
+        body {{
+            margin: 0;
+            padding: 16px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: {bodyColor};
+            background-color: {bodyBackground};
+        }}
+        * {{
+            box-sizing: border-box;
+        }}
+        .email-container {{
+            max-width: {maxWidth};
+            margin: 0 auto;
+        }}
+    </style>
+</head>
+<body>
+    <div class='email-container'>
+        {htmlContent}
+    </div>
+</body>
+</html>";
     }
 
     private object BuildVariableObject(ScribanVariableDefinition varDef)
@@ -346,7 +495,25 @@
         {
             foreach (string property in varDef.Properties)
             {
-                obj[property] = $"[{varDef.Name}.{property}]";
+                string value;
+
+                if (property == "Value" && varDef.ExampleValue is not null)
+                {
+                    // Use ExampleValue for "Value" property
+                    value = varDef.ExampleValue;
+                }
+                else if (property == "Label")
+                {
+                    // Always use variable name for "Label" property
+                    value = varDef.Name;
+                }
+                else
+                {
+                    // Generate placeholder for other properties
+                    value = $"[{varDef.Name}.{property}]";
+                }
+
+                obj[property] = value;
             }
         }
 
@@ -376,10 +543,6 @@
                     // Also add as direct property for flattened access
                     obj[childVar.Name] = childObj;
                 }
-                // Make it iterable by implementing IEnumerable behavior
-                // Return a ScriptObject that also acts as an array
-                obj.SetValue("Items", new ScriptArray(items), false);
-                obj.Import(typeof(Enumerable));
 
                 // Return custom wrapper that supports both property access and iteration
                 return new FlattenedLoopableVariable(obj, items);
@@ -394,35 +557,13 @@
             }
         }
 
-        // If no properties and no children, return a placeholder string
+        // If no properties and no children, return example value or placeholder string
         if (varDef.Properties.Length == 0 && varDef.ChildVars.Length == 0)
         {
-            return $"[{varDef.Name}]";
+            return varDef.ExampleValue ?? $"[{varDef.Name}]";
         }
 
         return obj;
-    }
-
-    // Helper class to support both property access and iteration
-    private sealed class FlattenedLoopableVariable : ScriptObject, IEnumerable
-    {
-        private readonly List<object> items;
-
-        public FlattenedLoopableVariable(ScriptObject properties, List<object> items)
-        {
-            this.items = items;
-
-            // Copy all properties from the source object
-            foreach (KeyValuePair<string, object?> kvp in properties)
-            {
-                this[kvp.Key] = kvp.Value;
-            }
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            return items.GetEnumerator();
-        }
     }
 
     private List<TreeItemData<string>> BuildTreeItems(IReadOnlyList<ScribanVariableDefinition> variables)
@@ -498,9 +639,42 @@
         return items;
     }
 
-    private string GetPreviewContainerClass()
+    private string GetDeviceIcon()
     {
-        return previewDarkModeActive ? "preview-container-dark" : "preview-container-light";
+        return previewDeviceMode switch
+        {
+            DeviceMode.Desktop => Icons.Material.Filled.Computer,
+            DeviceMode.Tablet => Icons.Material.Filled.Tablet,
+            DeviceMode.Mobile => Icons.Material.Filled.PhoneIphone,
+            _ => Icons.Material.Filled.Computer
+        };
+    }
+
+    // todo use shared const for width
+    private string GetViewportLabel()
+    {
+        return previewDeviceMode switch
+        {
+            DeviceMode.Tablet => "Tablet (768px)",
+            DeviceMode.Mobile => "Mobile (375px)",
+            _ => string.Empty
+        };
+    }
+
+    private string GetViewportFrameClass()
+    {
+        return previewDeviceMode switch
+        {
+            DeviceMode.Desktop => "viewport-frame-desktop",
+            DeviceMode.Tablet => "viewport-frame-tablet",
+            DeviceMode.Mobile => "viewport-frame-mobile",
+            _ => "viewport-frame-desktop"
+        };
+    }
+
+    private string GetPreviewBackgroundColor()
+    {
+        return previewDarkModeActive ? "#1e1e1e" : "#ffffff";
     }
 
     private string GetMainContainerStyle()
@@ -585,6 +759,15 @@
         Light,
     }
 
+    private enum DeviceMode
+    {
+        Desktop,
+        Tablet,
+        Mobile,
+    }
+
+    // todo check what to keep here
+    // check if we want to include other default functions
     // Scriban built-in string functions
     private static readonly ScribanFunctionDefinition[] BuiltInStringFunctions =
     [
@@ -627,6 +810,30 @@
         public TreeItemPresenter(string variableName) : base(variableName)
         {
             Text = variableName;
+        }
+    }
+
+    // todo check if needed or if we need it public
+    // check GetEnumerator warning
+    // Helper class to support both property access and iteration
+    private sealed class FlattenedLoopableVariable : ScriptObject, IEnumerable
+    {
+        private readonly List<object> items;
+
+        public FlattenedLoopableVariable(ScriptObject properties, List<object> items)
+        {
+            this.items = items;
+
+            // Copy all properties from the source object
+            foreach (KeyValuePair<string, object?> kvp in properties)
+            {
+                this[kvp.Key] = kvp.Value;
+            }
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return items.GetEnumerator();
         }
     }
 }

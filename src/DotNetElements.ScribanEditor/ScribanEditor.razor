@@ -8,578 +8,572 @@
 @inherits MudComponentBase
 
 <style>
-	.mud-tabs-dense {
-	}
+    .mud-tabs-dense {
+    }
 
-		.mud-tabs-dense .mud-tab {
-			min-height: 34px;
-			min-width: 100px !important;
-			font-size: var(--mud-typography-subtitle2-size);
-			font-family: var(--mud-typography-subtitle2-family);
-			font-weight: var(--mud-typography-subtitle2-weight);
-			line-height: var(--mud-typography-subtitle2-lineheight);
-			letter-spacing: var(--mud-typography-subtitle2-letterspacing);
-			text-transform: var(--mud-typography-subtitle2-text-transform);
-		}
+        .mud-tabs-dense .mud-tab {
+            min-height: 34px;
+            min-width: 100px !important;
+            font-size: var(--mud-typography-subtitle2-size);
+            font-family: var(--mud-typography-subtitle2-family);
+            font-weight: var(--mud-typography-subtitle2-weight);
+            line-height: var(--mud-typography-subtitle2-lineheight);
+            letter-spacing: var(--mud-typography-subtitle2-letterspacing);
+            text-transform: var(--mud-typography-subtitle2-text-transform);
+        }
 
-		.mud-tabs-dense .mud-tabs-tabbar-inner {
-			min-height: 0px;
-		}
+        .mud-tabs-dense .mud-tabs-tabbar-inner {
+            min-height: 0px;
+        }
 
-		.mud-tabs-dense .mud-icon-button {
-			padding: 0px;
-			min-height: 34px;
-			min-width: 34px;
-		}
+        .mud-tabs-dense .mud-icon-button {
+            padding: 0px;
+            min-height: 34px;
+            min-width: 34px;
+        }
 
-	.mud-tree-view-dense {
-	}
+    .mud-tree-view-dense {
+    }
 
-		.mud-tree-view-dense .mud-icon-button {
-			padding: 0px !important;
-		}
+        .mud-tree-view-dense .mud-icon-button {
+            padding: 0px !important;
+        }
 
-		.mud-tree-view-dense .mud-collapse-wrapper {
-			scrollbar-width: none;
-		}
+        .mud-tree-view-dense .mud-collapse-wrapper {
+            scrollbar-width: none;
+        }
 
-	.tree-item-content {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		width: 100%;
-	}
+    .tree-item-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
 
-		.tree-item-content .tree-item-text {
-			flex: 1;
-			min-width: 0;
-		}
+        .tree-item-content .tree-item-text {
+            flex: 1;
+            min-width: 0;
+        }
 
-		.tree-item-content .tree-item-badges {
-			display: flex;
-			gap: 4px;
-			flex-shrink: 0;
-		}
+        .tree-item-content .tree-item-badges {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
 
-	.variable-badge {
-		display: inline-block;
-		font-size: 0.65rem;
-		padding: 1px 4px;
-		border-radius: 3px;
-		font-weight: 500;
-		vertical-align: middle;
-	}
+    .variable-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-weight: 500;
+        vertical-align: middle;
+    }
 
-	.variable-badge-loopable {
-		background-color: rgba(103, 58, 183, 0.2);
-		color: var(--mud-palette-primary);
-		border: 1px solid var(--mud-palette-primary);
-	}
+    .variable-badge-loopable {
+        background-color: rgba(103, 58, 183, 0.2);
+        color: var(--mud-palette-primary);
+        border: 1px solid var(--mud-palette-primary);
+    }
 
-	.variable-badge-property {
-		background-color: rgba(76, 175, 80, 0.2);
-		color: #4caf50;
-		border: 1px solid #4caf50;
-	}
+    .variable-badge-property {
+        background-color: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+        border: 1px solid #4caf50;
+    }
 
-	.preview-data-section {
-		margin-bottom: 32px;
-	}
+    .preview-data-section {
+        margin-bottom: 32px;
+    }
 
-	.preview-data-section-title {
-		font-weight: 600;
-		font-size: 0.95rem;
-		color: var(--mud-palette-text-primary);
-		margin-bottom: 12px;
-		padding-bottom: 8px;
-		border-bottom: 2px solid var(--mud-palette-divider);
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
+    .preview-data-section-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--mud-palette-text-primary);
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--mud-palette-divider);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-	.preview-data-group {
-		margin-left: 16px;
-		padding-left: 12px;
-		border-left: 2px solid var(--mud-palette-lines-default);
-		margin-bottom: 12px;
-	}
+    .preview-data-group {
+        margin-left: 16px;
+        padding-left: 12px;
+        border-left: 2px solid var(--mud-palette-lines-default);
+        margin-bottom: 12px;
+    }
 
-	.preview-data-group-header {
-		font-weight: 500;
-		font-size: 0.8rem;
-		color: var(--mud-palette-text-secondary);
-		margin-bottom: 8px;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
+    .preview-data-group-header {
+        font-weight: 500;
+        font-size: 0.8rem;
+        color: var(--mud-palette-text-secondary);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
 
-	.preview-data-field {
-		margin-bottom: 8px;
-	}
+    .preview-data-field {
+        margin-bottom: 8px;
+    }
 
-	.preview-data-badge {
-		display: inline-block;
-		font-size: 0.65rem;
-		padding: 2px 6px;
-		border-radius: 3px;
-		font-weight: 500;
-		background-color: rgba(103, 58, 183, 0.1);
-		color: var(--mud-palette-primary);
-		border: 1px solid var(--mud-palette-primary);
-	}
+    .preview-data-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-weight: 500;
+        background-color: rgba(103, 58, 183, 0.1);
+        color: var(--mud-palette-primary);
+        border: 1px solid var(--mud-palette-primary);
+    }
 
-	.preview-iframe {
-		width: 100%;
-		height: 100%;
-		border: none;
-		background-color: transparent;
-	}
+    .preview-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background-color: transparent;
+    }
 
-	.preview-container {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		border-left: 1px solid var(--mud-palette-lines-inputs);
-		overflow: hidden;
-		position: relative;
-	}
+    .preview-container {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        border-left: 1px solid var(--mud-palette-lines-inputs);
+        overflow: hidden;
+        position: relative;
+    }
 
-	.viewport-frame {
-		margin: 48px auto auto auto;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		border-radius: 8px;
-		overflow: hidden;
-		background-color: white;
-		transition: all 0.3s ease;
-	}
+    .viewport-frame {
+        margin: 48px auto auto auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: white;
+        transition: all 0.3s ease;
+    }
 
-	.viewport-frame-desktop {
-		width: 100%;
-		height: 100%;
-		margin: 0;
-		box-shadow: none;
-		border-radius: 0;
-	}
+    .viewport-frame-desktop {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
 
-	.viewport-frame-tablet {
-		width: 768px;
-		max-width: calc(100% - 32px);
-		height: calc(100% - 64px);
-	}
+    .viewport-frame-tablet {
+        width: 768px;
+        max-width: calc(100% - 32px);
+        height: calc(100% - 64px);
+    }
 
-	.viewport-frame-mobile {
-		width: 375px;
-		max-width: calc(100% - 32px);
-		height: calc(100% - 64px);
-	}
+    .viewport-frame-mobile {
+        width: 375px;
+        max-width: calc(100% - 32px);
+        height: calc(100% - 64px);
+    }
 
-	.viewport-label {
-		position: absolute;
-		top: 8px;
-		right: 8px;
-		background-color: rgba(0, 0, 0, 0.7);
-		color: white;
-		padding: 4px 12px;
-		border-radius: 12px;
-		font-size: 0.75rem;
-		font-weight: 500;
-		z-index: 1;
-		pointer-events: none;
-	}
+    .viewport-label {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        z-index: 1;
+        pointer-events: none;
+    }
 </style>
 
 <div class="@Class" style="@Style" @attributes="UserAttributes">
-	<div style="@GetMainContainerStyle()">
-		@* Left Column - Template Variables & Help *@
-		<div style="@GetSidebarStyle()">
-			<div style="flex: 1; border-bottom: 1px solid var(--mud-palette-lines-default);">
-				<div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
-					<MudText Typo="Typo.subtitle2">Template Variables</MudText>
-				</div>
-				<MudTreeView Items="@availableVariablesTreeItems" ExpandOnClick="true" ReadOnly="true" Dense="true" Class="mud-tree-view-dense" Style="overflow-y: auto;">
-					<ItemTemplate Context="treeItem">
-						<MudTreeViewItem @bind-Expanded="@treeItem.Expanded" Items="@treeItem.Children" Value="@treeItem.Value">
-							<Content>
-								<div class="tree-item-content">
-									<div class="tree-item-text">
-										<MudText Typo="Typo.subtitle2" Style="font-size: 0.8rem;">@treeItem.Text</MudText>
-									</div>
-									@if (treeItem is not TreeItemPresenter presenter)
-									{
-										throw new InvalidOperationException("Expected tree item to be of type TreeItemPresenter");
-									}
+    <div style="@GetMainContainerStyle()">
+        @* Left Column - Template Variables & Help *@
+        <div style="@GetSidebarStyle()">
+            <div style="flex: 1; border-bottom: 1px solid var(--mud-palette-lines-default);">
+                <div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
+                    <MudText Typo="Typo.subtitle2">Template Variables</MudText>
+                </div>
+                <MudTreeView Items="@availableVariablesTreeItems" ExpandOnClick="true" ReadOnly="true" Dense="true" Class="mud-tree-view-dense" Style="overflow-y: auto;">
+                    <ItemTemplate Context="treeItem">
+                        <MudTreeViewItem @bind-Expanded="@treeItem.Expanded" Items="@treeItem.Children" Value="@treeItem.Value">
+                            <Content>
+                                <div class="tree-item-content">
+                                    <div class="tree-item-text">
+                                        <MudText Typo="Typo.subtitle2" Style="font-size: 0.8rem;">@treeItem.Text</MudText>
+                                    </div>
+                                    @if (treeItem is not TreeItemPresenter presenter)
+                                    {
+                                        throw new InvalidOperationException("Expected tree item to be of type TreeItemPresenter");
+                                    }
 
-									<div class="tree-item-badges">
-										@if (presenter.IsLoopable)
-										{
-											<span class="variable-badge variable-badge-loopable" title="Can be used in for loops">loop</span>
-										}
-										@if (presenter.IsProperty)
-										{
-											<span class="variable-badge variable-badge-property" title="Property">prop</span>
-										}
-									</div>
-								</div>
-							</Content>
-						</MudTreeViewItem>
-					</ItemTemplate>
-				</MudTreeView>
-			</div>
-			<div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
-				<MudTabs Class="mud-tabs-dense">
-					<MudTabPanel Text="Syntax">
-						<div style="overflow-y: auto; padding: 8px;">
-							<MudText Typo="Typo.subtitle2" Class="mb-2">Scriban Syntax</MudText>
-						</div>
-					</MudTabPanel>
-					<MudTabPanel Text="Functions">
-						<div style="overflow-y: auto; padding: 8px;">
-							<MudText Typo="Typo.subtitle2" Class="mb-3">String Functions</MudText>
+                                    <div class="tree-item-badges">
+                                        @if (presenter.IsLoopable)
+                                        {
+                                            <span class="variable-badge variable-badge-loopable" title="Can be used in for loops">loop</span>
+                                        }
+                                        @if (presenter.IsProperty)
+                                        {
+                                            <span class="variable-badge variable-badge-property" title="Property">prop</span>
+                                        }
+                                    </div>
+                                </div>
+                            </Content>
+                        </MudTreeViewItem>
+                    </ItemTemplate>
+                </MudTreeView>
+            </div>
+            <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                <MudTabs Class="mud-tabs-dense">
+                    <MudTabPanel Text="Syntax">
+                        <div style="overflow-y: auto; padding: 8px;">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Scriban Syntax</MudText>
+                        </div>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Functions">
+                        <div style="overflow-y: auto; padding: 8px;">
+                            <MudText Typo="Typo.subtitle2" Class="mb-3">String Functions</MudText>
 
-							@foreach (ScribanFunctionDefinition func in BuiltInStringFunctions)
-							{
-								<div class="mb-3">
-									<MudText Typo="Typo.body2" Style="font-weight: 600; font-size: 0.8rem;">@func.Name</MudText>
-									<MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mb-1">@func.Description</MudText>
+                            @foreach (ScribanFunctionDefinition func in BuiltInStringFunctions)
+                            {
+                                <div class="mb-3">
+                                    <MudText Typo="Typo.body2" Style="font-weight: 600; font-size: 0.8rem;">@func.Name</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mb-1">@func.Description</MudText>
 
-									@if (func.FunctionParams.Length > 0)
-									{
-										<div class="ml-2">
-											<MudText Typo="Typo.caption" Style="font-style: italic; font-size: 0.7rem;">Parameters:</MudText>
-											@foreach (FunctionParam param in func.FunctionParams)
-											{
-												<MudText Typo="Typo.caption" Class="ml-2" Style="font-size: 0.7rem;">
-													• <strong>@param.Name:</strong> @param.Description
-												</MudText>
-											}
-										</div>
-									}
-								</div>
-							}
-						</div>
-					</MudTabPanel>
-					<MudTabPanel Text="Email Tips">
-						<div style="overflow-y: auto; padding: 8px;">
-							<MudText Typo="Typo.subtitle2" Class="mb-2">Email Best Practices</MudText>
-							<MudText Typo="Typo.caption" Class="mb-2">
-								• Use inline styles (style="...") instead of CSS classes<br />
-								• Use tables for layout (email clients have poor CSS support)<br />
-								• Keep width ≤ 600px for optimal display<br />
-								• Always specify font-family, color, and font-size<br />
-								• Use absolute URLs for images<br />
-								• Test with different email clients<br />
-								• Avoid JavaScript, forms, and CSS Grid/Flexbox
-							</MudText>
-						</div>
-					</MudTabPanel>
-				</MudTabs>
-			</div>
-		</div>
+                                    @if (func.FunctionParams.Length > 0)
+                                    {
+                                        <div class="ml-2">
+                                            <MudText Typo="Typo.caption" Style="font-style: italic; font-size: 0.7rem;">Parameters:</MudText>
+                                            @foreach (FunctionParam param in func.FunctionParams)
+                                            {
+                                                <MudText Typo="Typo.caption" Class="ml-2" Style="font-size: 0.7rem;">
+                                                    • <strong>@param.Name:</strong> @param.Description
+                                                </MudText>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Email Tips">
+                        <div style="overflow-y: auto; padding: 8px;">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Email Best Practices</MudText>
+                            <MudText Typo="Typo.caption" Class="mb-2">
+                                • Use inline styles (style="...") instead of CSS classes<br />
+                                • Use tables for layout (email clients have poor CSS support)<br />
+                                • Keep width ≤ 600px for optimal display<br />
+                                • Always specify font-family, color, and font-size<br />
+                                • Use absolute URLs for images<br />
+                                • Test with different email clients<br />
+                                • Avoid JavaScript, forms, and CSS Grid/Flexbox
+                            </MudText>
+                        </div>
+                    </MudTabPanel>
+                </MudTabs>
+            </div>
+        </div>
 
-		@* Middle & Right Columns - Editor and Preview *@
-		<div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
-			@* Toolbar *@
-			<div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; gap: 8px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
-				<MudChipSet @bind-SelectedValue="editorMode" CheckMark="false" SelectionMode="SelectionMode.SingleSelection" Size="Size.Small" SelectedColor="Color.Primary">
-					<MudChip Value="EditorMode.Template" Variant="@(editorMode is EditorMode.Template ? Variant.Filled : Variant.Outlined)">
-						Template
-					</MudChip>
-					<MudChip Value="EditorMode.Styles" Variant="@(editorMode is EditorMode.Styles ? Variant.Filled : Variant.Outlined)">
-						Styles
-					</MudChip>
-					<MudChip Value="EditorMode.PreviewData" Variant="@(editorMode is EditorMode.PreviewData ? Variant.Filled : Variant.Outlined)">
-						Preview Data
-					</MudChip>
-				</MudChipSet>
-				<MudSpacer />
-				@if (PreviewEnabled)
-				{
-					<MudIconButton Icon="@(previewShown? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-								   Color="Color.Default"
-								   Size="Size.Small"
-								   OnClick="TogglePreview" />
-					@if (previewShown)
-					{
-						<MudIconButton Icon="@Icons.Material.Filled.Refresh"
-									   Color="Color.Default"
-									   Size="Size.Small"
-									   OnClick="UpdatePreviewAsync" />
-						<MudIconButton Icon="@(previewDarkModeActive? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
-									   Color="Color.Default"
-									   Size="Size.Small"
-									   OnClick="TogglePreviewDarkMode" />
-						<MudIconButton Icon="@GetDeviceIcon()"
-									   Color="Color.Default"
-									   Size="Size.Small"
-									   OnClick="TogglePreviewDevice" />
-					}
-				}
-			</div>
+        @* Middle & Right Columns - Editor and Preview *@
+        <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+            @* Toolbar *@
+            <div style="display: flex; align-items: center; padding: 4px 8px; min-height: 40px; gap: 8px; border-bottom: 1px solid var(--mud-palette-lines-inputs); background-color: var(--mud-palette-surface);">
+                <MudChipSet @bind-SelectedValue="editorMode" CheckMark="false" SelectionMode="SelectionMode.SingleSelection" Size="Size.Small" SelectedColor="Color.Primary">
+                    <MudChip Value="EditorMode.Template" Variant="@(editorMode is EditorMode.Template ? Variant.Filled : Variant.Outlined)">
+                        Template
+                    </MudChip>
+                    <MudChip Value="EditorMode.Styles" Variant="@(editorMode is EditorMode.Styles ? Variant.Filled : Variant.Outlined)">
+                        Styles
+                    </MudChip>
+                    <MudChip Value="EditorMode.PreviewData" Variant="@(editorMode is EditorMode.PreviewData ? Variant.Filled : Variant.Outlined)">
+                        Preview Data
+                    </MudChip>
+                </MudChipSet>
+                <MudSpacer />
+                @if (PreviewEnabled)
+                {
+                    <MudIconButton Icon="@(previewShown? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                   Color="Color.Default"
+                                   Size="Size.Small"
+                                   OnClick="TogglePreview" />
+                    @if (previewShown)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="UpdatePreviewAsync" />
+                        <MudIconButton Icon="@(previewDarkModeActive? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="TogglePreviewDarkMode" />
+                        <MudIconButton Icon="@GetDeviceIcon()"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       OnClick="TogglePreviewDevice" />
+                    }
+                }
+            </div>
 
-			@* Editor and Preview Row *@
-			<div style="display: flex; flex-direction: row; flex: 1; overflow: hidden;">
-				@* Editor Column *@
-				@if (editorMode is EditorMode.Template or EditorMode.Styles)
-				{
-					<div @ref="editorContainer" style="flex: 1; overflow: hidden;" />
-				}
-				else if (editorMode is EditorMode.PreviewData)
-				{
-					<div style="flex: 1; overflow-y: auto; padding: 16px; background-color: var(--mud-palette-background);">
-						<MudText Typo="Typo.h6" Class="mb-4">Preview Data</MudText>
-						<MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mb-4">
-							Customize example values for template preview.
-						</MudText>
+            @* Editor and Preview Row *@
+            <div style="display: flex; flex-direction: row; flex: 1; overflow: hidden;">
+                @* Editor Column *@
+                <div @ref="editorContainer" style="@GetEditorPanelStyle()" />
+                <div style="@GetPreviewDataPanelStyle()">
+                    <MudText Typo="Typo.h6" Class="mb-4">Preview Data</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mb-4">
+                        Customize example values for template preview.
+                    </MudText>
 
-						@foreach (ScribanVariableDefinition topLevelVar in availableVariables)
-						{
-							<div class="preview-data-section">
-								@* Section title for first level variable *@
-								<div class="preview-data-section-title">
-									<span>@topLevelVar.Name</span>
-									@if (topLevelVar.IsLoopable)
-									{
-										<span class="preview-data-badge" title="Can be used in for loops">loop</span>
-									}
-								</div>
+                    @foreach (ScribanVariableDefinition topLevelVar in availableVariables)
+                    {
+                        <div class="preview-data-section">
+                            @* Section title for first level variable *@
+                            <div class="preview-data-section-title">
+                                <span>@topLevelVar.Name</span>
+                                @if (topLevelVar.IsLoopable)
+                                {
+                                    <span class="preview-data-badge" title="Can be used in for loops">loop</span>
+                                }
+                            </div>
 
-								@* Render field if top-level var is editable *@
-								@if (IsVariableEditable(topLevelVar))
-								{
-									<div class="preview-data-field">
-										<MudTextField T="string"
-													  Label="@GetVariableFieldLabel(topLevelVar)"
-													  @bind-Value="topLevelVar.ExampleValue"
-													  Variant="Variant.Outlined"
-													  Margin="Margin.Dense"
-													  HelperText="@GetVariableHelperText(topLevelVar)"
-													  Clearable="true" />
-									</div>
-								}
+                            @* Render field if top-level var is editable *@
+                            @if (IsVariableEditable(topLevelVar))
+                            {
+                                <div class="preview-data-field">
+                                    <MudTextField T="string"
+                                                  Label="@GetVariableFieldLabel(topLevelVar)"
+                                                  @bind-Value="topLevelVar.ExampleValue"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  HelperText="@GetVariableHelperText(topLevelVar)"
+                                                  Clearable="true" />
+                                </div>
+                            }
 
-								@* Render nested children *@
-								@if (topLevelVar.ChildVars.Length > 0)
-								{
-									@RenderNestedVariables(topLevelVar.ChildVars, topLevelVar.IsLoopable && !topLevelVar.FlattenChildren, 1)
-								}
-							</div>
-						}
+                            @* Render nested children *@
+                            @if (topLevelVar.ChildVars.Length > 0)
+                            {
+                                @RenderNestedVariables(topLevelVar.ChildVars, topLevelVar.IsLoopable && !topLevelVar.FlattenChildren, 1)
+                            }
+                        </div>
+                    }
 
-						<div style="display: flex; gap: 8px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--mud-palette-lines-default);">
-							<MudButton Variant="Variant.Outlined"
-									   Color="Color.Primary"
-									   OnClick="ResetExampleValues"
-									   StartIcon="@Icons.Material.Filled.RestartAlt">
-								Reset All
-							</MudButton>
-							<MudButton Variant="Variant.Filled"
-									   Color="Color.Primary"
-									   OnClick="ApplyPreviewDataAsync"
-									   StartIcon="@Icons.Material.Filled.Check">
-								Apply Changes
-							</MudButton>
-						</div>
-					</div>
-				}
+                    <div style="display: flex; gap: 8px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--mud-palette-lines-default);">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   OnClick="ResetExampleValues"
+                                   StartIcon="@Icons.Material.Filled.RestartAlt">
+                            Reset All
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="ApplyPreviewDataAsync"
+                                   StartIcon="@Icons.Material.Filled.Check">
+                            Apply Changes
+                        </MudButton>
+                    </div>
+                </div>
 
-				@* Preview Column *@
-				@if (previewShown)
-				{
-					<div class="preview-container" style="background-color: var(--mud-palette-background);">
-						@if (previewDeviceMode != DeviceMode.Desktop)
-						{
-							<div class="viewport-label">
-								@GetViewportLabel()
-							</div>
-						}
-						<div class="viewport-frame @GetViewportFrameClass()">
-							<iframe class="preview-iframe" srcdoc="@renderedPreviewDoc" sandbox="allow-same-origin" />
-						</div>
-					</div>
-				}
-			</div>
-		</div>
-	</div>
+                @* Preview Column *@
+                @if (previewShown)
+                {
+                    <div class="preview-container" style="background-color: var(--mud-palette-background);">
+                        @if (previewDeviceMode != DeviceMode.Desktop)
+                        {
+                            <div class="viewport-label">
+                                @GetViewportLabel()
+                            </div>
+                        }
+                        <div class="viewport-frame @GetViewportFrameClass()">
+                            <iframe class="preview-iframe" srcdoc="@renderedPreviewDoc" sandbox="allow-same-origin" />
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
 
 @code
 {
-	[Parameter]
-	public string? InitialContent { get; set; }
+    [Parameter]
+    public string? InitialContent { get; set; }
 
-	[Parameter]
-	public bool Resizable { get; set; } = true;
+    [Parameter]
+    public bool Resizable { get; set; } = true;
 
-	[Parameter]
-	public bool PreviewEnabled { get; set; } = true;
+    [Parameter]
+    public bool PreviewEnabled { get; set; } = true;
 
-	[Parameter]
-	public string? MinHeight { get; set; } = "100px";
+    [Parameter]
+    public string? MinHeight { get; set; } = "100px";
 
-	[Parameter]
-	public string? MaxHeight { get; set; }
+    [Parameter]
+    public string? MaxHeight { get; set; }
 
-	[Parameter]
-	public string SidebarWidth { get; set; } = "250px";
+    [Parameter]
+    public string SidebarWidth { get; set; } = "250px";
 
-	private EditorTheme preferredTheme = EditorTheme.Dark;
-	private IReadOnlyList<ScribanVariableDefinition> availableVariables = [];
+    private EditorTheme preferredTheme = EditorTheme.Dark;
+    private IReadOnlyList<ScribanVariableDefinition> availableVariables = [];
 
-	private EditorMode editorMode { get; set; } = EditorMode.Template;
-	private bool previewShown;
-	private bool previewDarkModeActive = true;
-	private DeviceMode previewDeviceMode = DeviceMode.Desktop;
-	private TemplateContext? templateContext;
-	private string? renderedPreviewHtml;
-	private string? renderedPreviewDoc;
-	private IReadOnlyList<TreeItemData<string>> availableVariablesTreeItems { get; set; } = [];
+    private EditorMode editorMode { get; set; } = EditorMode.Template;
+    private bool previewShown;
+    private bool previewDarkModeActive = true;
+    private DeviceMode previewDeviceMode = DeviceMode.Desktop;
+    private TemplateContext? templateContext;
+    private string? renderedPreviewHtml;
+    private string? renderedPreviewDoc;
+    private IReadOnlyList<TreeItemData<string>> availableVariablesTreeItems { get; set; } = [];
 
-	private bool editorInitialized;
+    private bool editorInitialized;
 
-	private ElementReference editorContainer;
+    private ElementReference editorContainer;
 
-	private readonly IJSRuntime jsRuntime;
+    private readonly IJSRuntime jsRuntime;
 
-	public ScribanEditor(IJSRuntime jsRuntime)
-	{
-		this.jsRuntime = jsRuntime;
-	}
+    public ScribanEditor(IJSRuntime jsRuntime)
+    {
+        this.jsRuntime = jsRuntime;
+    }
 
-	public ValueTask<string> GetContentAsync()
-	{
-		return GetEditorContentAsync();
-	}
+    public ValueTask<string> GetContentAsync()
+    {
+        return GetEditorContentAsync();
+    }
 
-	public ValueTask SetContentAsync(string content)
-	{
-		return SetEditorContentAsync(content);
-	}
+    public ValueTask SetContentAsync(string content)
+    {
+        return SetEditorContentAsync(content);
+    }
 
-	public async ValueTask SetAvailableVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
-	{
-		availableVariables = variables.ToList();
-		availableVariablesTreeItems = BuildTreeItems(availableVariables);
+    public async ValueTask SetAvailableVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
+    {
+        availableVariables = variables.ToList();
+        availableVariablesTreeItems = BuildTreeItems(availableVariables);
 
-		InitializeExampleValues(availableVariables);
-		SetupScribanContext();
+        InitializeExampleValues(availableVariables);
+        SetupScribanContext();
 
-		if (!editorInitialized)
-			return;
+        if (!editorInitialized)
+            return;
 
-		await SetScribanVariablesAsync(availableVariables);
-	}
+        await SetScribanVariablesAsync(availableVariables);
+    }
 
-	public async ValueTask SetIsDarkModeActiveAsync(bool isDarkMode)
-	{
-		preferredTheme = isDarkMode ? EditorTheme.Dark : EditorTheme.Light;
+    public async ValueTask SetIsDarkModeActiveAsync(bool isDarkMode)
+    {
+        preferredTheme = isDarkMode ? EditorTheme.Dark : EditorTheme.Light;
 
-		if (!editorInitialized)
-			return;
+        if (!editorInitialized)
+            return;
 
-		await SetEditorThemeAsync(preferredTheme);
-	}
+        await SetEditorThemeAsync(preferredTheme);
+    }
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (!firstRender)
-			return;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
 
-		await InitEditorAsync();
-	}
+        await InitEditorAsync();
+    }
 
-	private void SwitchEditorMode(EditorMode mode)
-	{
-		editorMode = mode;
-	}
+    private void SwitchEditorMode(EditorMode mode)
+    {
+        editorMode = mode;
+    }
 
-	private void TogglePreview()
-	{
-		previewShown = !previewShown;
-	}
+    private void TogglePreview()
+    {
+        previewShown = !previewShown;
+    }
 
-	private void TogglePreviewDarkMode()
-	{
-		previewDarkModeActive = !previewDarkModeActive;
-		UpdateIFrameContent(renderedPreviewHtml ?? "");
-	}
+    private void TogglePreviewDarkMode()
+    {
+        previewDarkModeActive = !previewDarkModeActive;
+        UpdateIFrameContent(renderedPreviewHtml ?? "");
+    }
 
-	private async Task TogglePreviewDevice()
-	{
-		previewDeviceMode = previewDeviceMode switch
-		{
-			DeviceMode.Desktop => DeviceMode.Tablet,
-			DeviceMode.Tablet => DeviceMode.Mobile,
-			DeviceMode.Mobile => DeviceMode.Desktop,
-			_ => DeviceMode.Desktop
-		};
+    private async Task TogglePreviewDevice()
+    {
+        previewDeviceMode = previewDeviceMode switch
+        {
+            DeviceMode.Desktop => DeviceMode.Tablet,
+            DeviceMode.Tablet => DeviceMode.Mobile,
+            DeviceMode.Mobile => DeviceMode.Desktop,
+            _ => DeviceMode.Desktop
+        };
 
-		await UpdatePreviewAsync();
-	}
+        await UpdatePreviewAsync();
+    }
 
-	private void SetupScribanContext()
-	{
-		templateContext = new()
-		{
-			StrictVariables = true,
-			EnableRelaxedIndexerAccess = false,
-			EnableRelaxedFunctionAccess = false,
-			EnableRelaxedTargetAccess = false,
-			EnableRelaxedMemberAccess = false,
-			MemberRenamer = member => member.Name,
-		};
+    private void SetupScribanContext()
+    {
+        templateContext = new()
+        {
+            StrictVariables = true,
+            EnableRelaxedIndexerAccess = false,
+            EnableRelaxedFunctionAccess = false,
+            EnableRelaxedTargetAccess = false,
+            EnableRelaxedMemberAccess = false,
+            MemberRenamer = member => member.Name,
+        };
 
-		ScriptObject scriptObject = new();
+        ScriptObject scriptObject = new();
 
-		// Build the variable structure from availableVariables
-		foreach (ScribanVariableDefinition varDef in availableVariables)
-			scriptObject[varDef.Name] = BuildVariableObject(varDef);
+        // Build the variable structure from availableVariables
+        foreach (ScribanVariableDefinition varDef in availableVariables)
+            scriptObject[varDef.Name] = BuildVariableObject(varDef);
 
-		templateContext.PushGlobal(scriptObject);
-	}
+        templateContext.PushGlobal(scriptObject);
+    }
 
-	private async Task UpdatePreviewAsync()
-	{
-		string templateContent = await GetEditorContentAsync();
+    private async Task UpdatePreviewAsync()
+    {
+        string templateContent = await GetEditorContentAsync();
 
-		try
-		{
-			Template template = Template.Parse(templateContent);
-			string result = template.Render(templateContext);
+        try
+        {
+            Template template = Template.Parse(templateContent);
+            string result = template.Render(templateContext);
 
-			renderedPreviewHtml = result;
+            renderedPreviewHtml = result;
 
-			UpdateIFrameContent(renderedPreviewHtml);
-		}
-		catch (Exception ex)
-		{
-			string errorHtml = $@"
+            UpdateIFrameContent(renderedPreviewHtml);
+        }
+        catch (Exception ex)
+        {
+            string errorHtml = $@"
                 <div style='padding: 16px; color: #d32f2f; font-family: monospace; background-color: #ffebee; border: 1px solid #ef5350; border-radius: 4px; margin: 16px;'>
                     <strong>Error rendering preview:</strong><br/>
 																		{System.Web.HttpUtility.HtmlEncode(ex.Message)}
                 </div>";
 
-			UpdateIFrameContent(errorHtml);
-		}
-	}
+            UpdateIFrameContent(errorHtml);
+        }
+    }
 
-	// Create a complete HTML document for email rendering
-	private void UpdateIFrameContent(string htmlContent)
-	{
-		// todo use shared const for widths
-		string maxWidth = previewDeviceMode switch
-		{
-			DeviceMode.Mobile => "375px",
-			DeviceMode.Tablet => "768px",
-			_ => "100%"
-		};
+    // Create a complete HTML document for email rendering
+    private void UpdateIFrameContent(string htmlContent)
+    {
+        // todo use shared const for widths
+        string maxWidth = previewDeviceMode switch
+        {
+            DeviceMode.Mobile => "375px",
+            DeviceMode.Tablet => "768px",
+            _ => "100%"
+        };
 
-		// Respect dark mode for iframe background
-		string bodyBackground = previewDarkModeActive ? "#1e1e1e" : "#ffffff";
-		string bodyColor = previewDarkModeActive ? "#d4d4d4" : "#000000";
+        // Respect dark mode for iframe background
+        string bodyBackground = previewDarkModeActive ? "#1e1e1e" : "#ffffff";
+        string bodyColor = previewDarkModeActive ? "#d4d4d4" : "#000000";
 
-		renderedPreviewDoc = $@"<!DOCTYPE html>
+        renderedPreviewDoc = $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset='utf-8'>
@@ -609,566 +603,588 @@
     </div>
 </body>
 </html>";
-	}
-
-	private IEnumerable<ScribanVariableDefinition> GetEditableVariables(IReadOnlyList<ScribanVariableDefinition> variables)
-	{
-		foreach (ScribanVariableDefinition varDef in variables)
-		{
-			// Include variables that have a Value property or are simple types
-			if (varDef.Properties.Contains("Value") ||
-				(varDef.Properties.Length == 0 && varDef.ChildVars.Length == 0))
-			{
-				yield return varDef;
-			}
-
-			// Recursively get child variables
-			foreach (ScribanVariableDefinition child in GetEditableVariables(varDef.ChildVars))
-			{
-				yield return child;
-			}
-		}
-	}
-
-	private void InitializeExampleValues(IReadOnlyList<ScribanVariableDefinition> variables)
-	{
-		foreach (ScribanVariableDefinition varDef in variables)
-		{
-			varDef.ExampleValue = varDef.DefaultExampleValue;
-
-			if (varDef.ChildVars.Length > 0)
-				InitializeExampleValues(varDef.ChildVars);
-		}
-	}
-
-	private async Task ApplyPreviewDataAsync()
-	{
-		SetupScribanContext();
-
-		await UpdatePreviewAsync();
-	}
-
-	private void ResetExampleValues()
-	{
-		ResetExampleValuesRecursive(availableVariables);
-		SetupScribanContext();
-
-		// todo check if needed
-		// StateHasChanged();
-	}
-
-	private void ResetExampleValuesRecursive(IReadOnlyList<ScribanVariableDefinition> variables)
-	{
-		foreach (ScribanVariableDefinition varDef in variables)
-		{
-			varDef.ExampleValue = varDef.DefaultExampleValue;
-
-			if (varDef.ChildVars.Length > 0)
-				ResetExampleValuesRecursive(varDef.ChildVars);
-		}
-	}
-
-	private object BuildVariableObject(ScribanVariableDefinition varDef)
-	{
-		ScriptObject obj = new();
-
-		// Add properties with sample values
-		if (varDef.Properties.Length > 0)
-		{
-			foreach (string property in varDef.Properties)
-			{
-				string value;
-
-				if (property == "Value" && varDef.ExampleValue is not null)
-				{
-					// Use ExampleValue for "Value" property
-					value = varDef.ExampleValue;
-				}
-				else if (property == "Label")
-				{
-					// Always use variable name for "Label" property
-					value = varDef.Name;
-				}
-				else
-				{
-					// Generate placeholder for other properties
-					value = $"[{varDef.Name}.{property}]";
-				}
-
-				obj[property] = value;
-			}
-		}
-
-		// Add child variables
-		if (varDef.ChildVars.Length > 0)
-		{
-			if (varDef.IsLoopable && !varDef.FlattenChildren)
-			{
-				// Loop-only: Create an array of items (e.g., Options2)
-				// Children are ONLY accessible through loop iteration
-				List<object> items = [];
-				foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
-				{
-					items.Add(BuildVariableObject(childVar));
-				}
-				return new ScriptArray(items);
-			}
-			else if (varDef.IsLoopable && varDef.FlattenChildren)
-			{
-				// Flattened + Loopable: Create array AND add children as direct properties (e.g., Options1)
-				// Children are accessible both directly AND through loop iteration
-				List<object> items = [];
-				foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
-				{
-					object childObj = BuildVariableObject(childVar);
-					items.Add(childObj);
-					// Also add as direct property for flattened access
-					obj[childVar.Name] = childObj;
-				}
-
-				// Return custom wrapper that supports both property access and iteration
-				return new FlattenedLoopableVariable(obj, items);
-			}
-			else
-			{
-				// Normal nested structure: Add children as nested properties
-				foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
-				{
-					obj[childVar.Name] = BuildVariableObject(childVar);
-				}
-			}
-		}
-
-		// If no properties and no children, return example value or placeholder string
-		if (varDef.Properties.Length == 0 && varDef.ChildVars.Length == 0)
-		{
-			return varDef.ExampleValue ?? $"[{varDef.Name}]";
-		}
-
-		return obj;
-	}
-
-	private List<TreeItemData<string>> BuildTreeItems(IReadOnlyList<ScribanVariableDefinition> variables)
-	{
-		List<TreeItemData<string>> items = [];
-
-		foreach (ScribanVariableDefinition varDef in variables)
-		{
-			TreeItemPresenter item = new(varDef.Name)
-			{
-				IsLoopable = varDef.IsLoopable,
-				IsProperty = false
-			};
-
-			List<TreeItemData<string>> children = [];
-
-			// Add properties first
-			if (varDef.Properties.Length > 0)
-			{
-				foreach (string property in varDef.Properties)
-				{
-					children.Add(new TreeItemPresenter(property)
-					{
-						IsLoopable = false,
-						IsProperty = true
-					});
-				}
-			}
-
-			// Add child variables
-			if (varDef.ChildVars.Length > 0)
-			{
-				// Only show children if not loopable OR if flatten is enabled
-				bool shouldShowChildren = !varDef.IsLoopable || varDef.FlattenChildren;
-
-				if (shouldShowChildren)
-				{
-					children.AddRange(BuildTreeItems(varDef.ChildVars));
-				}
-				else if (varDef.IsLoopable)
-				{
-					// For loop-only variables, show item properties directly
-					// Get the first child as a representative (all items have the same structure)
-					ScribanVariableDefinition firstChild = varDef.ChildVars[0];
-
-					// Add hint text as a direct child
-					children.Add(new TreeItemPresenter("Item properties:")
-					{
-						IsLoopable = false,
-						IsProperty = false,
-						IsHint = true
-					});
-
-					// Add properties directly at the same level
-					if (firstChild.Properties.Length > 0)
-					{
-						foreach (string property in firstChild.Properties)
-						{
-							children.Add(new TreeItemPresenter(property)
-							{
-								IsLoopable = false,
-								IsProperty = true
-							});
-						}
-					}
-				}
-			}
-
-			item.Children = children;
-			items.Add(item);
-		}
-
-		return items;
-	}
-
-	private RenderFragment RenderNestedVariables(ScribanVariableDefinition[] variables, bool isLoopOnlyParent, int depth)
-	{
-		return builder =>
-		{
-			if (isLoopOnlyParent && variables.Length > 0)
-			{
-				// For loop-only collections, show the first child's structure as template
-				builder.OpenElement(0, "div");
-				builder.AddAttribute(1, "style", "margin-bottom: 12px;");
-
-				builder.OpenComponent<MudText>(2);
-				builder.AddAttribute(3, "Typo", Typo.caption);
-				builder.AddAttribute(4, "Color", Color.Tertiary);
-				builder.AddAttribute(5, "Class", "mb-2");
-				builder.AddAttribute(6, "ChildContent", (RenderFragment)(textBuilder =>
-				{
-					textBuilder.AddContent(0, "Item properties (accessible in loops):");
-				}));
-				builder.CloseComponent();
-
-				RenderNestedVariable(builder, variables[0], depth);
-
-				builder.CloseElement();
-			}
-			else
-			{
-				// Normal nested structure
-				foreach (ScribanVariableDefinition varDef in variables)
-				{
-					RenderNestedVariable(builder, varDef, depth);
-				}
-			}
-		};
-	}
-
-	private void RenderNestedVariable(RenderTreeBuilder builder, ScribanVariableDefinition varDef, int depth)
-	{
-		bool hasEditableValue = IsVariableEditable(varDef);
-		bool hasChildren = varDef.ChildVars.Length > 0;
-
-		// Start group
-		builder.OpenElement(0, "div");
-		builder.AddAttribute(1, "class", "preview-data-group");
-
-		// Group header for nested variable
-		builder.OpenElement(2, "div");
-		builder.AddAttribute(3, "class", "preview-data-group-header");
-
-		builder.OpenComponent<MudText>(4);
-		builder.AddAttribute(5, "Typo", Typo.caption);
-		builder.AddAttribute(6, "ChildContent", (RenderFragment)(textBuilder =>
-		{
-			textBuilder.AddContent(0, varDef.Name);
-		}));
-		builder.CloseComponent();
-
-		if (varDef.IsLoopable)
-		{
-			builder.OpenElement(7, "span");
-			builder.AddAttribute(8, "class", "preview-data-badge");
-			builder.AddAttribute(9, "title", "Can be used in for loops");
-			builder.AddContent(10, "loop");
-			builder.CloseElement();
-		}
-
-		builder.CloseElement(); // group-header
-
-		// Render editable field
-		if (hasEditableValue)
-		{
-			builder.OpenElement(11, "div");
-			builder.AddAttribute(12, "class", "preview-data-field");
-
-			builder.OpenComponent<MudTextField<string>>(13);
-			builder.AddAttribute(14, "Label", GetVariableFieldLabel(varDef));
-			builder.AddAttribute(15, "Value", varDef.ExampleValue);
-			builder.AddAttribute(16, "ValueChanged", EventCallback.Factory.Create<string?>(this, value =>
-			{
-				varDef.ExampleValue = value;
-			}));
-			builder.AddAttribute(17, "Variant", Variant.Outlined);
-			builder.AddAttribute(18, "Margin", Margin.Dense);
-			builder.AddAttribute(19, "HelperText", GetVariableHelperText(varDef));
-			builder.AddAttribute(20, "Clearable", true);
-			builder.CloseComponent();
-
-			builder.CloseElement(); // preview-data-field
-		}
-
-		// Render nested children recursively
-		if (hasChildren)
-		{
-			bool isLoopOnly = varDef.IsLoopable && !varDef.FlattenChildren;
-
-			if (isLoopOnly && varDef.ChildVars.Length > 0)
-			{
-				// Show first child as template for loop-only collections
-				builder.OpenElement(21, "div");
-				builder.AddAttribute(22, "style", "margin-top: 8px;");
-
-				builder.OpenComponent<MudText>(23);
-				builder.AddAttribute(24, "Typo", Typo.caption);
-				builder.AddAttribute(25, "Color", Color.Tertiary);
-				builder.AddAttribute(26, "Class", "mb-1");
-				builder.AddAttribute(27, "ChildContent", (RenderFragment)(textBuilder =>
-				{
-					textBuilder.AddContent(0, "Item properties:");
-				}));
-				builder.CloseComponent();
-
-				RenderNestedVariable(builder, varDef.ChildVars[0], depth + 1);
-
-				builder.CloseElement();
-			}
-			else
-			{
-				// Render all children normally
-				foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
-					RenderNestedVariable(builder, childVar, depth + 1);
-			}
-		}
-
-		builder.CloseElement(); // group
-	}
-
-	private bool IsVariableEditable(ScribanVariableDefinition varDef)
-	{
-		return varDef.Properties.Contains("Value") ||
-			   (varDef.Properties.Length == 0 && varDef.ChildVars.Length == 0);
-	}
-
-	private string GetVariableFieldLabel(ScribanVariableDefinition varDef)
-	{
-		if (varDef.Properties.Contains("Value"))
-		{
-			return "Value";
-		}
-
-		return "Content";
-	}
-
-	private string? GetVariableHelperText(ScribanVariableDefinition varDef)
-	{
-		if (varDef.Properties.Contains("Value"))
-		{
-			return $"Value for {varDef.Name}.Value";
-		}
-
-		return null;
-	}
-
-	private string GetDeviceIcon()
-	{
-		return previewDeviceMode switch
-		{
-			DeviceMode.Desktop => Icons.Material.Filled.Computer,
-			DeviceMode.Tablet => Icons.Material.Filled.Tablet,
-			DeviceMode.Mobile => Icons.Material.Filled.PhoneIphone,
-			_ => Icons.Material.Filled.Computer
-		};
-	}
-
-	// todo use shared const for width
-	private string GetViewportLabel()
-	{
-		return previewDeviceMode switch
-		{
-			DeviceMode.Tablet => "Tablet (768px)",
-			DeviceMode.Mobile => "Mobile (375px)",
-			_ => string.Empty
-		};
-	}
-
-	private string GetViewportFrameClass()
-	{
-		return previewDeviceMode switch
-		{
-			DeviceMode.Desktop => "viewport-frame-desktop",
-			DeviceMode.Tablet => "viewport-frame-tablet",
-			DeviceMode.Mobile => "viewport-frame-mobile",
-			_ => "viewport-frame-desktop"
-		};
-	}
-
-	private string GetMainContainerStyle()
-	{
-		StyleBuilder builder = new();
-		builder.AddStyle("display: flex");
-		builder.AddStyle("flex-direction: row");
-		builder.AddStyle("border: 1px solid var(--mud-palette-lines-inputs)");
-		builder.AddStyle("border-radius: var(--mud-default-borderradius)");
-		builder.AddStyle("height: 100%");
-		builder.AddStyle("overflow: hidden");
-		builder.AddStyle("resize: vertical", Resizable);
-		builder.AddStyle("min-height", MinHeight, MinHeight is not null);
-		builder.AddStyle("max-height", MaxHeight, MaxHeight is not null);
-
-		return builder.Build();
-	}
-
-	private string GetSidebarStyle()
-	{
-		StyleBuilder builder = new();
-		builder.AddStyle("resize: horizontal");
-		builder.AddStyle("display: flex");
-		builder.AddStyle("flex-direction: column");
-		builder.AddStyle("width", SidebarWidth);
-		builder.AddStyle("border-right: 1px solid var(--mud-palette-lines-inputs)");
-		builder.AddStyle("background-color: var(--mud-palette-background-grey)");
-		builder.AddStyle("overflow: hidden");
-
-		return builder.Build();
-	}
-
-	// scriban-editor.js interop helpers
-	private async ValueTask InitEditorAsync()
-	{
-		await jsRuntime.InvokeVoidAsync("ScribanEditor.initEditor", editorContainer);
-
-		await SetEditorThemeAsync(preferredTheme);
-
-		if (availableVariables.Count > 0)
-			await SetScribanVariablesAsync(availableVariables);
-
-		if (!string.IsNullOrEmpty(InitialContent))
-			await SetEditorContentAsync(InitialContent);
-
-		editorInitialized = true;
-
-		StateHasChanged();
-	}
-
-	private ValueTask SetEditorContentAsync(string content)
-	{
-		return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorContent", editorContainer, content);
-	}
-
-	private ValueTask<string> GetEditorContentAsync()
-	{
-		return jsRuntime.InvokeAsync<string>("ScribanEditor.getEditorContent", editorContainer);
-	}
-
-	private ValueTask SetScribanFunctionsAsync(IEnumerable<ScribanFunctionDefinition> functions)
-	{
-		return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanFunctions", editorContainer, functions);
-	}
-
-	private ValueTask SetScribanVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
-	{
-		return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanVariables", editorContainer, variables);
-	}
-
-	private ValueTask SetEditorThemeAsync(EditorTheme theme)
-	{
-		return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorTheme", editorContainer, theme.ToString().ToLowerInvariant());
-	}
-
-	private sealed record class ScribanFunctionDefinition(string Name, string Description, FunctionParam[] FunctionParams);
-	private sealed record class FunctionParam(string Name, string Description);
-
-	private enum EditorTheme
-	{
-		Dark,
-		Light,
-	}
-
-	private enum EditorMode
-	{
-		Template,
-		Styles,
-		PreviewData
-	}
-
-	private enum DeviceMode
-	{
-		Desktop,
-		Tablet,
-		Mobile,
-	}
-
-	// todo check what to keep here
-	// check if we want to include other default functions
-	// Scriban built-in string functions
-	private static readonly ScribanFunctionDefinition[] BuiltInStringFunctions =
-	[
-		new("string.append", "Appends a string to another string", [new("text", "The string to append")]),
-		new("string.capitalize", "Capitalizes the first character of the string", []),
-		new("string.downcase", "Converts the string to lowercase", []),
-		new("string.upcase", "Converts the string to uppercase", []),
-		new("string.strip", "Removes whitespace from both ends", []),
-		new("string.lstrip", "Removes whitespace from the left end", []),
-		new("string.rstrip", "Removes whitespace from the right end", []),
-		new("string.replace", "Replaces occurrences of a string", [new("old", "The string to find"), new("new", "The replacement string")]),
-		new("string.replace_first", "Replaces the first occurrence", [new("old", "The string to find"), new("new", "The replacement string")]),
-		new("string.remove", "Removes all occurrences of a string", [new("text", "The string to remove")]),
-		new("string.remove_first", "Removes the first occurrence", [new("text", "The string to remove")]),
-		new("string.slice", "Extracts a substring", [new("start", "Starting position (0-based)"), new("length", "Number of characters (optional)")]),
-		new("string.split", "Splits string into an array", [new("delimiter", "The string to split on")]),
-		new("string.starts_with", "Checks if string starts with text", [new("text", "The text to check for")]),
-		new("string.ends_with", "Checks if string ends with text", [new("text", "The text to check for")]),
-		new("string.contains", "Checks if string contains text", [new("text", "The text to search for")]),
-		new("string.truncate", "Truncates string to length", [new("length", "Maximum length")]),
-		new("string.truncatewords", "Truncates to word count", [new("count", "Maximum number of words")]),
-		new("string.pad_left", "Pads string on the left", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
-		new("string.pad_right", "Pads string on the right", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
-		new("string.pluralize", "Returns singular or plural form", [new("count", "Number to check"), new("singular", "Singular form"), new("plural", "Plural form")]),
-		new("string.md5", "Computes MD5 hash", []),
-		new("string.sha1", "Computes SHA1 hash", []),
-		new("string.sha256", "Computes SHA256 hash", []),
-		new("string.hmac_sha1", "Computes HMAC SHA1", [new("key", "The secret key")]),
-		new("string.hmac_sha256", "Computes HMAC SHA256", [new("key", "The secret key")]),
-		new("string.handle", "Converts to URL-friendly string", []),
-		new("string.handleize", "Converts to handleized string", [])
-	];
-
-	private sealed class TreeItemPresenter : TreeItemData<string>
-	{
-		public bool IsLoopable { get; set; }
-		public bool IsProperty { get; set; }
-		public bool IsHint { get; set; }
-
-		public TreeItemPresenter(string variableName) : base(variableName)
-		{
-			Text = variableName;
-		}
-	}
-
-	// todo check if needed or if we need it public
-	// check GetEnumerator warning
-	// Helper class to support both property access and iteration
-	private sealed class FlattenedLoopableVariable : ScriptObject, IEnumerable
-	{
-		private readonly List<object> items;
-
-		public FlattenedLoopableVariable(ScriptObject properties, List<object> items)
-		{
-			this.items = items;
-
-			// Copy all properties from the source object
-			foreach (KeyValuePair<string, object?> kvp in properties)
-			{
-				this[kvp.Key] = kvp.Value;
-			}
-		}
-
-		public IEnumerator GetEnumerator()
-		{
-			return items.GetEnumerator();
-		}
-	}
+    }
+
+    private IEnumerable<ScribanVariableDefinition> GetEditableVariables(IReadOnlyList<ScribanVariableDefinition> variables)
+    {
+        foreach (ScribanVariableDefinition varDef in variables)
+        {
+            // Include variables that have a Value property or are simple types
+            if (varDef.Properties.Contains("Value") ||
+                (varDef.Properties.Length == 0 && varDef.ChildVars.Length == 0))
+            {
+                yield return varDef;
+            }
+
+            // Recursively get child variables
+            foreach (ScribanVariableDefinition child in GetEditableVariables(varDef.ChildVars))
+            {
+                yield return child;
+            }
+        }
+    }
+
+    private void InitializeExampleValues(IReadOnlyList<ScribanVariableDefinition> variables)
+    {
+        foreach (ScribanVariableDefinition varDef in variables)
+        {
+            varDef.ExampleValue = varDef.DefaultExampleValue;
+
+            if (varDef.ChildVars.Length > 0)
+                InitializeExampleValues(varDef.ChildVars);
+        }
+    }
+
+    private async Task ApplyPreviewDataAsync()
+    {
+        SetupScribanContext();
+
+        await UpdatePreviewAsync();
+    }
+
+    private void ResetExampleValues()
+    {
+        ResetExampleValuesRecursive(availableVariables);
+        SetupScribanContext();
+
+        // todo check if needed
+        // StateHasChanged();
+    }
+
+    private void ResetExampleValuesRecursive(IReadOnlyList<ScribanVariableDefinition> variables)
+    {
+        foreach (ScribanVariableDefinition varDef in variables)
+        {
+            varDef.ExampleValue = varDef.DefaultExampleValue;
+
+            if (varDef.ChildVars.Length > 0)
+                ResetExampleValuesRecursive(varDef.ChildVars);
+        }
+    }
+
+    private object BuildVariableObject(ScribanVariableDefinition varDef)
+    {
+        ScriptObject obj = new();
+
+        // Add properties with sample values
+        if (varDef.Properties.Length > 0)
+        {
+            foreach (string property in varDef.Properties)
+            {
+                string value;
+
+                if (property == "Value" && varDef.ExampleValue is not null)
+                {
+                    // Use ExampleValue for "Value" property
+                    value = varDef.ExampleValue;
+                }
+                else if (property == "Label")
+                {
+                    // Always use variable name for "Label" property
+                    value = varDef.Name;
+                }
+                else
+                {
+                    // Generate placeholder for other properties
+                    value = $"[{varDef.Name}.{property}]";
+                }
+
+                obj[property] = value;
+            }
+        }
+
+        // Add child variables
+        if (varDef.ChildVars.Length > 0)
+        {
+            if (varDef.IsLoopable && !varDef.FlattenChildren)
+            {
+                // Loop-only: Create an array of items (e.g., Options2)
+                // Children are ONLY accessible through loop iteration
+                List<object> items = [];
+                foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
+                {
+                    items.Add(BuildVariableObject(childVar));
+                }
+                return new ScriptArray(items);
+            }
+            else if (varDef.IsLoopable && varDef.FlattenChildren)
+            {
+                // Flattened + Loopable: Create array AND add children as direct properties (e.g., Options1)
+                // Children are accessible both directly AND through loop iteration
+                List<object> items = [];
+                foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
+                {
+                    object childObj = BuildVariableObject(childVar);
+                    items.Add(childObj);
+                    // Also add as direct property for flattened access
+                    obj[childVar.Name] = childObj;
+                }
+
+                // Return custom wrapper that supports both property access and iteration
+                return new FlattenedLoopableVariable(obj, items);
+            }
+            else
+            {
+                // Normal nested structure: Add children as nested properties
+                foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
+                {
+                    obj[childVar.Name] = BuildVariableObject(childVar);
+                }
+            }
+        }
+
+        // If no properties and no children, return example value or placeholder string
+        if (varDef.Properties.Length == 0 && varDef.ChildVars.Length == 0)
+        {
+            return varDef.ExampleValue ?? $"[{varDef.Name}]";
+        }
+
+        return obj;
+    }
+
+    private List<TreeItemData<string>> BuildTreeItems(IReadOnlyList<ScribanVariableDefinition> variables)
+    {
+        List<TreeItemData<string>> items = [];
+
+        foreach (ScribanVariableDefinition varDef in variables)
+        {
+            TreeItemPresenter item = new(varDef.Name)
+            {
+                IsLoopable = varDef.IsLoopable,
+                IsProperty = false
+            };
+
+            List<TreeItemData<string>> children = [];
+
+            // Add properties first
+            if (varDef.Properties.Length > 0)
+            {
+                foreach (string property in varDef.Properties)
+                {
+                    children.Add(new TreeItemPresenter(property)
+                    {
+                        IsLoopable = false,
+                        IsProperty = true
+                    });
+                }
+            }
+
+            // Add child variables
+            if (varDef.ChildVars.Length > 0)
+            {
+                // Only show children if not loopable OR if flatten is enabled
+                bool shouldShowChildren = !varDef.IsLoopable || varDef.FlattenChildren;
+
+                if (shouldShowChildren)
+                {
+                    children.AddRange(BuildTreeItems(varDef.ChildVars));
+                }
+                else if (varDef.IsLoopable)
+                {
+                    // For loop-only variables, show item properties directly
+                    // Get the first child as a representative (all items have the same structure)
+                    ScribanVariableDefinition firstChild = varDef.ChildVars[0];
+
+                    // Add hint text as a direct child
+                    children.Add(new TreeItemPresenter("Item properties:")
+                    {
+                        IsLoopable = false,
+                        IsProperty = false,
+                        IsHint = true
+                    });
+
+                    // Add properties directly at the same level
+                    if (firstChild.Properties.Length > 0)
+                    {
+                        foreach (string property in firstChild.Properties)
+                        {
+                            children.Add(new TreeItemPresenter(property)
+                            {
+                                IsLoopable = false,
+                                IsProperty = true
+                            });
+                        }
+                    }
+                }
+            }
+
+            item.Children = children;
+            items.Add(item);
+        }
+
+        return items;
+    }
+
+    private RenderFragment RenderNestedVariables(ScribanVariableDefinition[] variables, bool isLoopOnlyParent, int depth)
+    {
+        return builder =>
+        {
+            if (isLoopOnlyParent && variables.Length > 0)
+            {
+                // For loop-only collections, show the first child's structure as template
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "style", "margin-bottom: 12px;");
+
+                builder.OpenComponent<MudText>(2);
+                builder.AddAttribute(3, "Typo", Typo.caption);
+                builder.AddAttribute(4, "Color", Color.Tertiary);
+                builder.AddAttribute(5, "Class", "mb-2");
+                builder.AddAttribute(6, "ChildContent", (RenderFragment)(textBuilder =>
+                {
+                    textBuilder.AddContent(0, "Item properties (accessible in loops):");
+                }));
+                builder.CloseComponent();
+
+                RenderNestedVariable(builder, variables[0], depth);
+
+                builder.CloseElement();
+            }
+            else
+            {
+                // Normal nested structure
+                foreach (ScribanVariableDefinition varDef in variables)
+                {
+                    RenderNestedVariable(builder, varDef, depth);
+                }
+            }
+        };
+    }
+
+    private void RenderNestedVariable(RenderTreeBuilder builder, ScribanVariableDefinition varDef, int depth)
+    {
+        bool hasEditableValue = IsVariableEditable(varDef);
+        bool hasChildren = varDef.ChildVars.Length > 0;
+
+        // Start group
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "preview-data-group");
+
+        // Group header for nested variable
+        builder.OpenElement(2, "div");
+        builder.AddAttribute(3, "class", "preview-data-group-header");
+
+        builder.OpenComponent<MudText>(4);
+        builder.AddAttribute(5, "Typo", Typo.caption);
+        builder.AddAttribute(6, "ChildContent", (RenderFragment)(textBuilder =>
+        {
+            textBuilder.AddContent(0, varDef.Name);
+        }));
+        builder.CloseComponent();
+
+        if (varDef.IsLoopable)
+        {
+            builder.OpenElement(7, "span");
+            builder.AddAttribute(8, "class", "preview-data-badge");
+            builder.AddAttribute(9, "title", "Can be used in for loops");
+            builder.AddContent(10, "loop");
+            builder.CloseElement();
+        }
+
+        builder.CloseElement(); // group-header
+
+        // Render editable field
+        if (hasEditableValue)
+        {
+            builder.OpenElement(11, "div");
+            builder.AddAttribute(12, "class", "preview-data-field");
+
+            builder.OpenComponent<MudTextField<string>>(13);
+            builder.AddAttribute(14, "Label", varDef.Name);
+            builder.AddAttribute(15, "Value", varDef.ExampleValue);
+            builder.AddAttribute(16, "ValueChanged", EventCallback.Factory.Create<string?>(this, value =>
+            {
+                varDef.ExampleValue = value;
+            }));
+            builder.AddAttribute(17, "Variant", Variant.Outlined);
+            builder.AddAttribute(18, "Margin", Margin.Dense);
+            builder.AddAttribute(19, "HelperText", GetVariableHelperText(varDef));
+            builder.AddAttribute(20, "Clearable", true);
+            builder.CloseComponent();
+
+            builder.CloseElement(); // preview-data-field
+        }
+
+        // Render nested children recursively
+        if (hasChildren)
+        {
+            bool isLoopOnly = varDef.IsLoopable && !varDef.FlattenChildren;
+
+            if (isLoopOnly && varDef.ChildVars.Length > 0)
+            {
+                // Show first child as template for loop-only collections
+                builder.OpenElement(21, "div");
+                builder.AddAttribute(22, "style", "margin-top: 8px;");
+
+                builder.OpenComponent<MudText>(23);
+                builder.AddAttribute(24, "Typo", Typo.caption);
+                builder.AddAttribute(25, "Color", Color.Tertiary);
+                builder.AddAttribute(26, "Class", "mb-1");
+                builder.AddAttribute(27, "ChildContent", (RenderFragment)(textBuilder =>
+                {
+                    textBuilder.AddContent(0, "Item properties:");
+                }));
+                builder.CloseComponent();
+
+                RenderNestedVariable(builder, varDef.ChildVars[0], depth + 1);
+
+                builder.CloseElement();
+            }
+            else
+            {
+                // Render all children normally
+                foreach (ScribanVariableDefinition childVar in varDef.ChildVars)
+                    RenderNestedVariable(builder, childVar, depth + 1);
+            }
+        }
+
+        builder.CloseElement(); // group
+    }
+
+    private bool IsVariableEditable(ScribanVariableDefinition varDef)
+    {
+        return varDef.Properties.Contains("Value") ||
+               (varDef.Properties.Length == 0 && varDef.ChildVars.Length == 0);
+    }
+
+    private string GetVariableFieldLabel(ScribanVariableDefinition varDef)
+    {
+        if (varDef.Properties.Contains("Value"))
+        {
+            return "Value";
+        }
+
+        return "Content";
+    }
+
+    private string? GetVariableHelperText(ScribanVariableDefinition varDef)
+    {
+        if (varDef.Properties.Contains("Value"))
+        {
+            return $"Value for {varDef.Name}.Value";
+        }
+
+        return null;
+    }
+
+    private string GetDeviceIcon()
+    {
+        return previewDeviceMode switch
+        {
+            DeviceMode.Desktop => Icons.Material.Filled.Computer,
+            DeviceMode.Tablet => Icons.Material.Filled.Tablet,
+            DeviceMode.Mobile => Icons.Material.Filled.PhoneIphone,
+            _ => Icons.Material.Filled.Computer
+        };
+    }
+
+    // todo use shared const for width
+    private string GetViewportLabel()
+    {
+        return previewDeviceMode switch
+        {
+            DeviceMode.Tablet => "Tablet (768px)",
+            DeviceMode.Mobile => "Mobile (375px)",
+            _ => string.Empty
+        };
+    }
+
+    private string GetViewportFrameClass()
+    {
+        return previewDeviceMode switch
+        {
+            DeviceMode.Desktop => "viewport-frame-desktop",
+            DeviceMode.Tablet => "viewport-frame-tablet",
+            DeviceMode.Mobile => "viewport-frame-mobile",
+            _ => "viewport-frame-desktop"
+        };
+    }
+
+    private string GetMainContainerStyle()
+    {
+        StyleBuilder builder = new();
+        builder.AddStyle("display: flex");
+        builder.AddStyle("flex-direction: row");
+        builder.AddStyle("border: 1px solid var(--mud-palette-lines-inputs)");
+        builder.AddStyle("border-radius: var(--mud-default-borderradius)");
+        builder.AddStyle("height: 100%");
+        builder.AddStyle("overflow: hidden");
+        builder.AddStyle("resize: vertical", Resizable);
+        builder.AddStyle("min-height", MinHeight, MinHeight is not null);
+        builder.AddStyle("max-height", MaxHeight, MaxHeight is not null);
+
+        return builder.Build();
+    }
+
+    private string GetSidebarStyle()
+    {
+        StyleBuilder builder = new();
+        builder.AddStyle("resize: horizontal");
+        builder.AddStyle("display: flex");
+        builder.AddStyle("flex-direction: column");
+        builder.AddStyle("width", SidebarWidth);
+        builder.AddStyle("border-right: 1px solid var(--mud-palette-lines-inputs)");
+        builder.AddStyle("background-color: var(--mud-palette-background-grey)");
+        builder.AddStyle("overflow: hidden");
+
+        return builder.Build();
+    }
+
+    private string GetEditorPanelStyle()
+    {
+        StyleBuilder builder = new();
+        builder.AddStyle("flex: 1");
+        builder.AddStyle("overflow: hidden");
+        builder.AddStyle("display", editorMode is EditorMode.Template or EditorMode.Styles ? "block" : "none");
+
+        return builder.Build();
+    }
+
+    private string GetPreviewDataPanelStyle()
+    {
+        StyleBuilder builder = new();
+        builder.AddStyle("flex: 1");
+        builder.AddStyle("overflow-y: auto");
+        builder.AddStyle("padding: 16px");
+        builder.AddStyle("background-color: var(--mud-palette-background)");
+        builder.AddStyle("display", editorMode is EditorMode.PreviewData ? "block" : "none");
+
+        return builder.Build();
+    }
+
+    // scriban-editor.js interop helpers
+    private async ValueTask InitEditorAsync()
+    {
+        await jsRuntime.InvokeVoidAsync("ScribanEditor.initEditor", editorContainer);
+
+        await SetEditorThemeAsync(preferredTheme);
+
+        if (availableVariables.Count > 0)
+            await SetScribanVariablesAsync(availableVariables);
+
+        if (!string.IsNullOrEmpty(InitialContent))
+            await SetEditorContentAsync(InitialContent);
+
+        editorInitialized = true;
+
+        StateHasChanged();
+    }
+
+    private ValueTask SetEditorContentAsync(string content)
+    {
+        return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorContent", editorContainer, content);
+    }
+
+    private ValueTask<string> GetEditorContentAsync()
+    {
+        return jsRuntime.InvokeAsync<string>("ScribanEditor.getEditorContent", editorContainer);
+    }
+
+    private ValueTask SetScribanFunctionsAsync(IEnumerable<ScribanFunctionDefinition> functions)
+    {
+        return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanFunctions", editorContainer, functions);
+    }
+
+    private ValueTask SetScribanVariablesAsync(IEnumerable<ScribanVariableDefinition> variables)
+    {
+        return jsRuntime.InvokeVoidAsync("ScribanEditor.setScribanVariables", editorContainer, variables);
+    }
+
+    private ValueTask SetEditorThemeAsync(EditorTheme theme)
+    {
+        return jsRuntime.InvokeVoidAsync("ScribanEditor.setEditorTheme", editorContainer, theme.ToString().ToLowerInvariant());
+    }
+
+    private sealed record class ScribanFunctionDefinition(string Name, string Description, FunctionParam[] FunctionParams);
+    private sealed record class FunctionParam(string Name, string Description);
+
+    private enum EditorTheme
+    {
+        Dark,
+        Light,
+    }
+
+    private enum EditorMode
+    {
+        Template,
+        Styles,
+        PreviewData
+    }
+
+    private enum DeviceMode
+    {
+        Desktop,
+        Tablet,
+        Mobile,
+    }
+
+    // todo check what to keep here
+    // check if we want to include other default functions
+    // Scriban built-in string functions
+    private static readonly ScribanFunctionDefinition[] BuiltInStringFunctions =
+    [
+        new("string.append", "Appends a string to another string", [new("text", "The string to append")]),
+        new("string.capitalize", "Capitalizes the first character of the string", []),
+        new("string.downcase", "Converts the string to lowercase", []),
+        new("string.upcase", "Converts the string to uppercase", []),
+        new("string.strip", "Removes whitespace from both ends", []),
+        new("string.lstrip", "Removes whitespace from the left end", []),
+        new("string.rstrip", "Removes whitespace from the right end", []),
+        new("string.replace", "Replaces occurrences of a string", [new("old", "The string to find"), new("new", "The replacement string")]),
+        new("string.replace_first", "Replaces the first occurrence", [new("old", "The string to find"), new("new", "The replacement string")]),
+        new("string.remove", "Removes all occurrences of a string", [new("text", "The string to remove")]),
+        new("string.remove_first", "Removes the first occurrence", [new("text", "The string to remove")]),
+        new("string.slice", "Extracts a substring", [new("start", "Starting position (0-based)"), new("length", "Number of characters (optional)")]),
+        new("string.split", "Splits string into an array", [new("delimiter", "The string to split on")]),
+        new("string.starts_with", "Checks if string starts with text", [new("text", "The text to check for")]),
+        new("string.ends_with", "Checks if string ends with text", [new("text", "The text to check for")]),
+        new("string.contains", "Checks if string contains text", [new("text", "The text to search for")]),
+        new("string.truncate", "Truncates string to length", [new("length", "Maximum length")]),
+        new("string.truncatewords", "Truncates to word count", [new("count", "Maximum number of words")]),
+        new("string.pad_left", "Pads string on the left", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
+        new("string.pad_right", "Pads string on the right", [new("width", "Total width after padding"), new("char", "Character to pad with (optional, default: space)")]),
+        new("string.pluralize", "Returns singular or plural form", [new("count", "Number to check"), new("singular", "Singular form"), new("plural", "Plural form")]),
+        new("string.md5", "Computes MD5 hash", []),
+        new("string.sha1", "Computes SHA1 hash", []),
+        new("string.sha256", "Computes SHA256 hash", []),
+        new("string.hmac_sha1", "Computes HMAC SHA1", [new("key", "The secret key")]),
+        new("string.hmac_sha256", "Computes HMAC SHA256", [new("key", "The secret key")]),
+        new("string.handle", "Converts to URL-friendly string", []),
+        new("string.handleize", "Converts to handleized string", [])
+    ];
+
+    private sealed class TreeItemPresenter : TreeItemData<string>
+    {
+        public bool IsLoopable { get; set; }
+        public bool IsProperty { get; set; }
+        public bool IsHint { get; set; }
+
+        public TreeItemPresenter(string variableName) : base(variableName)
+        {
+            Text = variableName;
+        }
+    }
+
+    // todo check if needed or if we need it public
+    // check GetEnumerator warning
+    // Helper class to support both property access and iteration
+    private sealed class FlattenedLoopableVariable : ScriptObject, IEnumerable
+    {
+        private readonly List<object> items;
+
+        public FlattenedLoopableVariable(ScriptObject properties, List<object> items)
+        {
+            this.items = items;
+
+            // Copy all properties from the source object
+            foreach (KeyValuePair<string, object?> kvp in properties)
+            {
+                this[kvp.Key] = kvp.Value;
+            }
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return items.GetEnumerator();
+        }
+    }
 }
